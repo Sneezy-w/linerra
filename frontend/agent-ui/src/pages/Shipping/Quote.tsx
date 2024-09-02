@@ -1,16 +1,51 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Card, Input, Select, Checkbox, Row, Col, Typography, Alert } from 'antd';
+import {
+  Form,
+  Card,
+  Input,
+  Select,
+  Checkbox,
+  Row,
+  Col,
+  Typography,
+  Alert,
+  Button,
+  Steps,
+  Affix,
+} from 'antd';
 import { QuestionCircleOutlined } from '@ant-design/icons';
+import useCarrierModel from '@/models/carrierModel';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+const { Step } = Steps;
 
 const Quote: React.FC = () => {
   const [form] = Form.useForm();
   const [formData, setFormData] = useState({});
-  const [showConfirmationTypeOptions, setShowConfirmationTypeOptions] = useState(false);
   const [packageType, setPackageType] = useState<string | undefined>(undefined);
   const [quantity, setQuantity] = useState<number>(1);
+  const [selectedRegions, setSelectedRegions] = useState({
+    sender: {
+      id: 'CA',
+      name: 'Canada',
+      type: 'CP',
+      timezone: 'America/Blanc-Sablon',
+    },
+    recipient: {
+      id: 'CA',
+      name: 'Canada',
+      type: 'CP',
+      timezone: 'America/Blanc-Sablon',
+    },
+  });
+  const { regions, provincesByRegion, fetchRegions, fetchProvincesByRegion } = useCarrierModel();
+  const [currentStep, setCurrentStep] = useState(0);
+
+  useEffect(() => {
+    fetchRegions();
+    fetchProvincesByRegion('CA'); // Fetch provinces for Canada
+  }, [fetchRegions, fetchProvincesByRegion]);
 
   const onFinish = (values: any) => {
     console.log('Form values:', values);
@@ -26,9 +61,37 @@ const Quote: React.FC = () => {
     setQuantity(value);
   };
 
+  const handleRegionChange = (value: string, type: 'sender' | 'recipient') => {
+    fetchProvincesByRegion(value);
+    setSelectedRegions((prev) => ({ ...prev, [type]: value }));
+    form.setFieldsValue({ [`${type}State`]: undefined });
+  };
+
+  const handleRegionSearch = (input: string, option: any) => {
+    return option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
+  };
+
   useEffect(() => {
     form.setFieldsValue(formData);
   }, [formData, form]);
+
+  const handleReset = () => {
+    form.resetFields();
+    setCurrentStep(0);
+  };
+
+  const handleNext = () => {
+    form.validateFields().then(() => {
+      setCurrentStep(currentStep + 1);
+    });
+  };
+
+  const steps = [
+    { title: 'Quote', content: '' },
+    { title: 'Select Service', content: '' },
+    { title: 'Fill Infos', content: '' },
+    { title: 'Complete', content: '' },
+  ];
 
   return (
     <div>
@@ -38,7 +101,6 @@ const Quote: React.FC = () => {
           form={form}
           layout="horizontal"
           onFinish={onFinish}
-          initialValues={formData}
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 16 }}
           labelAlign="right"
@@ -61,15 +123,19 @@ const Quote: React.FC = () => {
                 <Form.Item name="senderSerach" label="Search">
                   <Input />
                 </Form.Item>
-                <Form.Item
-                  name="senderCountry"
-                  label="Country/Region"
-                  rules={[{ required: true }]}
-                  initialValue="Canada"
-                >
-                  <Select>
-                    <Option value="Canada">Canada</Option>
-                    {/* Add more country options */}
+                <Form.Item name="senderCountry" label="Country/Region" rules={[{ required: true }]}>
+                  <Select
+                    showSearch
+                    filterOption={handleRegionSearch}
+                    onChange={(value) => handleRegionChange(value, 'sender')}
+                    defaultActiveFirstOption={false}
+                    initialValue="Canada"
+                  >
+                    {regions.map((region) => (
+                      <Option key={region.id} value={region.id}>
+                        {region.name}
+                      </Option>
+                    ))}
                   </Select>
                 </Form.Item>
                 <Form.Item name="senderCity" label="City" rules={[{ required: true }]}>
@@ -77,9 +143,11 @@ const Quote: React.FC = () => {
                 </Form.Item>
                 <Form.Item name="senderState" label="Province/State" rules={[{ required: true }]}>
                   <Select>
-                    {/* Add state/province options */}
-                    <Option value="state1">State 1</Option>
-                    <Option value="state2">State 2</Option>
+                    {provincesByRegion[selectedRegions.sender]?.map((province) => (
+                      <Option key={province.id} value={province.id}>
+                        {province.name}
+                      </Option>
+                    ))}
                   </Select>
                 </Form.Item>
                 <Form.Item name="senderPostalCode" label="Postal Code" rules={[{ required: true }]}>
@@ -99,11 +167,19 @@ const Quote: React.FC = () => {
                   name="recipientCountry"
                   label="Country/Region"
                   rules={[{ required: true }]}
-                  initialValue="Canada"
                 >
-                  <Select>
-                    <Option value="Canada">Canada</Option>
-                    {/* Add more country options */}
+                  <Select
+                    showSearch
+                    filterOption={handleRegionSearch}
+                    onChange={(value) => handleRegionChange(value, 'recipient')}
+                    defaultActiveFirstOption={false}
+                    initialValue="Canada"
+                  >
+                    {regions.map((region) => (
+                      <Option key={region.id} value={region.id}>
+                        {region.name}
+                      </Option>
+                    ))}
                   </Select>
                 </Form.Item>
                 <Form.Item name="recipientCity" label="City" rules={[{ required: true }]}>
@@ -115,9 +191,11 @@ const Quote: React.FC = () => {
                   rules={[{ required: true }]}
                 >
                   <Select>
-                    {/* Add state/province options */}
-                    <Option value="state1">State 1</Option>
-                    <Option value="state2">State 2</Option>
+                    {provincesByRegion[selectedRegions.recipient]?.map((province) => (
+                      <Option key={province.id} value={province.id}>
+                        {province.name}
+                      </Option>
+                    ))}
                   </Select>
                 </Form.Item>
                 <Form.Item
@@ -386,6 +464,29 @@ const Quote: React.FC = () => {
           />
         </Form>
       </>
+      <Affix offsetBottom={20}>
+        <div
+          style={{
+            padding: '16px',
+            backgroundColor: '#fff',
+            boxShadow: '0 -2px 8px rgba(0, 0, 0, 0.15)',
+          }}
+        >
+          <Steps current={currentStep} size="small" style={{ marginBottom: 16 }}>
+            {steps.map((item) => (
+              <Step key={item.title} title={item.title} />
+            ))}
+          </Steps>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Button onClick={handleReset} style={{ marginRight: 8 }}>
+              Reset
+            </Button>
+            <Button type="primary" onClick={handleNext}>
+              {currentStep < steps.length - 1 ? 'Next' : 'Submit'}
+            </Button>
+          </div>
+        </div>
+      </Affix>
     </div>
   );
 };
