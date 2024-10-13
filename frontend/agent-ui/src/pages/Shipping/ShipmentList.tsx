@@ -5,9 +5,9 @@ import { BarcodeOutlined, CalendarOutlined, SearchOutlined, ShoppingOutlined } f
 import { ReactBarcode } from 'react-jsbarcode';
 import { Box, Package, MailOpen, Boxes } from 'lucide-react';
 import dayjs from 'dayjs';
-import { Link, useModel } from '@umijs/max';
+import { useModel } from '@umijs/max';
 import moment from 'moment';
-
+import { Link } from 'umi';
 
 
 import { getCarrierServiceById } from '@/models/carriers';
@@ -275,29 +275,30 @@ const ShipmentCard: React.FC<{ shipment: typeof mockShipment & { service: Return
                 </Link>
               </TLink>
             </Space> */}
-                <Text copyable={{ text: shipment.number }} style={{ fontSize: '1em' }}>
-                  <Link to={`/shipping/shipment/${shipment.number}`}>
-                    <Button
-                      color="primary"
-                      type="link"
-                      icon={
-                        <Box style={
-                          {
-                            verticalAlign: 'middle',
-                          }
-                        }
-                        />
-                      }
-                      style={{
 
-                        fontSize: '1em',
-                        padding: 0,
-                      }}
-                    >
-                      {shipment.number}
-                    </Button>
-                  </Link>
-                </Text>
+                <Link to={`/shipping/shipment/${shipment.number}`}>
+                  <Button
+                    color="primary"
+                    variant="link"
+                    icon={
+                      <Box style={
+                        {
+                          verticalAlign: 'middle',
+                        }
+                      }
+                      />
+                    }
+                    style={{
+
+                      fontSize: '1em',
+                      padding: 0,
+                    }}
+                  >
+                    {shipment.number}
+                    <Text copyable={{ text: shipment.number }} />
+                  </Button>
+                </Link>
+
                 {shipment.externalId && <Text copyable type="secondary">{shipment.externalId}</Text>}
               </Space>
             </>}

@@ -17,6 +17,7 @@ stages:
       mainTable: ${sls:stage}_linerra_main
       frontendUrl: ${env:FRONTEND_URL, 'http://localhost:8000'}
       localDynamoDBPort: ${env:LOCAL_DYNAMO_DB_PORT, 8900}
+      labelBucketName: shipment-label-files-${sls:stage}
 
 provider:
   name: aws
@@ -37,6 +38,7 @@ provider:
     VERYK_API_URL: ${env:VERYK_API_URL, param:verykApiUrl}
     FRONTEND_URL: ${param:frontendUrl}
     LOCAL_DYNAMO_DB_PORT: ${param:localDynamoDBPort}
+    S3_LABEL_BUCKET_NAME: ${param:labelBucketName}
 
   iam:
     role:
@@ -67,6 +69,13 @@ provider:
             - dynamodb:Scan
           Resource:
             - Fn::GetAtt: [MainTable, Arn]
+        - Effect: Allow
+          Action:
+            - s3:GetObject
+            - s3:PutObject
+            - s3:DeleteObject
+            - s3:PutObjectAcl
+          Resource: "*"
 
 functions:
   api:
@@ -239,6 +248,11 @@ resources:
         TimeToLiveSpecification:
           AttributeName: expirationTime
           Enabled: true
+
+    S3LabelBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${param:labelBucketName}
 
 package:
  individually: true
