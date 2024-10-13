@@ -2,7 +2,7 @@ import { ShipmentDO, ShipmentEditResVO, ShipmentReqVO } from "../../models/veryk
 import { verykCarriers } from "../../constant/verykConstant";
 import { quoteApiResToResVO, quoteReqVOToApiReq } from "../../models/veryk/quote.convert";
 import { QuoteReqVO, QuoteResVO } from "../../models/veryk/quote.entity";
-import { quote, create } from "../../utils/verykUtils";
+import { quote, create, getLabel } from "../../utils/verykUtils";
 import { shipmentApiResToApiUpdateDO, shipmentReqVOToApiReq, shipmentReqVOToDO } from "../../models/veryk/shipment.convert";
 import { generateOrderNumber, now } from "../../utils/utils";
 import { MainTable, Shipment } from "system/src/dynamodb/toolbox";
@@ -10,6 +10,8 @@ import { Condition, DeleteItemCommand, GetItemCommand, PutItemCommand, QueryComm
 import { UpdateAttributesCommand } from 'dynamodb-toolbox'
 import { ServiceError } from "system/src/utils/serviceError";
 import { updateAttributesCommandReturnValuesOptionsSet } from "dynamodb-toolbox/dist/esm/entity/actions/updateAttributes/options";
+import { LabelApiRes, LabelFile } from "system/src/models/veryk/label.entity";
+import { S3Service } from "../s3Service";
 
 export class VerykShipmentService {
   public static instance: VerykShipmentService = new VerykShipmentService();
@@ -177,10 +179,13 @@ export class VerykShipmentService {
       apiReq.option = { reference_number: number };
     }
     const shipmentApiRes = await create(apiReq, acceptLanguage)
-    console.log(shipmentApiRes);
+    //console.log(shipmentApiRes);
     const shipmentApiUpdateDO = shipmentApiResToApiUpdateDO(shipmentApiRes);
 
-    console.log(shipmentApiUpdateDO);
+    const labelFile = await this.saveAllLabelFile(shipmentApiRes.id, acceptLanguage);
+    shipmentApiUpdateDO.labelFile = labelFile;
+
+    //console.log(shipmentApiUpdateDO);
     const { Attributes } = await Shipment.build(UpdateAttributesCommand)
       .item({ ...shipmentApiUpdateDO })
       .options({ returnValues: "ALL_NEW" })
@@ -195,5 +200,40 @@ export class VerykShipmentService {
     // const submitRes = await create(apiReq, acceptLanguage);
     // return submitRes;
     return { externalId: Attributes?.externalId, waybillNumber: Attributes?.waybillNumber, number: Attributes?.number };
+  }
+
+  /**
+   * get label
+   * @param params
+   * @param acceptLanguage
+   * @returns
+   */
+  async getAllPrintableLabels(shipmentId: string, acceptLanguage?: string): Promise<LabelApiRes> {
+    const labelApiRes = await getLabel({ id: shipmentId, options: 1 }, acceptLanguage);
+    return labelApiRes;
+  }
+
+  async saveAllLabelFile(shipmentId: string, acceptLanguage?: string): Promise<LabelFile> {
+    const labelApiRes = await this.getAllPrintableLabels(shipmentId, acceptLanguage);
+    if (!labelApiRes) {
+      throw new ServiceError("Label not found", "Label.NotFound");
+    }
+    const { name: labelFileName, label: labelFileContent, type: labelFileType } = labelApiRes;
+    const labelBuffer = Buffer.from(labelFileContent as string, 'base64');
+    const labelKey = `label/${labelFileName}`;
+    await S3Service.instance.uploadLabelFile(labelKey, labelBuffer, labelFileType);
+
+    const labelFile: LabelFile = {
+      label: labelKey
+    }
+
+    if (labelApiRes.invoice) {
+      const { name: invoiceFileName, label: invoiceFileContent, type: invoiceFileType } = labelApiRes.invoice;
+      const invoiceBuffer = Buffer.from(invoiceFileContent as string, 'base64');
+      const invoiceKey = `invoice/${invoiceFileName}`;
+      await S3Service.instance.uploadLabelFile(invoiceKey, invoiceBuffer, invoiceFileType);
+      labelFile.invoice = invoiceKey;
+    }
+    return labelFile;
   }
 }

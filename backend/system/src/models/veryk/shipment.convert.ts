@@ -113,5 +113,6 @@ export const shipmentDOToDetailResVO = (shipmentDO: ShipmentDO): ShipmentDetailR
     ...(shipmentDO.destinationLocalized ? { destinationLocalized: shipmentDO.destinationLocalized } : {}),
     ...(shipmentDO.sadditional ? { sadditional: shipmentDO.sadditional } : {}),
     ...(shipmentDO.product ? { product: shipmentDO.product } : {}),
+    ...(shipmentDO.labelFile ? { labelFile: shipmentDO.labelFile } : {}),
   };
 };

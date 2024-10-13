@@ -4,6 +4,7 @@ import { OptionApiReq, OptionDO, OptionEditResVO, OptionReqVO } from "./option.e
 import { Currency, ServiceApiRes } from "./general.entity";
 import { ProductItem } from "./product.entity";
 import { NativeAttributeValue } from "@aws-sdk/util-dynamodb";
+import { LabelFile } from "./label.entity";
 export interface ShipmentReqVO {
   //token?: string;
   number?: string;
@@ -58,6 +59,8 @@ export interface ShipmentDO {
   destinationLocalized?: DestinationDO;
   sadditional?: ShipmentAdditional;
 
+  labelFile?: LabelFile;
+
 
   created?: string;
 }
@@ -77,6 +80,8 @@ export interface ShipmentApiUpdateDO {
   payments: PaymentDO[];
   total: Currency;
   submittedAt: string;
+
+  labelFile?: LabelFile;
 
   //GSI1PK: "SHIPMENT_NO";
   //product?: ProductItem[];
@@ -123,6 +128,8 @@ export interface ShipmentDetailResVO {
   product?: ProductItem[];
   destinationLocalized?: DestinationDO;
   sadditional?: ShipmentAdditional;
+
+  labelFile?: LabelFile;
 
   created?: string;
 }
