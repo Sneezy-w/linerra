@@ -25,7 +25,7 @@ const OrderSuccess: React.FC = () => {
           }
           extra={[
             <Button type="primary" key="viewShipments">
-              <Link to="/shipments">View Shipments</Link>
+              <Link to="/shipping/shipments/list">View Shipments</Link>
             </Button>,
           ]}
         />

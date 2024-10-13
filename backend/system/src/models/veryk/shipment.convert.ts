@@ -28,7 +28,7 @@ export const shipmentReqVOToApiReq = (shipmentReqVO: ShipmentReqVO): ShipmentApi
 
 
 export const shipmentReqVOToDO = (shipmentReqVO: ShipmentReqVO): ShipmentDO => {
-  const { initiation, destination, package: pkg, option, number, serviceId, destinationLocalized, sadditional, product } = shipmentReqVO;
+  const { initiation, destination, package: pkg, option, number, serviceId, destinationLocalized, sadditional, product, price } = shipmentReqVO;
   return {
     number: number || "",
     initiationRegionId: initiation.regionId,
@@ -45,6 +45,7 @@ export const shipmentReqVOToDO = (shipmentReqVO: ShipmentReqVO): ShipmentDO => {
     ...(destinationLocalized ? { destination_localized: destinationReqVOToDO(destinationLocalized) } : {}),
     ...(sadditional ? { sadditional: sadditional } : {}),
     ...(product ? { product: product } : {}),
+    ...(price ? { price: price } : {}),
   };
 };
 

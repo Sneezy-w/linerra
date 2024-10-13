@@ -27,8 +27,8 @@ const getPrice = (record: any) => {
       price: getDefaultCurrency(Number(record.freight))
     })
   }
-  if (record.charge_details?.length > 0) {
-    record.charge_details.forEach((chargeDetail: any) => {
+  if (record.chargeDetails?.length > 0) {
+    record.chargeDetails.forEach((chargeDetail: any) => {
       if (Number(chargeDetail.price) > 0) {
         charges.push({
           code: 'extra_fee',
@@ -38,8 +38,8 @@ const getPrice = (record: any) => {
       }
     })
   }
-  if (record.tax_details?.length > 0) {
-    record.tax_details.forEach((taxDetail: any) => {
+  if (record.taxDetails?.length > 0) {
+    record.taxDetails.forEach((taxDetail: any) => {
       if (Number(taxDetail.price) > 0) {
         charges.push({
           code: 'tax',

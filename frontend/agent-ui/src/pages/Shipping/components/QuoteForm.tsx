@@ -42,7 +42,7 @@ const QuoteForm: React.FC = () => {
     carriersLoading: model.loading
   }));
 
-  const loading = useMemo(() => dictsLoading || carriersLoading || operationLoading, [dictsLoading, carriersLoading, operationLoading]);
+  const loading = useMemo(() => dictsLoading || carriersLoading, [dictsLoading, carriersLoading]);
 
 
 
@@ -114,35 +114,37 @@ const QuoteForm: React.FC = () => {
 
     //await sleep(2000);
 
-    console.log(formData);
+    //console.log(formData);
     // console.log(formRef.current?.getFieldsFormatValue?.());
-    console.log(formRef.current?.getFieldsValue?.());
+    //console.log(formRef.current?.getFieldsValue?.());
+    setOperationLoading(true);
     setQuoteFormData(formData);
-    // const carrierIds: string[] = allCarrierIds;
-    // const carriers: VerykType.Carrier[] = allCarriers;
-    // const quotePromises = carrierIds.map(carrierId =>
-    //   fetchQuoteForCarrier(formData, carrierId)
-    // );
+    const carrierIds: string[] = allCarrierIds;
+    const carriers: VerykType.Carrier[] = allCarriers;
+    const quotePromises = carrierIds.map(carrierId =>
+      fetchQuoteForCarrier(formData, carrierId)
+    );
 
-    // const quoteResults = await Promise.all(quotePromises);
-    // const aggregatedResults = quoteResults.flatMap(result => result || []);
-    // const quoteServices: VerykType.QuoteService[] = aggregatedResults.flatMap(result => {
-    //   const carrier = carriers.find(c => c.id === result.carrierId);
-    //   return result?.services?.map((service: VerykType.QuoteService) => {
-    //     return {
-    //       ...service,
-    //       carrier: {
-    //         carrierId: result.carrierId,
-    //         carrierCode: result.carrierCode,
-    //         name: result.name,
-    //         currency: result.currency,
-    //         logo: carrier?.logo,
-    //       }
-    //     }
-    //   }) || [];
-    // }).sort((a, b) => Number(a.charge) - Number(b.charge));
-    // setQuoteServices(quoteServices);
+    const quoteResults = await Promise.all(quotePromises);
+    const aggregatedResults = quoteResults.flatMap(result => result || []);
+    const quoteServices: VerykType.QuoteService[] = aggregatedResults.flatMap(result => {
+      const carrier = carriers.find(c => c.id === result.carrierId);
+      return result?.services?.map((service: VerykType.QuoteService) => {
+        return {
+          ...service,
+          carrier: {
+            carrierId: result.carrierId,
+            carrierCode: result.carrierCode,
+            name: result.name,
+            currency: result.currency,
+            logo: carrier?.logo,
+          }
+        }
+      }) || [];
+    }).sort((a, b) => Number(a.charge) - Number(b.charge));
+    setQuoteServices(quoteServices);
     setCurrentStep(1);
+    setOperationLoading(false);
   }, []);
 
   const packagesProFormListRender = (params: Record<string, any>) => (meta: any, index: any, action: any, count: any) => {

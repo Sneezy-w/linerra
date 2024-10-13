@@ -50,6 +50,7 @@ const Shipment: React.FC = () => {
       });
     } else {
       setCurrentStep(0);
+      setShipmentFormInitialValues(undefined);
       fetchQuoteFormInitialValues().then((initialValues) => {
         setQuoteFormInitialValues(initialValues);
 

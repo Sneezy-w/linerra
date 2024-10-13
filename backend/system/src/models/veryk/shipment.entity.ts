@@ -17,6 +17,7 @@ export interface ShipmentReqVO {
   product?: ProductItem[];
   destinationLocalized?: DestinationReqVO;
   sadditional?: ShipmentAdditional
+  price?: Price
 }
 
 export interface ShipmentApiReq {

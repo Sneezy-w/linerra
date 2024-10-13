@@ -647,6 +647,7 @@ const ShipmentForm: React.FC = () => {
   // }, [quoteFormData, serviceId]);
   useEffect(() => {
     if (shipmentFormInitialValues && formRef.current) {
+      console.log(shipmentFormInitialValues);
       //formRef.current?.resetFields();
       formRef.current?.setFieldsValue(shipmentFormInitialValues);
     }
