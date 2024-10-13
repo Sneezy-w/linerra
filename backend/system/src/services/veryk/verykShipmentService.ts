@@ -6,7 +6,7 @@ import { quote, create } from "../../utils/verykUtils";
 import { shipmentApiResToApiUpdateDO, shipmentReqVOToApiReq, shipmentReqVOToDO } from "../../models/veryk/shipment.convert";
 import { generateOrderNumber, now } from "../../utils/utils";
 import { MainTable, Shipment } from "system/src/dynamodb/toolbox";
-import { Condition, GetItemCommand, PutItemCommand, QueryCommand, UpdateItemCommand, UpdateItemResponse } from "dynamodb-toolbox";
+import { Condition, DeleteItemCommand, GetItemCommand, PutItemCommand, QueryCommand, UpdateItemCommand, UpdateItemResponse } from "dynamodb-toolbox";
 import { UpdateAttributesCommand } from 'dynamodb-toolbox'
 import { ServiceError } from "system/src/utils/serviceError";
 import { updateAttributesCommandReturnValuesOptionsSet } from "dynamodb-toolbox/dist/esm/entity/actions/updateAttributes/options";
@@ -72,6 +72,19 @@ export class VerykShipmentService {
   async get(number: string): Promise<ShipmentDO> {
     const { Item } = await Shipment.build(GetItemCommand).key({ number }).send();
     return Item as ShipmentDO;
+  }
+
+  async delete(number: string): Promise<void> {
+
+    // only delete open shipment
+    const condition: Condition<typeof Shipment> = {
+      attr: 'status',
+      eq: 'open'
+    }
+    await Shipment.build(DeleteItemCommand)
+      .key({ number })
+      .options({ condition })
+      .send();
   }
 
   async getPage(params: { limit: number, keyword?: string, status?: string, dateRange: [string, string], lastEvaluatedKey?: Record<string, unknown> }, currentUser: Record<string, any>) {

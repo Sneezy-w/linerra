@@ -12,6 +12,7 @@ router.post("/quote", verykShipmentController.quote);
 router.post("/save", verykShipmentController.save);
 router.post("/submit", verykShipmentController.submit);
 router.get("/get/:number", verykShipmentController.get);
+router.delete("/delete/:number", verykShipmentController.delete);
 router.get("/getDetail/:number", verykShipmentController.getDetail);
 router.post("/page", verykShipmentController.getPage);
 router.get("/shipmentList", verykShipmentController.shipmentList);

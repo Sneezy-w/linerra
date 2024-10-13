@@ -88,6 +88,14 @@ export async function getShipment(number: string, options?: Record<string, any>)
   });
 }
 
+export async function deleteShipment(number: string, options?: Record<string, any>) {
+  const encodedNumber = encodeURIComponent(number);
+  return request<API.R<void>>(`/api/veryk/shipment/delete/${encodedNumber}`, {
+    method: 'DELETE',
+    ...(options || {}),
+  });
+}
+
 export async function getShipmentPage(data: VerykType.ShipmentPageReqVO, options?: Record<string, any>) {
   return request<API.R<API.ResponsePageVO<VerykType.ShipmentDetailResVO>>>('/api/veryk/shipment/page', {
     method: 'POST',

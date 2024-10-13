@@ -30,6 +30,15 @@ export class VerykShipmentController {
     res.ok(shipmentDOToEditResVO(shipment));
   }
 
+  async delete(req: Request, res: Response) {
+    try {
+      await verykShipmentService.delete(req.params.number);
+      res.ok();
+    } catch (error) {
+      res.fail("Only open shipment can be deleted", "ONLY_OPEN_SHIPMENT_CAN_BE_DELETED");
+    }
+  }
+
   async getDetail(req: Request, res: Response) {
     const shipment = await verykShipmentService.get(req.params.number);
     res.ok(shipmentDOToDetailResVO(shipment));
