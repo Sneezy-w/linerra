@@ -8,14 +8,14 @@ export async function getAvailableCarriers(options?: Record<string, any>) {
 }
 
 export async function getCarriers(options?: Record<string, any>) {
-  return request<API.R<Array<VerkType.Carrier>>>('/api/veryk/general/getCarriers', {
+  return request<API.R<Array<VerykType.Carrier>>>('/api/veryk/general/getCarriers', {
     method: 'GET',
     ...(options || {}),
   });
 }
 
 export async function getProvinces(regionId: string, options?: Record<string, any>) {
-  return request<API.R<Array<VerkType.Province>>>('/api/veryk/general/getProvinces', {
+  return request<API.R<Array<VerykType.Province>>>('/api/veryk/general/getProvinces', {
     method: 'GET',
     params: { regionId },
     ...(options || {}),
@@ -23,14 +23,14 @@ export async function getProvinces(regionId: string, options?: Record<string, an
 }
 
 export async function getRegions(options?: Record<string, any>) {
-  return request<API.R<Array<VerkType.Region>>>('/api/veryk/general/getRegions', {
+  return request<API.R<Array<VerykType.Region>>>('/api/veryk/general/getRegions', {
     method: 'GET',
     ...(options || {}),
   });
 }
 
-export async function postQuote(data: VerkType.QuoteRequest, options?: Record<string, any>) {
-  return request<API.R<Array<VerkType.QuoteResponse>>>('/api/veryk/shipment/quote', {
+export async function postQuote(data: VerykType.QuoteReqVO, options?: Record<string, any>) {
+  return request<API.R<Array<VerykType.QuoteResponse>>>('/api/veryk/shipment/quote', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -40,12 +40,57 @@ export async function postQuote(data: VerkType.QuoteRequest, options?: Record<st
   });
 }
 
-export async function postShipment(data: VerkType.QuoteRequest, options?: Record<string, any>) {
+export async function postShipment(data: VerykType.QuoteRequest, options?: Record<string, any>) {
   return request<API.R<{ number: string }>>('/api/veryk/shipment/save', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
+    data: data,
+    ...(options || {}),
+  });
+}
+
+export async function postShipmentSave(data: VerykType.ShipmentReqVO, options?: Record<string, any>) {
+  return request<API.R<{ number: string }>>('/api/veryk/shipment/save', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: data,
+    ...(options || {}),
+  });
+}
+
+export async function postShipmentSubmit(data: VerykType.ShipmentReqVO, options?: Record<string, any>) {
+  return request<API.R<{
+    number: string,
+    externalId: string,
+    waybillNumber: string
+  }>>('/api/veryk/shipment/submit', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: data,
+    ...(options || {}),
+  });
+}
+
+export async function getShipment(number: string, options?: Record<string, any>) {
+  const encodedNumber = encodeURIComponent(number);
+  return request<API.R<VerykType.ShipmentEditResVO>>(`/api/veryk/shipment/get/${encodedNumber}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    ...(options || {}),
+  });
+}
+
+export async function getShipmentPage(data: VerykType.ShipmentPageReqVO, options?: Record<string, any>) {
+  return request<API.R<API.ResponsePageVO<VerykType.ShipmentDetailResVO>>>('/api/veryk/shipment/page', {
+    method: 'POST',
     data: data,
     ...(options || {}),
   });

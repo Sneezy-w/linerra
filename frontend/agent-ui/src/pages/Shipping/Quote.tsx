@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Form, Button, Steps, Affix, message } from 'antd';
 import { useModel } from '@umijs/max';
-import { postQuote, postShipment } from '@/services/service/verkApi';
+import { postQuote, postShipment } from '@/services/service/verykApi';
 import ShipmentOverview from './ShipmentOverview';
 import QuoteInfo from './QuoteInfo';
 import ShipmentDetails from './ShipmentDetails';
@@ -15,8 +15,8 @@ const Quote: React.FC = () => {
   const [formData, setFormData] = useState<any>({});
   const { carriers, modelLoading, fetchCarriers } = useModel('carrierModel');
   const [currentStep, setCurrentStep] = useState(0);
-  const [quoteResponse, setQuoteResponse] = useState<Array<VerkType.QuoteResponse | null>>([]);
-  const [selectedQuote, setSelectedQuote] = useState<VerkType.QuoteResponse | null>(null);
+  const [quoteResponse, setQuoteResponse] = useState<Array<VerykType.QuoteResponse | null>>([]);
+  const [selectedQuote, setSelectedQuote] = useState<VerykType.QuoteResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [orderNumber, setOrderNumber] = useState<string>('');
   const onFinish = (values: any) => {
@@ -41,7 +41,7 @@ const Quote: React.FC = () => {
       setFormData(formValues); // Store form data
 
       if (currentStep === 0) {
-        const quoteRequest: VerkType.QuoteRequest = {
+        const quoteRequest: VerykType.QuoteRequest = {
           carrierIds: carriers.map((carrier) => carrier.id),
           initiation: {
             address: '',
@@ -99,7 +99,7 @@ const Quote: React.FC = () => {
         setQuoteResponse(response.data ?? []); // Store the response in state
       } else if (currentStep === 2) {
         // This is the last step, submit the shipment
-        const shipmentData: VerkType.QuoteRequest = {
+        const shipmentData: VerykType.QuoteRequest = {
           serviceId: selectedQuote?.services[0].id || '',
           initiation: {
             address: formValues.senderAddress,
@@ -180,7 +180,7 @@ const Quote: React.FC = () => {
       setFormData(formValues); // Store form data
 
       // This is the last step, submit the shipment
-      const shipmentData: VerkType.QuoteRequest = {
+      const shipmentData: VerykType.QuoteRequest = {
         serviceId: selectedQuote?.serviceId || '',
         initiation: {
           address: formValues.senderAddress1,
@@ -259,7 +259,7 @@ const Quote: React.FC = () => {
     setCurrentStep(currentStep - 1);
   }, [currentStep]);
 
-  const handleSelectQuote = (quote: VerkType.QuoteResponse) => {
+  const handleSelectQuote = (quote: VerykType.QuoteResponse) => {
     setSelectedQuote(quote);
     console.log('selectedQuote', quote);
     setCurrentStep(currentStep + 1);

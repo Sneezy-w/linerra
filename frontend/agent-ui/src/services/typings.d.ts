@@ -18,4 +18,8 @@ declare namespace API {
     avatar?: string;
   }
 
+  interface ResponsePageVO<T> {
+    items: T[];
+    lastEvaluatedKey?: Record<string, unknown>;
+  }
 }

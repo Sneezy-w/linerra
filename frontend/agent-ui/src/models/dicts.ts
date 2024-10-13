@@ -1,7 +1,9 @@
 // src/models/userModel.ts
-import { useRequest } from 'ahooks';
+import { useAsyncEffect, useRequest } from 'ahooks';
 import { getDicts } from '../services/service/dict';
 import { getAccessToken } from '@/access';
+import { useCallback, useEffect } from 'react';
+import { useModel } from '@umijs/max';
 
 
 export default () => {
@@ -14,60 +16,42 @@ export default () => {
     manual: true,
   });
 
-  const getDictItems = (dictType: string) => async () => {
-    let loadedDicts: Record<string, API.Service.DictItem[]> | undefined = dicts;
-    if (!loadedDicts) {
-      const accessToken = getAccessToken();
-      if (accessToken) {
-        loadedDicts = await fetchDictsAsync();
-      }
-    }
-    return loadedDicts?.[dictType] || [];
-  };
+  const { currentUser } = useModel('@@initialState', (model) => ({
+    currentUser: model.initialState?.currentUser,
+  }));
 
-  // const getDictItemsAsync = useAsync(async (dictType: string) => {
-  //   if (!dicts) {
-  //     const accessToken = getAccessToken();
-  //     if (accessToken) {
-  //       const loadedDicts = await fetchDictsAsync();
-  //       return loadedDicts?.[dictType] || [];
-  //     }
-  //   }
-  //   return dicts?.[dictType] || [];
-  // }, [dicts, fetchDictsAsync]);
-
-  const getDictItem = (dictType: string, value: string) => async () => {
-    let loadedDicts: Record<string, API.Service.DictItem[]> | undefined = dicts;
-    if (!loadedDicts) {
-      const accessToken = getAccessToken();
-      if (accessToken) {
-        loadedDicts = await fetchDictsAsync();
-      }
+  useEffect(() => {
+    const accessToken = getAccessToken();
+    if (accessToken && currentUser) {
+      fetchDicts();
     }
-    return loadedDicts?.[dictType]?.find((item) => item.value === value) || null;
-  };
-
-  const getDictItemCode = (dictType: string, value: string) => async () => {
-    let loadedDicts: Record<string, API.Service.DictItem[]> | undefined = dicts;
-    if (!loadedDicts) {
-      const accessToken = getAccessToken();
-      if (accessToken) {
-        loadedDicts = await fetchDictsAsync();
-      }
-    }
-    const dictItem = loadedDicts?.[dictType]?.find((item) => item.value === value) || null;
-    return dictItem?.code || null;
-  };
+  }, [currentUser]);
 
   return {
     dicts,
     loading,
     fetchDicts,
     fetchDictsAsync,
-    getDictItems,
-    getDictItem,
-    getDictItemCode,
+    // getDictItems,
+    // getDictItem,
+    // getDictItemCode,
   };
 };
 
+export const getDictItems = (dicts: Record<string, API.Service.DictItem[]> | undefined, dictType: string) => {
+  return dicts?.[dictType] || [];
+};
 
+export const getDictItem = (dicts: Record<string, API.Service.DictItem[]> | undefined, dictType: string, value: string | undefined) => {
+  return dicts?.[dictType]?.find((item) => item.value === value);
+};
+
+export const getDictItemCode = (dicts: Record<string, API.Service.DictItem[]> | undefined, dictType: string, value: string) => {
+  const dictItem = getDictItem(dicts, dictType, value);
+  return dictItem?.code;
+};
+
+export const findDictItem = (items: API.Service.DictItem[] | undefined, value: string) => {
+  const dictItem = items?.find((item) => item.value === value);
+  return dictItem;
+};

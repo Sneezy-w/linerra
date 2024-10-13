@@ -49,7 +49,17 @@ export class VerykShipmentService {
         .send();
 
     } else {
-      await Shipment.build(UpdateItemCommand)
+      //console.log(shipmentDO);
+
+      // const command = Shipment.build(UpdateItemCommand)
+      //   .item({ ...shipmentDO })
+      // console.log(command);
+      //const { Item } = await Shipment.build(GetItemCommand).key({ number: shipmentDO.number }).send()
+
+
+      //console.log(Item);
+      //console.log({ ...Item, ...shipmentDO });
+      await Shipment.build(UpdateAttributesCommand)
         .item({ ...shipmentDO })
         //.options({ returnValues: "ALL_NEW" })
         .send();
@@ -64,7 +74,7 @@ export class VerykShipmentService {
     return Item as ShipmentDO;
   }
 
-  async getPage(params: { limit: number, keyword?: string, status?: string, dateRange: [string, string] }, currentUser: Record<string, any>): Promise<ShipmentDO[]> {
+  async getPage(params: { limit: number, keyword?: string, status?: string, dateRange: [string, string], lastEvaluatedKey?: Record<string, unknown> }, currentUser: Record<string, any>) {
     // const filter: Record<string, any> = {}
     // if (params.status) {
     //   filter.status = {
@@ -100,13 +110,15 @@ export class VerykShipmentService {
 
     let filters: Record<string, any> = {}
 
-    if (conditions.length) {
+    if (conditions.length > 1) {
       filters.Shipment = {
         and: conditions
       }
+    } else if (conditions.length === 1) {
+      filters.Shipment = conditions[0]
     }
 
-    const { Items } = await MainTable.build(QueryCommand)
+    const pageResult = await MainTable.build(QueryCommand)
       .query({
         index: "GSI1",
         partition: `STATION#${currentUser.stationId}`,
@@ -117,11 +129,14 @@ export class VerykShipmentService {
       })
       .entities(Shipment)
       .options({
-        limit: params.limit,
-        filters: filters
+        limit: (conditions.length > 0 ? undefined : params.limit),
+        filters: filters,
+        exclusiveStartKey: params.lastEvaluatedKey
       })
       .send()
-    return Items as ShipmentDO[];
+    //console.log(pageResult);
+    //console.log(pageResult.LastEvaluatedKey);
+    return pageResult;
   }
 
 
@@ -132,14 +147,16 @@ export class VerykShipmentService {
    * @returns
    */
   async submit(params: ShipmentReqVO, currentUser: Record<string, any>, acceptLanguage?: string) {
+    //console.log(params);
     if (params.number) {
       const shipmentDO = await this.get(params.number);
+      //console.log(shipmentDO);
       if (shipmentDO.status !== "open") {
         throw new ServiceError("Shipment status is not open", "Shipment.StatusNotOpen");
       }
     }
     const { number } = await this.save(params, currentUser);
-    //console.log(number);
+    console.log(number);
     const apiReq = shipmentReqVOToApiReq(params);
     if (apiReq.option) {
       apiReq.option.reference_number = number;
@@ -164,6 +181,6 @@ export class VerykShipmentService {
     // }
     // const submitRes = await create(apiReq, acceptLanguage);
     // return submitRes;
-    return { externalId: Attributes?.externalId, waybillNumber: Attributes?.waybillNumber };
+    return { externalId: Attributes?.externalId, waybillNumber: Attributes?.waybillNumber, number: Attributes?.number };
   }
 }

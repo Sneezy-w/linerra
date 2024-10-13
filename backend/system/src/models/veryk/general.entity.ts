@@ -1,3 +1,5 @@
+type Nullable<T> = T | null | undefined;
+
 
 export interface Currency {
   code: string;
@@ -25,7 +27,11 @@ export interface Region {
   id: string;
   name: string;
   type: string;
-  timezone: string;
+  timezone: Nullable<string>;
+  phoneCode?: Nullable<string>;
+  timezones?: string[];
+  languages?: string[];
+  currency?: Currency;
 }
 
 export interface Province {

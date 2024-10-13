@@ -4,6 +4,7 @@ import { QuoteResVO } from '@linerra/system/src/models/veryk/quote.entity';
 import { shipmentDetail, shipmentList } from 'system/src/utils/verykUtils';
 import { shipmentDOToDetailResVO, shipmentDOToEditResVO } from 'system/src/models/veryk/shipment.convert';
 import _ from 'lodash';
+import { ShipmentDO } from 'system/src/models/veryk/shipment.entity';
 
 const verykShipmentService = VerykShipmentService.instance;
 
@@ -36,13 +37,18 @@ export class VerykShipmentController {
 
   async getPage(req: Request, res: Response) {
 
-    const shipments = await verykShipmentService.getPage({
-      limit: Number(req.query.limit) || 10,
-      keyword: req.query.keyword as string,
-      status: req.query.status as string,
-      dateRange: [req.query.startDate as string || new Date(new Date().setMonth(new Date().getMonth() - 3)).toISOString(), req.query.endDate as string || new Date().toISOString()]
+    const shipmentPage = await verykShipmentService.getPage({
+      limit: Number(req.body.limit) || 10,
+      keyword: req.body.keyword as string,
+      status: req.body.status as string,
+      dateRange: [req.body.startDate as string || new Date(new Date().setMonth(new Date().getMonth() - 3)).toISOString(), req.body.endDate as string || new Date().toISOString()],
+      lastEvaluatedKey: req.body.lastEvaluatedKey as Record<string, unknown>
     }, req.context.user);
-    res.ok(shipments.map(shipment => shipmentDOToDetailResVO(shipment)));
+
+    res.ok({
+      items: (shipmentPage.Items || []).map(shipment => shipmentDOToDetailResVO(shipment as ShipmentDO)),
+      lastEvaluatedKey: shipmentPage.LastEvaluatedKey
+    });
   }
 
   async submit(req: Request, res: Response) {

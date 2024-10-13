@@ -8,7 +8,7 @@ export const initiationReqVOToApiReq = (initiationReqVO: InitiationReqVO): Initi
     region_id: regionId,
     postalcode: postalCode,
     ...(phone && { mobile_phone: phone }),
-    ...(province && { province: province.code }),
+    ...(province && { province: province.code || province.name }),
     ...rest,
   };
 };
@@ -19,7 +19,7 @@ export const destinationReqVOToApiReq = (destinationReqVO: DestinationReqVO): De
     region_id: regionId,
     postalcode: postalCode,
     ...(phone && { mobile_phone: phone }),
-    ...(province && { province: province.code }),
+    ...(province && { province: province.code || province.name }),
     ...rest,
   };
 };

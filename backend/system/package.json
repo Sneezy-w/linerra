@@ -18,7 +18,7 @@
     "@aws-sdk/client-cognito-identity-provider": "^3.635.0",
     "amazon-cognito-identity-js": "^6.3.12",
     "aws-jwt-verify": "^4.0.1",
-    "dynamodb-toolbox": "^1.8.0",
+    "dynamodb-toolbox": "^1.10.2",
     "express": "^4.19.2",
     "express-winston": "^4.2.0",
     "express-async-errors": "^3.1.1",

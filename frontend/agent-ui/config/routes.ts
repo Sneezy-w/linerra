@@ -59,6 +59,18 @@ export default [
         component: './Shipping/Quote',
       },
       {
+        path: '/shipping/shipment',
+        name: 'shipment',
+        component: './Shipping/Shipment',
+      },
+      {
+        path: '/shipping/shipment/:number',
+        name: 'shipment',
+        component: './Shipping/Shipment',
+        hideInMenu: true,
+        hideChildrenInMenu: true,
+      },
+      {
         path: '/shipping/shipments',
         name: 'shipments',
         routes: [

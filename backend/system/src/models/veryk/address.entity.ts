@@ -1,3 +1,5 @@
+import { Currency } from "./general.entity";
+
 export interface BaseAddressReqVO {
   regionId: string;
   postalCode: string;

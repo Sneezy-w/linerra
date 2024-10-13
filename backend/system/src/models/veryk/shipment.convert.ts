@@ -7,6 +7,7 @@ import { optionReqVOToApiReq } from "./option.convert";
 export const shipmentReqVOToApiReq = (shipmentReqVO: ShipmentReqVO): ShipmentApiReq => {
   const { serviceId, initiation, destination, package: pkg, option, number,
     //carrierId, airportTo,
+    destinationLocalized, sadditional, product,
     ...rest } = shipmentReqVO;
   return {
     initiation: initiationReqVOToApiReq(initiation),
@@ -18,13 +19,16 @@ export const shipmentReqVOToApiReq = (shipmentReqVO: ShipmentReqVO): ShipmentApi
     payment_method: "account",
     state: "order",
     service_id: serviceId,
+    ...(destinationLocalized ? { destination_localized: destinationReqVOToApiReq(destinationLocalized) } : {}),
+    ...(sadditional ? { sadditional: sadditional } : {}),
+    ...(product ? { product: product } : {}),
     ...rest,
   };
 };
 
 
 export const shipmentReqVOToDO = (shipmentReqVO: ShipmentReqVO): ShipmentDO => {
-  const { initiation, destination, package: pkg, option, number, serviceId } = shipmentReqVO;
+  const { initiation, destination, package: pkg, option, number, serviceId, destinationLocalized, sadditional, product } = shipmentReqVO;
   return {
     number: number || "",
     initiationRegionId: initiation.regionId,
@@ -38,6 +42,9 @@ export const shipmentReqVOToDO = (shipmentReqVO: ShipmentReqVO): ShipmentDO => {
     stationId: "",
     //sortTimestamp: "",
     //GSI1PK: "SHIPMENT_NO",
+    ...(destinationLocalized ? { destination_localized: destinationReqVOToDO(destinationLocalized) } : {}),
+    ...(sadditional ? { sadditional: sadditional } : {}),
+    ...(product ? { product: product } : {}),
   };
 };
 
@@ -48,7 +55,11 @@ export const shipmentDOToEditResVO = (shipmentDO: ShipmentDO): ShipmentEditResVO
     initiation: shipmentDO.initiation,
     destination: shipmentDO.destination,
     package: packageDOToEditResVO(shipmentDO.package),
+    status: shipmentDO.status,
     option: shipmentDO.option,
+    ...(shipmentDO.destinationLocalized ? { destinationLocalized: shipmentDO.destinationLocalized } : {}),
+    ...(shipmentDO.sadditional ? { sadditional: shipmentDO.sadditional } : {}),
+    ...(shipmentDO.product ? { product: shipmentDO.product } : {}),
   };
 };
 
@@ -95,5 +106,11 @@ export const shipmentDOToDetailResVO = (shipmentDO: ShipmentDO): ShipmentDetailR
     payments: shipmentDO.payments!,
     total: shipmentDO.total!,
     submittedAt: shipmentDO.submittedAt!,
+
+    created: shipmentDO.created,
+
+    ...(shipmentDO.destinationLocalized ? { destinationLocalized: shipmentDO.destinationLocalized } : {}),
+    ...(shipmentDO.sadditional ? { sadditional: shipmentDO.sadditional } : {}),
+    ...(shipmentDO.product ? { product: shipmentDO.product } : {}),
   };
 };

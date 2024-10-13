@@ -4,12 +4,12 @@ import {
   getAvailableCarriers,
   getProvinces,
   getRegions,
-} from '@/services/service/verkApi';
+} from '@/services/service/verykApi';
 
 export default () => {
-  const [carriers, setCarriers] = useState<VerkType.Carrier[]>([]);
-  const [regions, setRegions] = useState<VerkType.Region[]>([]);
-  const [provincesByRegion, setProvincesByRegion] = useState<Record<string, VerkType.Province[]>>(
+  const [carriers, setCarriers] = useState<VerykType.Carrier[]>([]);
+  const [regions, setRegions] = useState<VerykType.Region[]>([]);
+  const [provincesByRegion, setProvincesByRegion] = useState<Record<string, VerykType.Province[]>>(
     {},
   );
   const [modelLoading, setModelLoading] = useState<Record<string, boolean>>({

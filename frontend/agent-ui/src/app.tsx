@@ -131,7 +131,6 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState, loa
     },
     footerRender: () => <Footer />,
     onPageChange: () => {
-      console.log("Onpagechange");
       const { location } = history;
       // 如果没有登录，重定向到 login
       if (!initialState?.currentUser && location.pathname !== loginPath) {
@@ -178,7 +177,6 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState, loa
     childrenRender: (children) => {
       // console.log("Loading", initialState?.loading);
       // if (initialState?.loading) return <PageLoading />;
-      console.log("Childrenrender", initialState?.loading);
       return (
         <>
           {children}

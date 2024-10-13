@@ -128,7 +128,6 @@ const Login: React.FC = () => {
   //console.log("Login", null);
   const [type, setType] = useState<string>('signIn');
   const { initialState, setInitialState } = useModel('@@initialState');
-  //const { fetchDictsAsync, fetchDicts } = useModel('dicts');
   const { styles } = useStyles();
   const intl = useIntl();
 

@@ -13,7 +13,7 @@ router.post("/save", verykShipmentController.save);
 router.post("/submit", verykShipmentController.submit);
 router.get("/get/:number", verykShipmentController.get);
 router.get("/getDetail/:number", verykShipmentController.getDetail);
-router.get("/page", verykShipmentController.getPage);
+router.post("/page", verykShipmentController.getPage);
 router.get("/shipmentList", verykShipmentController.shipmentList);
 router.get("/shipmentDetail/:id", verykShipmentController.shipmentDetail);
 export default router;

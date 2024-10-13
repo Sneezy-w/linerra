@@ -5,8 +5,8 @@ const { Title } = Typography;
 
 interface ShipmentOverviewProps {
   form: FormInstance;
-  quoteResponse: Array<VerkType.QuoteResponse | null>;
-  onSelectQuote: (quote: VerkType.QuoteResponse) => void;
+  quoteResponse: Array<VerykType.QuoteResponse | null>;
+  onSelectQuote: (quote: VerykType.QuoteResponse) => void;
 }
 
 const ShipmentOverview: React.FC<ShipmentOverviewProps> = ({
@@ -21,7 +21,7 @@ const ShipmentOverview: React.FC<ShipmentOverviewProps> = ({
   const formData = form.getFieldsValue();
 
   const quoteData = quoteResponse
-    .filter((quote): quote is VerkType.QuoteResponse => quote !== null)
+    .filter((quote): quote is VerykType.QuoteResponse => quote !== null)
     .flatMap((quote) =>
       quote.services.map((service, serviceIndex) => ({
         serviceId: service.id,
@@ -62,7 +62,7 @@ const ShipmentOverview: React.FC<ShipmentOverviewProps> = ({
     {
       title: 'Action',
       key: 'action',
-      render: (_, record: VerkType.QuoteResponse) => (
+      render: (_, record: VerykType.QuoteResponse) => (
         <Button onClick={() => onSelectQuote(record)} type="primary">
           Select
         </Button>

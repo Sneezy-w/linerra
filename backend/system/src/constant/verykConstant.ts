@@ -260,139 +260,139 @@ export const verykCarriers: Carrier[] = [
       }
     ]
   },
-  {
-    "id": "14",
-    "code": "dayross",
-    "groupCode": "dayross",
-    "name": "DayRoss",
-    "regionId": "CA",
-    "currency": {
-      "code": "CAD",
-      "symbol": "$",
-      "value": "0.00"
-    },
-    "services": [
-      {
-        "id": "331",
-        "code": "GL",
-        "name": "GENERAL LTL"
-      }
-    ]
-  },
-  {
-    "id": "21",
-    "code": "dayross-sameday",
-    "groupCode": "dayross",
-    "name": "Dayross Sameday",
-    "regionId": "CA",
-    "currency": {
-      "code": "CAD",
-      "symbol": "$",
-      "value": "0.00"
-    },
-    "services": [
-      {
-        "id": "383",
-        "code": "EG@0101",
-        "name": "Commerce Solutions"
-      }
-    ]
-  },
-  {
-    "id": "23",
-    "code": "truckingltl",
-    "groupCode": "other",
-    "name": "Trucking LTL",
-    "regionId": "CA",
-    "currency": {
-      "code": "CAD",
-      "symbol": "$",
-      "value": "0.00"
-    },
-    "services": [
-      {
-        "id": "392",
-        "code": "Trucking_LTL",
-        "name": "Trucking LTL"
-      }
-    ]
-  },
-  {
-    "id": "24",
-    "code": "truckingftl",
-    "groupCode": "other",
-    "name": "Trucking FTL",
-    "regionId": "CA",
-    "currency": {
-      "code": "CAD",
-      "symbol": "$",
-      "value": "0.00"
-    },
-    "services": [
-      {
-        "id": "391",
-        "code": "Trucking_FTL",
-        "name": "Trucking FTL"
-      }
-    ]
-  },
-  {
-    "id": "25",
-    "code": "oceanfreight",
-    "groupCode": "other",
-    "name": "Ocean Freight",
-    "regionId": "CA",
-    "currency": {
-      "code": "CAD",
-      "symbol": "$",
-      "value": "0.00"
-    },
-    "services": [
-      {
-        "id": "390",
-        "code": "Ocean_Freight",
-        "name": "Ocean Freight"
-      }
-    ]
-  },
-  {
-    "id": "26",
-    "code": "shipvehicles",
-    "groupCode": "other",
-    "name": "Ship Vehicles",
-    "regionId": "CA",
-    "currency": {
-      "code": "CAD",
-      "symbol": "$",
-      "value": "0.00"
-    },
-    "services": [
-      {
-        "id": "389",
-        "code": "Ship_Vehicles",
-        "name": "Ship Vehicles"
-      }
-    ]
-  },
-  {
-    "id": "27",
-    "code": "airfreight",
-    "groupCode": "other",
-    "name": "Air Freight",
-    "regionId": "CA",
-    "currency": {
-      "code": "CAD",
-      "symbol": "$",
-      "value": "0.00"
-    },
-    "services": [
-      {
-        "id": "388",
-        "code": "Air_Freight",
-        "name": "Air_Freight"
-      }
-    ]
-  }
+  // {
+  //   "id": "14",
+  //   "code": "dayross",
+  //   "groupCode": "dayross",
+  //   "name": "DayRoss",
+  //   "regionId": "CA",
+  //   "currency": {
+  //     "code": "CAD",
+  //     "symbol": "$",
+  //     "value": "0.00"
+  //   },
+  //   "services": [
+  //     {
+  //       "id": "331",
+  //       "code": "GL",
+  //       "name": "GENERAL LTL"
+  //     }
+  //   ]
+  // },
+  // {
+  //   "id": "21",
+  //   "code": "dayross-sameday",
+  //   "groupCode": "dayross",
+  //   "name": "Dayross Sameday",
+  //   "regionId": "CA",
+  //   "currency": {
+  //     "code": "CAD",
+  //     "symbol": "$",
+  //     "value": "0.00"
+  //   },
+  //   "services": [
+  //     {
+  //       "id": "383",
+  //       "code": "EG@0101",
+  //       "name": "Commerce Solutions"
+  //     }
+  //   ]
+  // },
+  // {
+  //   "id": "23",
+  //   "code": "truckingltl",
+  //   "groupCode": "other",
+  //   "name": "Trucking LTL",
+  //   "regionId": "CA",
+  //   "currency": {
+  //     "code": "CAD",
+  //     "symbol": "$",
+  //     "value": "0.00"
+  //   },
+  //   "services": [
+  //     {
+  //       "id": "392",
+  //       "code": "Trucking_LTL",
+  //       "name": "Trucking LTL"
+  //     }
+  //   ]
+  // },
+  // {
+  //   "id": "24",
+  //   "code": "truckingftl",
+  //   "groupCode": "other",
+  //   "name": "Trucking FTL",
+  //   "regionId": "CA",
+  //   "currency": {
+  //     "code": "CAD",
+  //     "symbol": "$",
+  //     "value": "0.00"
+  //   },
+  //   "services": [
+  //     {
+  //       "id": "391",
+  //       "code": "Trucking_FTL",
+  //       "name": "Trucking FTL"
+  //     }
+  //   ]
+  // },
+  // {
+  //   "id": "25",
+  //   "code": "oceanfreight",
+  //   "groupCode": "other",
+  //   "name": "Ocean Freight",
+  //   "regionId": "CA",
+  //   "currency": {
+  //     "code": "CAD",
+  //     "symbol": "$",
+  //     "value": "0.00"
+  //   },
+  //   "services": [
+  //     {
+  //       "id": "390",
+  //       "code": "Ocean_Freight",
+  //       "name": "Ocean Freight"
+  //     }
+  //   ]
+  // },
+  // {
+  //   "id": "26",
+  //   "code": "shipvehicles",
+  //   "groupCode": "other",
+  //   "name": "Ship Vehicles",
+  //   "regionId": "CA",
+  //   "currency": {
+  //     "code": "CAD",
+  //     "symbol": "$",
+  //     "value": "0.00"
+  //   },
+  //   "services": [
+  //     {
+  //       "id": "389",
+  //       "code": "Ship_Vehicles",
+  //       "name": "Ship Vehicles"
+  //     }
+  //   ]
+  // },
+  // {
+  //   "id": "27",
+  //   "code": "airfreight",
+  //   "groupCode": "other",
+  //   "name": "Air Freight",
+  //   "regionId": "CA",
+  //   "currency": {
+  //     "code": "CAD",
+  //     "symbol": "$",
+  //     "value": "0.00"
+  //   },
+  //   "services": [
+  //     {
+  //       "id": "388",
+  //       "code": "Air_Freight",
+  //       "name": "Air_Freight"
+  //     }
+  //   ]
+  // }
 ];
 
 // export const defaultCurrency: Currency = {

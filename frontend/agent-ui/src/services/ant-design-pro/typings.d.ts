@@ -1,7 +1,7 @@
 // @ts-ignore
 /* eslint-disable */
-
 declare namespace API {
+  import * as ProFormComponents from '@ant-design/pro-components';
   type CurrentUser = UserInfo & {
     name?: string;
     avatar?: string;
@@ -98,4 +98,21 @@ declare namespace API {
     description?: string;
     type?: NoticeIconItemType;
   };
+
+  type NamePath = string | number | (string | number)[];
+  type FieldSchema = {
+    key: string;
+    component: keyof typeof ProFormComponents;
+    name: NamePath;
+    label: string;
+    placeholder?: string;
+    required: boolean | (() => boolean);
+    requiredMessage: string;
+    dependencies?: NamePath[];
+    fieldProps?: any;
+    options?: { label: string; value: any }[];
+    request?: (params?: any) => Promise<{ label: string; value: any }[]>;
+  };
+
+  type Nullable<T> = T | null | undefined;
 }

@@ -21,15 +21,15 @@ import Loading from '@/components/Loading';
 import ShippingDetailsForm from './ShippingDetailsForm';
 import PackageInformationForm from './PackageInformationForm';
 import AdditionalOptionsForm from './AdditionalOptionsForm';
-import { postShipment } from '@/services/service/verkApi';
+import { postShipment } from '@/services/service/verykApi';
 import OrderSuccess from './OrderSuccess';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
 
 interface ShippingServiceFormProps {
-  selectedService: VerkType.Service;
-  selectedCarrier: VerkType.Carrier;
+  selectedService: VerykType.Service;
+  selectedCarrier: VerykType.Carrier;
   onReselect: () => void;
   // Removed formData prop
 }
@@ -52,7 +52,7 @@ const ShippingServiceForm: React.FC<ShippingServiceFormProps> = ({
       await form.validateFields();
       const formValues = form.getFieldsValue();
 
-      const shipmentData: VerkType.QuoteRequest = {
+      const shipmentData: VerykType.QuoteRequest = {
         serviceId: selectedService.id,
         initiation: {
           address: formValues.senderAddress1,
@@ -229,9 +229,9 @@ const ShippingServiceForm: React.FC<ShippingServiceFormProps> = ({
 const CreateOrder: React.FC = () => {
   const { carriers, modelLoading, fetchCarriers } = useModel('carrierModel');
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedService, setSelectedService] = useState<VerkType.Service | null>(null);
+  const [selectedService, setSelectedService] = useState<VerykType.Service | null>(null);
   // Remove formData state
-  const [selectedCarrier, setSelectedCarrier] = useState<VerkType.Carrier | null>(null);
+  const [selectedCarrier, setSelectedCarrier] = useState<VerykType.Carrier | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
   const location = useLocation();
@@ -256,7 +256,7 @@ const CreateOrder: React.FC = () => {
     setCurrentPage(1);
   };
 
-  const handleServiceSelection = (carrier: VerkType.Carrier, service: VerkType.Service) => {
+  const handleServiceSelection = (carrier: VerykType.Carrier, service: VerykType.Service) => {
     setSelectedService(service);
     setSelectedCarrier(carrier);
     setIsModalVisible(false);
@@ -278,7 +278,7 @@ const CreateOrder: React.FC = () => {
 
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
-  const renderServiceList = (carrier: VerkType.Carrier) => {
+  const renderServiceList = (carrier: VerykType.Carrier) => {
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
     const paginatedServices = carrier.services.slice(startIndex, endIndex);

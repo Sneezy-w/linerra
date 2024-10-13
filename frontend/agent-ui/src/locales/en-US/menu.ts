@@ -54,6 +54,7 @@ export default {
   'menu.dashboard.myServices': 'My Services',
   'menu.shipping': 'Shipping',
   'menu.shipping.quote': 'Quote',
+  'menu.shipping.shipment': 'Shipment',
   'menu.shipping.shipments': 'Shipments',
   'menu.shipping.shipments.list': 'Shipment List',
   'menu.shipping.shipments.create': 'Create New Shipment',

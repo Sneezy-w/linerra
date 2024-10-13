@@ -5,7 +5,7 @@ const router = express.Router();
 const verykApi = new VerykApi();
 
 router.get('/getRegion', verykApi.getRegion);
-router.get('/getProvince', verykApi.getProvince);
+router.post('/getProvince', verykApi.getProvince);
 router.get('/getCarrier', verykApi.getCarrier);
 router.get('/getService', verykApi.getService);
 router.get('/getAccount', verykApi.getAccount);

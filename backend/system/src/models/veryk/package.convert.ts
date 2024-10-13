@@ -1,5 +1,5 @@
 import { getDefaultCurrency } from "../../constant/verykConstant";
-import { PackageApiReq, PackageApiRes, PackageDO, PackageEditResVO, PackageItem, PackageItemApiRes, PackageItemDO, PackageReqVO } from "./package.entity";
+import { PackageApiReq, PackageApiRes, PackageDO, PackageEditResVO, PackageItem, PackageItemApiRes, PackageItemDO, PackageItemVO, PackageReqVO } from "./package.entity";
 
 // export const packageItemReqVOToApiReq = (packageItemReqVO: PackageItemReqVO): PackageItemApiReq => {
 //   return {
@@ -10,9 +10,21 @@ import { PackageApiReq, PackageApiRes, PackageDO, PackageEditResVO, PackageItem,
 export const packageReqVOToApiReq = (packageReqVO: PackageReqVO): PackageApiReq => {
   return {
     type: packageReqVO.type,
-    packages: packageReqVO.packages,
+    packages: packageReqVO.packages.map(packageItemVOToPackageItem),
   };
 };
+
+export const packageItemVOToPackageItem = (packageItemVO: PackageItemVO): PackageItem => {
+  const { weight, dimension, insurance } = packageItemVO;
+  return {
+    weight,
+    insurance,
+    ...(dimension ? {
+      dimension: dimension
+    } : {}),
+  }
+}
+
 
 export const packageReqVOToDO = (packageReqVO: PackageReqVO): PackageDO => {
   const { type, packages } = packageReqVO;
@@ -22,28 +34,36 @@ export const packageReqVOToDO = (packageReqVO: PackageReqVO): PackageDO => {
   }
 }
 
-export const packageItemToDO = (packageItem: PackageItem): PackageItemDO => {
-  const { weight, dimension, insurance } = packageItem;
+export const packageItemToDO = (packageItem: PackageItemVO): PackageItemDO => {
+  const { weight, dimension, insurance, additional, sinsured } = packageItem;
   return {
     weight,
-    dimension,
-    insurance: getDefaultCurrency(insurance),
+    ...(dimension ? {
+      dimension: dimension
+    } : {}),
+    ...(typeof insurance === 'number' ? { insurance: getDefaultCurrency(insurance) } : {}),
+    ...(additional ? {
+      additional: additional
+    } : {}),
+    ...(typeof sinsured === 'number' ? { sinsured: sinsured } : {}),
   }
 }
 
 export const packageDOToEditResVO = (packageDO: PackageDO): PackageEditResVO => {
   return {
     type: packageDO.type,
-    packages: packageDO.packages.map(packageItemDOToPackageItem),
+    packages: packageDO.packages.map(packageItemDOToVO),
   }
 }
 
-export const packageItemDOToPackageItem = (packageItem: PackageItemDO): PackageItem => {
-  const { weight, dimension, insurance } = packageItem;
+export const packageItemDOToVO = (packageItem: PackageItemDO): PackageItemVO => {
+  const { weight, dimension, insurance, additional, sinsured } = packageItem;
   return {
     weight,
-    dimension,
-    insurance: Number(insurance.value),
+    ...(dimension ? { dimension: dimension } : {}),
+    ...(!isNaN(Number(insurance?.value)) ? { insurance: Number(insurance?.value) } : {}),
+    ...(additional ? { additional: additional } : {}),
+    ...(typeof sinsured === 'number' ? { sinsured: sinsured } : {}),
   }
 }
 

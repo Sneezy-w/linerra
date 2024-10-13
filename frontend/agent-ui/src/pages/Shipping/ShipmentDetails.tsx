@@ -6,7 +6,7 @@ import PackageInformationForm from './PackageInformationForm';
 
 interface ShipmentDetailsProps {
   form: FormInstance;
-  selectedQuote: VerkType.QuoteResponse | null;
+  selectedQuote: VerykType.QuoteResponse | null;
   formData: any;
 }
 
