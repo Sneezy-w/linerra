@@ -103,3 +103,11 @@ export async function getShipmentPage(data: VerykType.ShipmentPageReqVO, options
     ...(options || {}),
   });
 }
+
+export async function getSignedLabelUrl(key: string, options?: Record<string, any>) {
+  return request<API.R<{ url: string }>>('/api/veryk/shipment/getSignedLabelUrl', {
+    method: 'GET',
+    params: { key },
+    ...(options || {}),
+  });
+}

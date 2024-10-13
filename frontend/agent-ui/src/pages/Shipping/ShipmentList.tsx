@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PageContainer, ProCard, ProCardProps, ProForm, ProFormDateRangePicker, ProFormDateTimeRangePicker, ProFormInstance, ProFormSelect, ProFormText, QueryFilter } from '@ant-design/pro-components';
-import { Input, Select, DatePicker, Button, Space, Typography, Tag, Divider, List, Skeleton, TimeRangePickerProps, Row, Col, message, Spin, Flex } from 'antd';
+import { Input, Select, DatePicker, Button, Space, Typography, Tag, Divider, List, Skeleton, TimeRangePickerProps, Row, Col, message, Spin, Flex, Dropdown, MenuProps } from 'antd';
 import { BarcodeOutlined, CalendarOutlined, SearchOutlined, ShoppingOutlined } from '@ant-design/icons';
 import { ReactBarcode } from 'react-jsbarcode';
 import { Box, Package, MailOpen, Boxes } from 'lucide-react';
@@ -15,7 +15,7 @@ import { findDictItem, getDictItem } from '@/models/dicts';
 import { extend } from 'lodash';
 import { getRegionById } from '@/models/regions';
 import { CountryCode, parsePhoneNumber } from 'libphonenumber-js';
-import { deleteShipment, getShipmentPage } from '@/services/service/verykApi';
+import { deleteShipment, getShipmentPage, getSignedLabelUrl } from '@/services/service/verykApi';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useAsyncFn } from 'react-use';
 import { getPriceDetails, getTotal } from './utils/utils';
@@ -223,7 +223,7 @@ const getPackageIcon = (type: string) => {
   }
 };
 
-const ShipmentCard: React.FC<{ shipment: typeof mockShipment & { service: ReturnType<typeof getCarrierServiceById> } }> = ({ shipment }) => {
+const ShipmentCard: React.FC<{ shipment: VerykType.ShipmentDetailResVO & { service: ReturnType<typeof getCarrierServiceById> } }> = ({ shipment }) => {
 
   const { dicts, loading: dictsLoading } = useModel('dicts', (model) => ({
     dicts: model.dicts,
@@ -249,7 +249,47 @@ const ShipmentCard: React.FC<{ shipment: typeof mockShipment & { service: Return
     })
   }
 
+  const [signedLabelUrlLoading, setSignedLabelUrlLoading] = useState(false);
 
+  const openLabelUrl = async (key: string | undefined) => {
+    if (!key) {
+      message.error('Label URL is not available');
+      return;
+    }
+    try {
+      setSignedLabelUrlLoading(true);
+      const response = await getSignedLabelUrl(key);
+      if (response.success && response.data?.url) {
+        window.open(response.data.url, '_blank');
+      } else {
+        throw new Error('Failed to get label URL');
+      }
+    } catch (error) {
+      message.error('Failed to load label');
+    } finally {
+      setSignedLabelUrlLoading(false);
+    }
+  };
+
+  const printLabelDropdownMenu = useMemo(() => {
+    const items: MenuProps['items'] = []
+
+    if (shipment.labelFile?.label) {
+      items.push({
+        key: 'carrierLabel',
+        label: <Typography.Link onClick={() => openLabelUrl(shipment.labelFile?.label)}>Carrier Label</Typography.Link>
+      })
+    }
+
+    if (shipment.labelFile?.invoice) {
+      items.push({
+        key: 'invoice',
+        label: <Typography.Link onClick={() => openLabelUrl(shipment.labelFile?.invoice)}>Commercial Invoice</Typography.Link>
+      })
+    }
+
+    return items
+  }, [shipment])
 
 
   //const shipment = mockShipment[0]
@@ -261,7 +301,7 @@ const ShipmentCard: React.FC<{ shipment: typeof mockShipment & { service: Return
             key={shipment.number}
             style={{ width: '100%' }}
             title={<>
-              <Space align='center'>
+              <Space align='center' >
 
                 {/* <Space align='center'>
               <Box style={
@@ -295,8 +335,15 @@ const ShipmentCard: React.FC<{ shipment: typeof mockShipment & { service: Return
                     }}
                   >
                     {shipment.number}
-                    <Text copyable={{ text: shipment.number }} />
+
                   </Button>
+                  <Text copyable={{ text: shipment.number }}
+                    style={{
+                      fontSize: '1em',
+                      position: 'relative',
+                      left: '0.2em',
+                      top: '-0.4em',
+                    }} />
                 </Link>
 
                 {shipment.externalId && <Text copyable type="secondary">{shipment.externalId}</Text>}
@@ -437,9 +484,17 @@ const ShipmentCard: React.FC<{ shipment: typeof mockShipment & { service: Return
 
                   </>}
 
-                  {shipment.status === 'submitted' && <Button color="primary" type="link">
-                    Print Label
-                  </Button>}
+                  {shipment.status === 'submitted' &&
+                    <Dropdown
+                      menu={{ items: printLabelDropdownMenu }}
+                      disabled={signedLabelUrlLoading}
+                      placement="top"
+                    >
+                      <Button color="primary" type="link" loading={signedLabelUrlLoading}>
+                        Print Label
+                      </Button>
+                    </Dropdown>
+                  }
 
                 </Space>
 

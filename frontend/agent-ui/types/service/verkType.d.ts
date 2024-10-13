@@ -443,6 +443,8 @@ declare namespace VerykType {
     destinationLocalized?: DestinationReqVO;
     sadditional?: ShipmentAdditional;
 
+    labelFile?: LabelFile;
+
     created?: string;
   }
 
@@ -489,6 +491,11 @@ declare namespace VerykType {
     startDate?: string;
     endDate?: string;
     lastEvaluatedKey?: Record<string, any>;
+  }
+
+  type LabelFile = {
+    label: string;
+    invoice?: string;
   }
 }
 

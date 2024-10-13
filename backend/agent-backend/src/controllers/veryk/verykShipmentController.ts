@@ -4,7 +4,10 @@ import { QuoteResVO } from '@linerra/system/src/models/veryk/quote.entity';
 import { shipmentDetail, shipmentList } from 'system/src/utils/verykUtils';
 import { shipmentDOToDetailResVO, shipmentDOToEditResVO } from 'system/src/models/veryk/shipment.convert';
 import _ from 'lodash';
-import { ShipmentDO } from 'system/src/models/veryk/shipment.entity';
+import { ShipmentDO } from '@linerra/system/src/models/veryk/shipment.entity';
+import { S3Service } from '@linerra/system/src/services/s3Service';
+import { ErrorShowType } from '@linerra/system/src/enum/errorShowType';
+import logger from '@linerra/system/src/utils/logger';
 
 const verykShipmentService = VerykShipmentService.instance;
 
@@ -73,6 +76,21 @@ export class VerykShipmentController {
   async shipmentDetail(req: Request, res: Response) {
     const shipment = await shipmentDetail({ id: req.params.id }, req.context.acceptLanguage);
     res.ok(shipment);
+  }
+
+  async getSignedLabelUrl(req: Request, res: Response) {
+    try {
+      const key = req.query.key as string;
+      if (!key) {
+        return res.fail('Key is required', 'KeyRequired', ErrorShowType.ERROR_MESSAGE, 400);
+      }
+
+      const url = await S3Service.instance.getSignedLabelUrl(key);
+      res.ok({ url });
+    } catch (error) {
+      logger.error("Error getting label URL", error);
+      res.fail('Error getting label URL', 'ErrorGettingLabelUrl', ErrorShowType.ERROR_MESSAGE, 500);
+    }
   }
 
 
