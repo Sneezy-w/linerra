@@ -15,35 +15,35 @@ const ERROR_CODE = 'Veryk.ApiError';
 export function buildUrl(action: string): string {
   const params: Record<string, any> = {
     id: verykAppId,
-    timestamp: Math.floor(Date.now() / 1000), // ISO8601格式
+    timestamp: Math.floor(Date.now() / 1000), // ISO8601 format
     action: action,
     format: 'json'
   };
 
-  // 将所有参数key统一改为小写
+  // Convert all parameter keys to lowercase
   const lowercaseParams = Object.keys(params).reduce((acc, key) => {
     acc[key.toLowerCase()] = params[key];
     return acc;
   }, {} as Record<string, any>);
 
-  // 如果有sign，把它去掉
+  // If there is a sign, remove it
   delete lowercaseParams['sign'];
 
-  // 将参数名按字母顺序排序
+  // Sort parameter names in alphabetical order
   const sortedKeys = Object.keys(lowercaseParams).sort();
 
-  //将每个参数值进行urlEncode
+  // URL encode each parameter value
   const queryString = sortedKeys.map(key =>
     `${key}=${encodeURIComponent(lowercaseParams[key])}`
   ).join('&');
 
   const secret = verykAppSecret as string;
 
-  // 使用 HMAC SHA256 加密
+  // Use HMAC SHA256 encryption
   const hmac = crypto.createHmac('sha256', secret);
   hmac.update(queryString);
 
-  // base64编码，得到签名
+  // base64 encode to get signature
   const sign = encodeURIComponent(hmac.digest('base64'));
 
   return `${verykApiUrl}?${queryString}&sign=${sign}`;

@@ -1,9 +1,9 @@
 /**
- * 这个文件作为组件的目录
- * 目的是统一管理对外输出的组件，方便分类
+ * This file is used as a directory for components.
+ * The purpose is to manage and export components uniformly, making it easier to categorize and use.
  */
 /**
- * 布局组件
+ * Layout component
  */
 import Footer from './Footer';
 import { Question, SelectLang } from './RightContent';

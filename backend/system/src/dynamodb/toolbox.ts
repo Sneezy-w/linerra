@@ -204,8 +204,8 @@ export const Shipment = new Entity({
     }).optional(),
 
     sadditional: map({
-      DC: map({ // 确认收货(UPS,Canada Post可用) UPS: 不是发货到CA可用
-        state: string().required(), // 是否确认收货(选项:true/false)
+      DC: map({ // Delivery Confirmation(available when UPS,Canada Post) UPS: Not available when shipping to CA
+        state: string().required(), // Delivery Confirmation Yes or No(option:true/false)
         type: string().optional(), // Confirmation Type(available when UPS),options: 1:Signature Required, 2:Adult Signature Required
       }).optional(),
       SO: map({ // Signature(available when Canada Post)
@@ -225,34 +225,34 @@ export const Shipment = new Entity({
         state: string().required(), // Reason For Export options:DOC:Document; SAM:Commercial Sample; REP:Repair Or Warranty; SOG:Sale Of Goods; OTH:Other
         "other-reason": string().optional(), // Other Reason(required when state is OTH)
       }).optional(),
-      EDI: map({ // E-Commercial Invoice(支持DHL,UPS,FedEx）国际非文档包裹
+      EDI: map({ // E-Commercial Invoice(available when DHL,UPS,FedEx) International non-document packages
         state: string().required(), // E-Commercial Invoice Yes or No(option:true/false)
       }).optional(),
       signature: map({ // Delivery Confirmation(available where Fedex) In Canada and the U.S., Indirect Signature Required is available for residential shipments only.
         state: string().required(), // Signature Yes or No
         type: string().optional(), // Confirmation Type(required where state is true)
       }).optional(),
-      RS: map({ // Return Service 仅UPS可用
-        state: string().required(), // 是否开启回件功能取值(true/false)
-        code: string().optional(), // 回件服务类型 可选有效值：2,3,5,8,9
-        description: string().optional(), // 回件服务描述
+      RS: map({  // Return Service Only available when UPS
+        state: string().required(), // Return Service Yes or No(option:true/false)
+        code: string().optional(), // Return Service Type,optional valid values: 2,3,5,8,9
+        description: string().optional(), // Return Service Description
       }).optional(),
-      DG: map({ // 危险品（支持DHL非文档类型包裹）
+      DG: map({ // Dangerous Goods(available when DHL)
         state: string().required(), // Yes or No(option:true/false)
-        type: string().optional(), // 危险物品类型 可选有效值
+        type: string().optional(), // Dangerous Goods Type,optional valid values
       }).optional(),
 
-      DIT: map({ // 使用DHL官方发票，该选项不能和EDI（电子发票）同时使用
+      DIT: map({ // Use DHL official invoice, this option cannot be used with EDI (electronic invoice)
         state: string().required(), // Yes or No(option:true/false)
-        type: string().optional(), //发票类型，可选值： CMI (Commercail Invoice)，PFI (Proforma Invoice)
+        type: string().optional(), // Invoice Type,optional valid values: CMI (Commercail Invoice)，PFI (Proforma Invoice)
       }).optional(),
-      TermsOfTrade: map({ // 贸易条款 TermsOfTrade,支持货运商（FEDEX）
-        state: string().required(), // 有效值:DDP, DDU（DDP必须确认管理员已提前预设支付账号）
+      TermsOfTrade: map({ // TermsOfTrade,supported by freight forwarder (FEDEX)
+        state: string().required(), // Valid values: DDP, DDU (DDP must confirm that the admin has already preset the payment account)
       }).optional(),
-      IOSS: map({ // 欧盟关税代缴 IOSS(Canada Post, Fedex可用)
-        state: string().required(), // 有效值:true,false 有效值 0（否）或1（是）
-        ioss_id: string().optional(), // 欧盟关税代缴 IOSS ID  IOSS/state 值为1时，必填。最大长度13位。
-        type: string().optional(), // 选择承运商为FEDEX时必填，有效值："PERSONAL_NATIONAL", "PERSONAL_STATE", "FEDERAL", "BUSINESS_NATIONAL", "BUSINESS_STATE", "BUSINESS_UNION"。
+      IOSS: map({ // IOSS for EU tax collection(Canada Post, Fedex available)
+        state: string().required(), // Valid values: true,false  Valid values: 0 (No) or 1 (Yes)
+        ioss_id: string().optional(), // EU IOSS ID  Required when IOSS/state value is 1. Maximum length 13 digits.
+        type: string().optional(), // Required when choosing FEDEX as the carrier. Valid values: "PERSONAL_NATIONAL", "PERSONAL_STATE", "FEDERAL", "BUSINESS_NATIONAL", "BUSINESS_STATE", "BUSINESS_UNION".
       }).optional(),
 
     }).optional(),

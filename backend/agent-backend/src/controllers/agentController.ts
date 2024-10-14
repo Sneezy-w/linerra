@@ -54,12 +54,12 @@ export class AgentController {
       const accessPayload = await accessVerifier.verify(accessToken);
       const idPayload = await idTokenVerifier.verify(idToken);
       const now = Date.now();
-      // 检查两个token是否已过期
+      // check if the token is expired
       if (accessPayload.exp * 1000 < now || idPayload.exp * 1000 < now) {
         return res.fail('Token expired', 'TokenExpired', ErrorShowType.ERROR_MESSAGE, 401);
       }
 
-      // 检查是否有一个token距离过期时间不到15分钟
+      // check if the token is expired in 15 minutes
       const fifteenMinutesInMs = 15 * 60 * 1000;
       const accessTokenExpiresIn = accessPayload.exp * 1000 - now;
       const idTokenExpiresIn = idPayload.exp * 1000 - now;

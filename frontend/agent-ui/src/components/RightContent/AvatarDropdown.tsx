@@ -41,13 +41,13 @@ const useStyles = createStyles(({ token }) => {
 
 export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, children }) => {
   /**
-   * 退出登录，并且将当前的 url 保存
+   * Log out and save the current URL
    */
   const loginOut = async () => {
     //await outLogin();
     const { search, pathname } = window.location;
     const urlParams = new URL(window.location.href).searchParams;
-    /** 此方法会跳转到 redirect 参数所在的位置 */
+    /** This method will jump to the location of the redirect parameter */
     const redirect = urlParams.get('redirect');
     // Note: There may be security issues, please note
     if (window.location.pathname !== '/user/login' && !redirect) {
@@ -107,12 +107,12 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, childre
         {
           key: 'center',
           icon: <UserOutlined />,
-          label: '个人中心',
+          label: 'Personal Center',
         },
         {
           key: 'settings',
           icon: <SettingOutlined />,
-          label: '个人设置',
+          label: 'Personal Settings',
         },
         {
           type: 'divider' as const,
@@ -122,7 +122,7 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, childre
     {
       key: 'logout',
       icon: <LogoutOutlined />,
-      label: '退出登录',
+      label: 'Logout',
     },
   ];
 

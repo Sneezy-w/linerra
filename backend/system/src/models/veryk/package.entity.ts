@@ -72,7 +72,7 @@ export interface PackageAdditional {
     //state: string; // Yes or No(option:true/false)
     state: string; // Pack Code: PIECE, BARREL, BASKET, BOX, BUNDLE, CARTON, CASE, CRATE, CYLINDER, DRUM, ENVELOPE, OTHER, PAIL, PALLET, REEL, SKID, TANK, TUBE
   },
-  // pallet: { // 托盘数据，仅货运商Fedex Freight可用，且必填
+  // pallet: { // Pallet data, only available when freight forwarder is Fedex Freight, and required
   //   state: string; // Yes (option:true)
   //   description: string;
   // }

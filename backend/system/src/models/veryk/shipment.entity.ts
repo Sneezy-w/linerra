@@ -196,8 +196,8 @@ export interface PaymentApiRes {
 }
 
 export interface ShipmentAdditional {
-  DC?: { // 确认收货(UPS,Canada Post可用) UPS: 不是发货到CA可用
-    state: string; // 是否确认收货(选项:true/false)
+  DC?: { // Confirm receipt(available when UPS,Canada Post) UPS: Not available when shipping to CA
+    state: string; // Whether to confirm receipt(option:true/false)
     type?: string; // Confirmation Type(available when UPS),options: 1:Signature Required, 2:Adult Signature Required
   }
   SO?: { // Signature(available when Canada Post)
@@ -215,12 +215,12 @@ export interface ShipmentAdditional {
   },
   // COD?: { // Collect on delivery(available where Canada Post to CA)
   //   state: string; // Yes or No(option:true/false)
-  //   "option-amount": string; // 到付金额
+  //   "option-amount": string; // Amount to collect
   // }
   // D2PO?: { // Deliver to Post Office(available where Canada Post)
   //   state: string; // Yes or No(option:true/false)
   //   "option-qualifier-2	": string; // Post Office ID
-  //   email?: string; // 邮箱
+  //   email?: string; // Email
   // }
 
   _RFE?: { // Reason For Export(available where Canada Post/ups and not ship to CA)
@@ -278,11 +278,11 @@ export interface ShipmentAdditional {
 
   },
 
-  // accessorialServices?: { // 包裹类型为“pallet”或货运商为dayrosssameday时可选	 Dayross Fedex
+  // accessorialServices?: { // Optional when package type is "pallet" or freight forwarder is dayrosssameday
   //   state?: string; // Yes or No(option:true/false)
 
   //   /**
-  //    * 货运商为Dayross时可多选值：
+  //    * Valid values for freight forwarder Dayross:
   //     * APTFGT
   //     * DANGER
   //     * PRESDL
@@ -294,7 +294,7 @@ export interface ShipmentAdditional {
   //     * TRDSHW
   //     *
   //     *
-  //     * 货运商为Dayrosssameday时可多选值：
+  //     * Valid values for freight forwarder Dayrosssameday:
   //     * 2-MAN
   //     * 2-MANP
   //     * APPT
@@ -306,7 +306,7 @@ export interface ShipmentAdditional {
   //     * TAILPU
   //     *
   //     *
-  //     * 货运商为Fedex且包裹类型为“pallet”可多选值：
+  //     * Valid values for freight forwarder Fedex and package type is "pallet":
   //     * CALL_BEFORE_DELIVERY
   //     * LIMITED_ACCESS_PICKUP
   //     * LIMITED_ACCESS_DELIVERY
@@ -320,15 +320,15 @@ export interface ShipmentAdditional {
   //   accessorialServices?: string[];
   // },
 
-  // pickup?: { // 仅货运商Dayross，Dayrosssameday可用且必填
+  // pickup?: { // Only available when freight forwarder Dayross, Dayrosssameday
   //   state?: string; // Yes
-  //   starttime?: string; // 开始时间 预约上门取件开始时间 可选值:"06:00","06:30","07:00","07:30","08:00","08:30"......"20:30";
-  //   endtime?: string; // 预约取件结束时间 可选值:“07:00","07:30","08:00","08:30"......"20:30" ;
-  //   date?: string; // 预约取件日期(注：请避开节假日)  格式：YY-mm-dd;
+  //   starttime?: string; // Start time for appointment pickup Valid values:"06:00","06:30","07:00","07:30","08:00","08:30"......"20:30";
+  //   endtime?: string; // End time for appointment pickup Valid values:"07:00","07:30","08:00","08:30"......"20:30" ;
+  //   date?: string; // Appointment pickup date (Note: Please avoid holidays) Format: YY-mm-dd;
   // },
 
-  RS?: { // Return Service 仅UPS可用
-    state: string; // 是否开启回件功能取值(true/false)
+  RS?: { // Return Service Only available when UPS
+    state: string; // Whether to enable return service(option:true/false)
 
     /**
      * Return Service Type
@@ -341,14 +341,14 @@ export interface ShipmentAdditional {
      */
     code?: string;
 
-    description?: string; // 回件服务描述
+    description?: string; // Return service description
   },
 
-  DG?: { // 危险品（支持DHL,Fedex非文档类型包裹） not available when ship to CA
+  DG?: { // Dangerous goods(available when DHL,Fedex non-document type packages) not available when ship to CA
     state: string; // Yes or No(option:true/false)
 
     /**
-     * 危险物品类型 可选有效值
+     * Dangerous goods type Valid values:
      *
      * DHL:
      * HE (Dangerous Goods)
@@ -367,22 +367,22 @@ export interface ShipmentAdditional {
     type?: string;
   },
 
-  DIT?: { // 使用DHL官方发票，该选项不能和EDI（电子发票）同时使用
+  DIT?: { // Use DHL official invoice, this option cannot be used with EDI (electronic invoice)
     state: string; // Yes or No(option:true/false)
 
-    type?: string; //发票类型，可选值： CMI (Commercail Invoice)，PFI (Proforma Invoice)
+    type?: string; // Invoice type, valid values: CMI (Commercail Invoice)，PFI (Proforma Invoice)
   },
 
-  TermsOfTrade?: { // 贸易条款 TermsOfTrade,支持货运商（FEDEX） 非文档类型包裹   not available when ship to CA
-    state: string; // 有效值:DDP, DDU（DDP必须确认管理员已提前预设支付账号）
+  TermsOfTrade?: { // Terms of trade, supported by freight forwarder (FEDEX) non-document type packages  not available when ship to CA
+    state: string; // Valid values: DDP, DDU (DDP must confirm that the administrator has previously set up the payment account)
   },
 
-  IOSS?: { // 欧盟关税代缴 IOSS(Canada Post, Fedex(not document)可用)  not available when ship to CA
-    state: string; // 有效值:true,false 有效值 0（否）或1（是）
-    ioss_id?: string; // 欧盟关税代缴 IOSS ID  IOSS/state 值为1时，必填。最大长度13位。
+  IOSS?: { // EU customs duty payment, available when Canada Post, Fedex(not document)  not available when ship to CA
+    state: string; // Valid values: true,false  Valid values: 0 (No) or 1 (Yes)
+    ioss_id?: string; // EU customs duty payment IOSS ID  Required when IOSS/state value is 1. Maximum length 13 digits.
 
     /**
-     * 	选择承运商为FEDEX时必填，有效值："PERSONAL_NATIONAL", "PERSONAL_STATE", "FEDERAL", "BUSINESS_NATIONAL", "BUSINESS_STATE", "BUSINESS_UNION"。
+     * Required when state is 1. Valid values: "PERSONAL_NATIONAL", "PERSONAL_STATE", "FEDERAL", "BUSINESS_NATIONAL", "BUSINESS_STATE", "BUSINESS_UNION".
      */
     type?: string;
   },

@@ -238,15 +238,15 @@ declare namespace VerykType {
       state: string; // Pack Code: PIECE, BARREL, BASKET, BOX, BUNDLE, CARTON, CASE, CRATE, CYLINDER, DRUM, ENVELOPE, OTHER, PAIL, PALLET, REEL, SKID, TANK, TUBE
     },
 
-    // pallet: { // 托盘数据，仅货运商Fedex Freight可用，且必填
+    // pallet: { // Pallet data, only available when the freight forwarder is Fedex Freight, and required
     //   state: string; // Yes (option:true)
     //   description: string;
     // }
   }>
 
   type ShipmentAdditional = {
-    DC?: { // 确认收货(UPS,Canada Post可用) UPS: 不是发货到CA可用
-      state?: string; // 是否确认收货(选项:true/false)
+    DC?: { // Confirm Receipt(available when UPS,Canada Post) UPS: Not available when shipping to CA
+      state?: string; // Whether to confirm receipt(option:true/false)
       type?: string; // Confirmation Type(available when UPS),options: 1:Signature Required, 2:Adult Signature Required
     }
     SO?: { // Signature(available when Canada Post)
@@ -264,12 +264,12 @@ declare namespace VerykType {
     },
     // COD?: { // Collect on delivery(available where Canada Post to CA)
     //   state: string; // Yes or No(option:true/false)
-    //   "option-amount": string; // 到付金额
+    //   "option-amount": string; // COD amount
     // }
     // D2PO?: { // Deliver to Post Office(available where Canada Post)
     //   state: string; // Yes or No(option:true/false)
     //   "option-qualifier-2	": string; // Post Office ID
-    //   email?: string; // 邮箱
+    //   email?: string; // Email
     // }
 
     _RFE?: { // Reason For Export(available where Canada Post and not ship to CA)
@@ -277,7 +277,7 @@ declare namespace VerykType {
       "other-reason	"?: string; // Other Reason(required when state is OTH)
     },
 
-    EDI?: { // E-Commercial Invoice(支持DHL,UPS,FedEx）国际非文档包裹
+    EDI?: { // E-Commercial Invoice(available when DHL,UPS,FedEx) International non-document packages
       state?: string; // E-Commercial Invoice Yes or No(option:true/false)
     },
 
@@ -303,11 +303,11 @@ declare namespace VerykType {
 
     },
 
-    // accessorialServices?: { // 包裹类型为“pallet”或货运商为dayrosssameday时可选	 Dayross Fedex
+    // accessorialServices?: { // Optional when the package type is "pallet" or the freight forwarder is dayrosssameday	 Dayross Fedex
     //   state?: string; // Yes or No(option:true/false)
 
     //   /**
-    //    * 货运商为Dayross时可多选值：
+    //    * Optional values when the freight forwarder is Dayross:
     //     * APTFGT
     //     * DANGER
     //     * PRESDL
@@ -319,7 +319,7 @@ declare namespace VerykType {
     //     * TRDSHW
     //     *
     //     *
-    //     * 货运商为Dayrosssameday时可多选值：
+    //     * Optional values when the freight forwarder is Dayrosssameday:
     //     * 2-MAN
     //     * 2-MANP
     //     * APPT
@@ -331,7 +331,7 @@ declare namespace VerykType {
     //     * TAILPU
     //     *
     //     *
-    //     * 货运商为Fedex且包裹类型为“pallet”可多选值：
+    //     * Optional values when the freight forwarder is Fedex and the package type is "pallet":
     //     * CALL_BEFORE_DELIVERY
     //     * LIMITED_ACCESS_PICKUP
     //     * LIMITED_ACCESS_DELIVERY
@@ -345,15 +345,15 @@ declare namespace VerykType {
     //   accessorialServices?: string[];
     // },
 
-    // pickup?: { // 仅货运商Dayross，Dayrosssameday可用且必填
+    // pickup?: { // Only available when the freight forwarder is Dayross, Dayrosssameday, and required
     //   state?: string; // Yes
-    //   starttime?: string; // 开始时间 预约上门取件开始时间 可选值:"06:00","06:30","07:00","07:30","08:00","08:30"......"20:30";
-    //   endtime?: string; // 预约取件结束时间 可选值:“07:00","07:30","08:00","08:30"......"20:30" ;
-    //   date?: string; // 预约取件日期(注：请避开节假日)  格式：YY-mm-dd;
+    //   starttime?: string; // Start time for appointment pickup, optional values: "06:00","06:30","07:00","07:30","08:00","08:30"......"20:30";
+    //   endtime?: string; // End time for appointment pickup, optional values: "07:00","07:30","08:00","08:30"......"20:30";
+    //   date?: string; // Appointment pickup date (note: please avoid holidays) Format: YY-mm-dd;
     // },
 
-    RS?: { // Return Service 仅UPS可用
-      state?: string; // 是否开启回件功能取值(true/false)
+    RS?: { // Return Service Only available when UPS
+      state?: string; // Whether to enable return service(option:true/false)
 
       /**
        * Return Service Type
@@ -366,14 +366,14 @@ declare namespace VerykType {
        */
       code?: string;
 
-      description?: string; // 回件服务描述
+      description?: string; // Return service description
     },
 
-    DG?: { // 危险品（支持DHL非文档类型包裹）
+    DG?: { // Dangerous goods(available when DHL) Non-document packages
       state?: string; // Yes or No(option:true/false)
 
       /**
-       * 危险物品类型 可选有效值
+       * Dangerous goods type
        * HE (Dangerous Goods)
        * HU (Not Restricted Dangerous Goods)
        * HW (Lithium Metal PI970 Section II)
@@ -384,22 +384,23 @@ declare namespace VerykType {
       type?: string;
     },
 
-    DIT?: { // 使用DHL官方发票，该选项不能和EDI（电子发票）同时使用
+    DIT?: { // Use DHL official invoice, this option cannot be used with EDI (electronic invoice)
       state?: string; // Yes or No(option:true/false)
 
-      type?: string; //发票类型，可选值： CMI (Commercail Invoice)，PFI (Proforma Invoice)
+      type?: string; // Invoice type, optional values: CMI (Commercail Invoice), PFI (Proforma Invoice)
     },
 
-    TermsOfTrade?: { // 贸易条款 TermsOfTrade,支持货运商（FEDEX）
-      state?: string; // 有效值:DDP, DDU（DDP必须确认管理员已提前预设支付账号）
+    TermsOfTrade?: { // Terms of Trade, supported by freight forwarder (FEDEX)
+      state?: string; // Valid values: DDP, DDU (DDP must confirm that the admin has pre-set the payment account)
     },
 
-    IOSS?: { // 欧盟关税代缴 IOSS(Canada Post, Fedex可用)
-      state?: string; // 有效值:true,false 有效值 0（否）或1（是）
-      ioss_id?: string; // 欧盟关税代缴 IOSS ID  IOSS/state 值为1时，必填。最大长度13位。
+    IOSS?: { // EU VAT number IOSS (Canada Post, Fedex)
+      state?: string; // Valid values: true, false Valid values: 0 (No) or 1 (Yes)
+      ioss_id?: string; // EU VAT number IOSS/state value of 1, required. Maximum length 13 digits.
 
       /**
-       * 	选择承运商为FEDEX时必填，有效值："PERSONAL_NATIONAL", "PERSONAL_STATE", "FEDERAL", "BUSINESS_NATIONAL", "BUSINESS_STATE", "BUSINESS_UNION"。
+       * Required when the carrier is FEDEX
+       * Valid values: "PERSONAL_NATIONAL", "PERSONAL_STATE", "FEDERAL", "BUSINESS_NATIONAL", "BUSINESS_STATE", "BUSINESS_UNION".
        */
       type?: string;
     },
@@ -413,8 +414,8 @@ declare namespace VerykType {
 
     unit?: string;
 
-    origin?: string; // 原产国代码，例：CN        UPS,DHL,Fedex可用
-    HScode?: string; // 海关编码  UPS,DHL,UBI可用
+    origin?: string; // Origin country code, example: CN        UPS,DHL,Fedex
+    HScode?: string; // Customs code  UPS,DHL,UBI
   }
 
   type ShipmentEditResVO = ShipmentReqVO & {

@@ -11,13 +11,13 @@ export function setSessionToken(accessToken: string, idToken: string, sessionId?
   if (accessToken) {
     localStorage.setItem('access_token', accessToken);
     const decodedToken: any = JSON.parse(atob(accessToken.split('.')[1]));
-    const expirationTime: number = decodedToken.exp * 1000; // 转换为毫秒
+    const expirationTime: number = decodedToken.exp * 1000; // Convert to milliseconds
     localStorage.setItem('access_token_expired_at', expirationTime.toString());
   }
   if (idToken) {
     localStorage.setItem('id_token', idToken);
     const decodedToken: any = JSON.parse(atob(idToken.split('.')[1]));
-    const expirationTime: number = decodedToken.exp * 1000; // 转换为毫秒
+    const expirationTime: number = decodedToken.exp * 1000; // Convert to milliseconds
     localStorage.setItem('id_token_expired_at', expirationTime.toString());
   }
   if (sessionId) {
@@ -39,7 +39,7 @@ export function getAccessTokenExpiredAt() {
     const accessToken = getAccessToken();
     if (accessToken) {
       const decodedToken: any = JSON.parse(atob(accessToken.split('.')[1]));
-      const expirationTime: number = decodedToken.exp * 1000; // 转换为毫秒
+      const expirationTime: number = decodedToken.exp * 1000; // Convert to milliseconds
       localStorage.setItem('access_token_expired_at', expirationTime.toString());
       expiredAt = expirationTime.toString();
     }
@@ -55,7 +55,7 @@ export function getIdTokenExpiredAt() {
     const idToken = getIdToken();
     if (idToken) {
       const decodedToken: any = JSON.parse(atob(idToken.split('.')[1]));
-      const expirationTime: number = decodedToken.exp * 1000; // 转换为毫秒
+      const expirationTime: number = decodedToken.exp * 1000; // Convert to milliseconds
       localStorage.setItem('id_token_expired_at', expirationTime.toString());
       expiredAt = expirationTime.toString();
     }

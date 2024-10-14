@@ -5,8 +5,8 @@ export interface ProductItem {
 
   unit?: string;
 
-  origin?: string; // 原产国代码，例：CN        UPS,DHL,Fedex,Purolator可用
-  HScode?: string; // 海关编码  UPS,DHL,UBI可用
+  origin?: string; // Country of origin code, example: CN        UPS,DHL,Fedex,Purolator available
+  HScode?: string; // Customs code  UPS,DHL,UBI available
   //weight?: number; // Total weight of this commodity, available when Fedex Postpony
 
 }

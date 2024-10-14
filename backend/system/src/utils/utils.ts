@@ -2,11 +2,11 @@ export function generateOrderNumber(provider: string, stationNo: string): string
 
   const timestamp = Math.floor(Date.now() / 1000).toString(36).toUpperCase().padStart(6, '0');
 
-  // 2. 生成两位随机字符
+  // 2. Generate two random characters
 
   const randomPart = generateRandomString(2);
 
-  // 3. 组合订单号
+  // 3. Combine order number
   return `${timestamp}${randomPart}${provider}${stationNo}`;
 }
 

@@ -17,7 +17,7 @@ export class VerykShipmentService {
   public static instance: VerykShipmentService = new VerykShipmentService();
 
   /**
-   * 获取可用carrier
+   * Get available carriers
    * @returns
    */
   async getAvailableCarriers(): Promise<string[]> {
@@ -26,7 +26,7 @@ export class VerykShipmentService {
   }
 
   /**
-   * 获取报价
+   * Get quotes
    * @param params
    * @param acceptLanguage
    * @returns
@@ -156,7 +156,7 @@ export class VerykShipmentService {
 
 
   /**
-   * 提交到veryk
+   * Submit to veryk
    * @param params
    * @param acceptLanguage
    * @returns

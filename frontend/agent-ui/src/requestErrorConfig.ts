@@ -8,7 +8,7 @@ import _ from 'lodash';
 
 const loginPath = '/user/login';
 
-// 错误处理方案： 错误类型
+// Error handling scheme: error type
 enum ErrorShowType {
   SILENT = 0,
   WARN_MESSAGE = 1,
@@ -16,7 +16,7 @@ enum ErrorShowType {
   NOTIFICATION = 3,
   REDIRECT = 9,
 }
-// 与后端约定的响应数据格式
+// Response data format agreed with backend
 interface ResponseStructure {
   success: boolean;
   data: any;
@@ -49,14 +49,14 @@ function addRefreshSubscriber(cb: (token: string) => void) {
 }
 
 /**
- * @name 错误处理
- * pro 自带的错误处理， 可以在这里做自己的改动
+ * @name Error handling
+ * pro's own error handling, can make your own changes here
  * @doc https://umijs.org/docs/max/request#配置
  */
 export const errorConfig: RequestConfig = {
-  // 错误处理： umi@3 的错误处理方案。
+  // Error handling: umi@3's error handling scheme.
   errorConfig: {
-    // 错误抛出
+    // Error thrower
     errorThrower: (res) => {
       const { success, data, errorCode, errorMessage, showType } =
         res as unknown as ResponseStructure;
@@ -64,13 +64,13 @@ export const errorConfig: RequestConfig = {
         const error: any = new Error(errorMessage);
         error.name = 'BizError';
         error.info = { errorCode, errorMessage, showType, data };
-        throw error; // 抛出自制的错误
+        throw error; // Throw your own error
       }
     },
-    // 错误接收及处理
+    // Error receiver and handler
     errorHandler: (error: any, opts: any) => {
       if (opts?.skipErrorHandler) throw error;
-      // 我们的 errorThrower 抛出的错误。
+      // The error thrown by our errorThrower.
       if (error.name === 'BizError') {
         const errorInfo: ResponseStructure | undefined = error.info;
         if (errorInfo) {
@@ -99,8 +99,8 @@ export const errorConfig: RequestConfig = {
           }
         }
       } else if (error.response) {
-        // Axios 的错误
-        // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
+        // Axios's error
+        // The request was successful and the server also responded with a status code, but the status code is out of the 2xx range
         //message.error(`Response status:${error.response.status}`);
         //console.log(error.response);
         if (error.response.status === 401 && !opts?.skipLogout) {
@@ -137,12 +137,12 @@ export const errorConfig: RequestConfig = {
           }
         }
       } else if (error.request) {
-        // 请求已经成功发起，但没有收到响应
-        // \`error.request\` 在浏览器中是 XMLHttpRequest 的实例，
-        // 而在node.js中是 http.ClientRequest 的实例
+        // The request was successfully sent, but no response was received
+        // \`error.request\` is an instance of XMLHttpRequest in the browser,
+        // and in node.js it is an instance of http.ClientRequest
         message.error('None response! Please retry.');
       } else {
-        // 发送请求时出了点问题
+        // There was an error sending the request
         if (error.name === "TokenExpiredError") {
           // clearSessionToken();
           // message.error('Login expired, please login again.');
@@ -157,11 +157,11 @@ export const errorConfig: RequestConfig = {
     },
   },
 
-  // 请求拦截器
+  // Request interceptor
   requestInterceptors: [
     async (config: RequestConfig) => {
       //console.log("requestInterceptor", config);
-      // 拦截请求配置，进行个性化处理。
+      // Intercept request configuration for personalized processing.
       //const url = config?.url?.concat('?token = 123');
       const headers = config.headers;
       const isToken = headers?.['isToken'];
@@ -230,14 +230,14 @@ export const errorConfig: RequestConfig = {
     },
   ],
 
-  // 响应拦截器
+  // Response interceptor
   responseInterceptors: [
     (response) => {
-      // 拦截响应数据，进行个性化处理
+      // Intercept response data for personalized processing
       // const { data } = response as unknown as ResponseStructure;
 
       // if (data?.success === false) {
-      //   message.error('请求失败！');
+      //   message.error('Request failed!');
       // }
 
       return response;

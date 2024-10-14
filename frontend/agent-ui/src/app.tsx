@@ -66,7 +66,7 @@ export async function getInitialState(): Promise<{
     settings: defaultSettings as Partial<LayoutSettings>,
   };
 
-  // 如果不是登录页面，执行
+  // execute if not login page, otherwise return initialState
   const { location } = history;
   if (location.pathname !== loginPath) {
     // const [currentUser, dicts] = await Promise.all([
@@ -114,7 +114,7 @@ export async function getInitialState(): Promise<{
   return initialState;
 }
 
-// ProLayout 支持的api https://procomponents.ant.design/components/layout
+// ProLayout supported api https://procomponents.ant.design/components/layout
 export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState, loading }) => {
 
   return {
@@ -132,7 +132,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState, loa
     footerRender: () => <Footer />,
     onPageChange: () => {
       const { location } = history;
-      // 如果没有登录，重定向到 login
+      // If not logged in, redirect to login page
       if (!initialState?.currentUser && location.pathname !== loginPath) {
         history.push(loginPath);
       }
@@ -165,15 +165,15 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState, loa
       ? [
         <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
           <LinkOutlined />
-          <span>OpenAPI 文档</span>
+          <span>OpenAPI Document</span>
         </Link>,
       ]
       : [],
     menuHeaderRender: undefined,
     //loading: initialState ? false : true,
-    // 自定义 403 页面
+    // Custom 403 page
     // unAccessible: <div>unAccessible</div>,
-    // 增加一个 loading 的状态
+    // Add a loading state
     childrenRender: (children) => {
       // console.log("Loading", initialState?.loading);
       // if (initialState?.loading) return <PageLoading />;
@@ -201,8 +201,8 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState, loa
 };
 
 /**
- * @name request 配置，可以配置错误处理
- * 它基于 axios 和 ahooks 的 useRequest 提供了一套统一的网络请求和错误处理方案。
+ * @name request configuration, can configure error handling
+ * It provides a unified network request and error handling scheme based on axios and ahooks' useRequest.
  * @doc https://umijs.org/docs/max/request#配置
  */
 export const request = {

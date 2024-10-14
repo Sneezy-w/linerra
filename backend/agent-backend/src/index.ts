@@ -23,7 +23,8 @@ const app = express();
 
 app.use(express.json());
 
-// 请求日志记录
+
+// requestLogger
 // app.use(expressWinston.logger({
 //   winstonInstance: logger,
 //   meta: true,
@@ -71,7 +72,7 @@ app.get('/health', (req, res) => {
 });
 
 
-// 错误日志记录
+// errorLogger
 // app.use(expressWinston.errorLogger({
 //   winstonInstance: logger,
 // }));
