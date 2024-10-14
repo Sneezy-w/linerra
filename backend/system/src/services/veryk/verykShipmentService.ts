@@ -185,7 +185,7 @@ export class VerykShipmentService {
     const labelFile = await this.saveAllLabelFile(shipmentApiRes.id, acceptLanguage);
 
     const shipmentDetailApiRes = await shipmentDetail({ id: shipmentApiRes.id }, acceptLanguage);
-    console.log(JSON.stringify(shipmentDetailApiRes, null, 2));
+    //console.log(JSON.stringify(shipmentDetailApiRes, null, 2));
 
     const shipmentApiUpdateDO = shipmentApiResToApiUpdateDO(shipmentDetailApiRes);
     shipmentApiUpdateDO.labelFile = labelFile;
@@ -223,6 +223,9 @@ export class VerykShipmentService {
     if (!labelApiRes) {
       throw new ServiceError("Label not found", "Label.NotFound");
     }
+    console.log(labelApiRes.invoice?.name);
+    console.log(labelApiRes.delivery?.label);
+
     const { name: labelFileName, label: labelFileContent, type: labelFileType } = labelApiRes;
     const labelBuffer = Buffer.from(labelFileContent as string, 'base64');
     const labelKey = `label/${labelFileName}`;

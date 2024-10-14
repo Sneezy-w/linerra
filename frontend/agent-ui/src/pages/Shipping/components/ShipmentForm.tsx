@@ -408,12 +408,18 @@ const DestinationLocalizedModalForm: React.FC<{
     <ModalForm
       title="Localized Address"
       open={modalVisit}
-      onFinish={onFinish}
+      onFinish={(values) => {
+        return onFinish({
+          ...values.destinationLocalized,
+          regionId: destinationRegion?.id
+        });
+      }}
       onOpenChange={setModalVisit}
       layout='horizontal'
       labelAlign='right'
       labelCol={{ span: 5 }}
     >
+
       <ProFormText
         name={['destinationLocalized', 'name']}
         label="Contact Name"
@@ -449,7 +455,7 @@ const DestinationLocalizedModalForm: React.FC<{
 
       <ProFormText name={['destinationLocalized', 'province']} label="Province/State" placeholder="Required."
         rules={[{ required: true, message: 'Please enter a province/state' }]}
-        convertValue={(value) => value?.name || ''}
+        //convertValue={(value) => value?.name || ''}
         transform={(value) => {
           return {
             destinationLocalized: {
@@ -667,6 +673,7 @@ const ShipmentForm: React.FC = () => {
         ...values
       }
     });
+    setLocalizedModalVisit(false);
   }, []);
 
   //const [packageType, setPackageType] = useState<string>('env');

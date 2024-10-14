@@ -42,7 +42,7 @@ export const shipmentReqVOToDO = (shipmentReqVO: ShipmentReqVO): ShipmentDO => {
     stationId: "",
     //sortTimestamp: "",
     //GSI1PK: "SHIPMENT_NO",
-    ...(destinationLocalized ? { destination_localized: destinationReqVOToDO(destinationLocalized) } : {}),
+    ...(destinationLocalized ? { destinationLocalized: destinationReqVOToDO(destinationLocalized) } : {}),
     ...(sadditional ? { sadditional: sadditional } : {}),
     ...(product ? { product: product } : {}),
     ...(price ? { price: price } : {}),
