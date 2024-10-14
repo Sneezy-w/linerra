@@ -4,6 +4,7 @@ import { message, notification } from 'antd';
 import { clearSessionToken, getAccessToken, getIdToken, getSessionId, isNeedLogin, isNeedRefreshToken, setSessionToken } from './access';
 import { history, Link } from '@umijs/max';
 import { refreshToken } from './services/service/agent';
+import _ from 'lodash';
 
 const loginPath = '/user/login';
 
@@ -23,6 +24,12 @@ interface ResponseStructure {
   errorMessage?: string;
   showType?: ErrorShowType;
 }
+
+const handleLoginExpired = _.debounce(() => {
+  message.error('Login expired, please login again.');
+  clearSessionToken();
+  history.push(loginPath);
+}, 250, { leading: true, trailing: false });
 
 /**
  * @name 错误处理
@@ -80,9 +87,10 @@ export const errorConfig: RequestConfig = {
         //message.error(`Response status:${error.response.status}`);
         //console.log(error.response);
         if (error.response.status === 401 && !opts?.skipLogout) {
-          message.error("Login expired, please login again.");
-          clearSessionToken();
-          history.push(loginPath);
+          // message.error("Login expired, please login again.");
+          // clearSessionToken();
+          // history.push(loginPath);
+          handleLoginExpired();
           return;
         }
         const errorInfo: ResponseStructure | undefined = error.response.data;
@@ -118,7 +126,14 @@ export const errorConfig: RequestConfig = {
         message.error('None response! Please retry.');
       } else {
         // 发送请求时出了点问题
-        message.error('Request error, please retry.');
+        if (error.name === "NeedLoginError") {
+          // clearSessionToken();
+          // message.error('Login expired, please login again.');
+          // history.push(loginPath);
+          handleLoginExpired();
+        } else {
+          message.error('Request error, please retry.');
+        }
       }
     },
   },
@@ -132,8 +147,12 @@ export const errorConfig: RequestConfig = {
       const isToken = headers?.['isToken'];
       if (isToken !== false) {
         if (isNeedLogin()) {
-          clearSessionToken();
-          return config;
+          //clearSessionToken();
+          //history.push(loginPath);
+          const needLoginError = new Error("Login expired, please login again.");
+          needLoginError.name = "NeedLoginError";
+          throw needLoginError;
+          //return config;
         }
         if (config?.url?.includes('api/agents/refreshToken') && config?.headers?.['Authorization']) {
           return config;
