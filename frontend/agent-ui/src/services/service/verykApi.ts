@@ -51,7 +51,10 @@ export async function postShipment(data: VerykType.QuoteRequest, options?: Recor
   });
 }
 
-export async function postShipmentSave(data: VerykType.ShipmentReqVO, options?: Record<string, any>) {
+export async function postShipmentSave(
+  data: VerykType.ShipmentReqVO,
+  options?: Record<string, any>,
+) {
   return request<API.R<{ number: string }>>('/api/veryk/shipment/save', {
     method: 'POST',
     headers: {
@@ -62,12 +65,17 @@ export async function postShipmentSave(data: VerykType.ShipmentReqVO, options?: 
   });
 }
 
-export async function postShipmentSubmit(data: VerykType.ShipmentReqVO, options?: Record<string, any>) {
-  return request<API.R<{
-    number: string,
-    externalId: string,
-    waybillNumber: string
-  }>>('/api/veryk/shipment/submit', {
+export async function postShipmentSubmit(
+  data: VerykType.ShipmentReqVO,
+  options?: Record<string, any>,
+) {
+  return request<
+    API.R<{
+      number: string;
+      externalId: string;
+      waybillNumber: string;
+    }>
+  >('/api/veryk/shipment/submit', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -96,12 +104,18 @@ export async function deleteShipment(number: string, options?: Record<string, an
   });
 }
 
-export async function getShipmentPage(data: VerykType.ShipmentPageReqVO, options?: Record<string, any>) {
-  return request<API.R<API.ResponsePageVO<VerykType.ShipmentDetailResVO>>>('/api/veryk/shipment/page', {
-    method: 'POST',
-    data: data,
-    ...(options || {}),
-  });
+export async function getShipmentPage(
+  data: VerykType.ShipmentPageReqVO,
+  options?: Record<string, any>,
+) {
+  return request<API.R<API.ResponsePageVO<VerykType.ShipmentDetailResVO>>>(
+    '/api/veryk/shipment/page',
+    {
+      method: 'POST',
+      data: data,
+      ...(options || {}),
+    },
+  );
 }
 
 export async function getSignedLabelUrl(key: string, options?: Record<string, any>) {

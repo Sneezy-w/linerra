@@ -116,21 +116,22 @@ declare namespace VerykType {
     }[];
     token: string;
     zoneId: string;
-    zoneprice: any[] | {
-      id: string;
-      description: string;
-      postalcode_start: string;
-      postalcode_end: string;
-    };
+    zoneprice:
+      | any[]
+      | {
+          id: string;
+          description: string;
+          postalcode_start: string;
+          postalcode_end: string;
+        };
     carrier?: {
       carrierId: string;
       carrierCode: string;
       name: string;
       currency: Currency;
       logo?: string;
-    }
+    };
   };
-
 
   type QuoteReqVO = {
     initiation: InitiationReqVO;
@@ -138,7 +139,7 @@ declare namespace VerykType {
     package: PackageReqVO;
     option: OptionReqVO;
     carrierIds?: string[];
-  }
+  };
 
   type BaseAddressReqVO = {
     regionId: string;
@@ -151,13 +152,13 @@ declare namespace VerykType {
     address?: string;
     address2?: string;
     address3?: string;
-  }
+  };
 
   type Province = {
     id: string;
     name: string;
     code: string;
-  }
+  };
 
   type InitiationReqVO = BaseAddressReqVO;
   type DestinationReqVO = BaseAddressReqVO & {
@@ -168,7 +169,7 @@ declare namespace VerykType {
   type PackageReqVO = {
     type: string;
     packages: PackageItemReqVO[];
-  }
+  };
 
   type PackageItemReqVO = {
     weight: number;
@@ -180,13 +181,13 @@ declare namespace VerykType {
     insurance?: number;
     additional?: PackageAdditional;
     sinsured?: number; // Veryk insurance, available when fedex
-  }
+  };
 
   type OptionReqVO = {
     memo?: string;
     packingFee?: number;
     labelFormat?: string;
-  }
+  };
 
   type ShipmentReqVO = {
     //token?: string;
@@ -200,68 +201,80 @@ declare namespace VerykType {
 
     product?: ProductItem[];
     destinationLocalized?: DestinationReqVO;
-    sadditional?: ShipmentAdditional
-  }
+    sadditional?: ShipmentAdditional;
+  };
 
   type PackageAdditional = Partial<{
-    DC: { // Delivery Confirmation(available when UPS and ship to CA)
+    DC: {
+      // Delivery Confirmation(available when UPS and ship to CA)
       state: string; // Yes or No
       type?: string; // 1:No Signature, 2:Signature Required, 3:Adult Signature Required
-    },
-    COD: { // Collect on Delivery(UPS and ship to U.S. or Canada available, ship to U.S. should not be a Env)
+    };
+    COD: {
+      // Collect on Delivery(UPS and ship to U.S. or Canada available, ship to U.S. should not be a Env)
       state: string; // Yes or No
       amount?: number; // Collect on Delivery amount(required when state is true)
       fund_type?: string; // Fund Type,optionst(required when state is true): 0: check,cashier’s check or money order - no cash allowed, 8: cashier’s check or money order - no cash allowed
-    },
-    AH: { // Additional Handling(UPS and package should not be a Env available)
+    };
+    AH: {
+      // Additional Handling(UPS and package should not be a Env available)
       state: string; // Additional Handling Yes or No(option:true/false)
-    },
-    ReferenceNumber: { // UPS Reference Number
+    };
+    ReferenceNumber: {
+      // UPS Reference Number
       state: string; // Reference Number Yes or No(option:true/false)
       number?: string; // Reference Number
-    },
-    info: { // To the UAE(available when Fedex and ship to AE)
+    };
+    info: {
+      // To the UAE(available when Fedex and ship to AE)
       state: string; // To the UAE Yes or No(option:true/false)
       ItemDescriptionForClearance?: string; // Description For Clearanc(required when state is true)
-    }
+    };
     // |
     // { // dayros and dayros sameday
     //   state: string; // Yes (option:true)
     //   description: string; // Description of goods inside the pallet. It is available and required when the freight forwarder is dayros and dayros sameday
     // },
-    IM: { // UPS description
+    IM: {
+      // UPS description
       state: string; // Yes or No(option:true/false) Destination is mandatory for Mexico.
       description?: string;
-    },
-    packcode: { // Package description(available when Fedex and ship to CA,US,PR)
+    };
+    packcode: {
+      // Package description(available when Fedex and ship to CA,US,PR)
       //state: string; // Yes or No(option:true/false)
       state: string; // Pack Code: PIECE, BARREL, BASKET, BOX, BUNDLE, CARTON, CASE, CRATE, CYLINDER, DRUM, ENVELOPE, OTHER, PAIL, PALLET, REEL, SKID, TANK, TUBE
-    },
+    };
 
     // pallet: { // Pallet data, only available when the freight forwarder is Fedex Freight, and required
     //   state: string; // Yes (option:true)
     //   description: string;
     // }
-  }>
+  }>;
 
   type ShipmentAdditional = {
-    DC?: { // Confirm Receipt(available when UPS,Canada Post) UPS: Not available when shipping to CA
+    DC?: {
+      // Confirm Receipt(available when UPS,Canada Post) UPS: Not available when shipping to CA
       state?: string; // Whether to confirm receipt(option:true/false)
       type?: string; // Confirmation Type(available when UPS),options: 1:Signature Required, 2:Adult Signature Required
-    }
-    SO?: { // Signature(available when Canada Post)
+    };
+    SO?: {
+      // Signature(available when Canada Post)
       state?: string; // Signature Yes or No
-      "signature-type"?: string; // Signature Type,options: SO:Signature; PA18:Proof of Age Required - 18; PA19:Proof of Age Required - 19
-    }
-    HFP?: { // Hold for Pickup(available when Canada Post) Card for pickup(available when Canada Post TO CA)
+      'signature-type'?: string; // Signature Type,options: SO:Signature; PA18:Proof of Age Required - 18; PA19:Proof of Age Required - 19
+    };
+    HFP?: {
+      // Hold for Pickup(available when Canada Post) Card for pickup(available when Canada Post TO CA)
       state?: string; // Card for pickup Yes or No(option:true/false)
-    }
-    DNS?: { // Do not safe drop(available when Canada Post to CA)
+    };
+    DNS?: {
+      // Do not safe drop(available when Canada Post to CA)
       state?: string; // Yes or No(option:true/false)
-    }
-    LAD?: { // Leave at door - do not card(available when Canada Post to CA)
+    };
+    LAD?: {
+      // Leave at door - do not card(available when Canada Post to CA)
       state?: string; // Yes or No(option:true/false)
-    },
+    };
     // COD?: { // Collect on delivery(available where Canada Post to CA)
     //   state: string; // Yes or No(option:true/false)
     //   "option-amount": string; // COD amount
@@ -272,16 +285,19 @@ declare namespace VerykType {
     //   email?: string; // Email
     // }
 
-    _RFE?: { // Reason For Export(available where Canada Post and not ship to CA)
+    _RFE?: {
+      // Reason For Export(available where Canada Post and not ship to CA)
       state?: string; // Reason For Export options:DOC:Document; SAM:Commercial Sample; REP:Repair Or Warranty; SOG:Sale Of Goods; OTH:Other
-      "other-reason	"?: string; // Other Reason(required when state is OTH)
-    },
+      'other-reason	'?: string; // Other Reason(required when state is OTH)
+    };
 
-    EDI?: { // E-Commercial Invoice(available when DHL,UPS,FedEx) International non-document packages
+    EDI?: {
+      // E-Commercial Invoice(available when DHL,UPS,FedEx) International non-document packages
       state?: string; // E-Commercial Invoice Yes or No(option:true/false)
-    },
+    };
 
-    signature?: { // Delivery Confirmation(available where Fedex) In Canada and the U.S., Indirect Signature Required is available for residential shipments only.
+    signature?: {
+      // Delivery Confirmation(available where Fedex) In Canada and the U.S., Indirect Signature Required is available for residential shipments only.
       state?: string; // Signature Yes or No
 
       /**
@@ -300,8 +316,7 @@ declare namespace VerykType {
        * AdultSignatureRequired:Adult Signature Required
        */
       type?: string;
-
-    },
+    };
 
     // accessorialServices?: { // Optional when the package type is "pallet" or the freight forwarder is dayrosssameday	 Dayross Fedex
     //   state?: string; // Yes or No(option:true/false)
@@ -352,7 +367,8 @@ declare namespace VerykType {
     //   date?: string; // Appointment pickup date (note: please avoid holidays) Format: YY-mm-dd;
     // },
 
-    RS?: { // Return Service Only available when UPS
+    RS?: {
+      // Return Service Only available when UPS
       state?: string; // Whether to enable return service(option:true/false)
 
       /**
@@ -367,9 +383,10 @@ declare namespace VerykType {
       code?: string;
 
       description?: string; // Return service description
-    },
+    };
 
-    DG?: { // Dangerous goods(available when DHL) Non-document packages
+    DG?: {
+      // Dangerous goods(available when DHL) Non-document packages
       state?: string; // Yes or No(option:true/false)
 
       /**
@@ -382,19 +399,22 @@ declare namespace VerykType {
        * HV (Lithium Ion PI967 Section II)
        */
       type?: string;
-    },
+    };
 
-    DIT?: { // Use DHL official invoice, this option cannot be used with EDI (electronic invoice)
+    DIT?: {
+      // Use DHL official invoice, this option cannot be used with EDI (electronic invoice)
       state?: string; // Yes or No(option:true/false)
 
       type?: string; // Invoice type, optional values: CMI (Commercail Invoice), PFI (Proforma Invoice)
-    },
+    };
 
-    TermsOfTrade?: { // Terms of Trade, supported by freight forwarder (FEDEX)
+    TermsOfTrade?: {
+      // Terms of Trade, supported by freight forwarder (FEDEX)
       state?: string; // Valid values: DDP, DDU (DDP must confirm that the admin has pre-set the payment account)
-    },
+    };
 
-    IOSS?: { // EU VAT number IOSS (Canada Post, Fedex)
+    IOSS?: {
+      // EU VAT number IOSS (Canada Post, Fedex)
       state?: string; // Valid values: true, false Valid values: 0 (No) or 1 (Yes)
       ioss_id?: string; // EU VAT number IOSS/state value of 1, required. Maximum length 13 digits.
 
@@ -403,9 +423,8 @@ declare namespace VerykType {
        * Valid values: "PERSONAL_NATIONAL", "PERSONAL_STATE", "FEDERAL", "BUSINESS_NATIONAL", "BUSINESS_STATE", "BUSINESS_UNION".
        */
       type?: string;
-    },
-
-  }
+    };
+  };
 
   type ProductItem = {
     name: string; // Product Name
@@ -416,7 +435,7 @@ declare namespace VerykType {
 
     origin?: string; // Origin country code, example: CN        UPS,DHL,Fedex
     HScode?: string; // Customs code  UPS,DHL,UBI
-  }
+  };
 
   type ShipmentEditResVO = ShipmentReqVO & {
     number: string;
@@ -428,7 +447,7 @@ declare namespace VerykType {
     externalId: string;
     waybillNumber: string;
     serviceId: string;
-    status: "open" | "submitted" | "completed" | "cancelled";
+    status: 'open' | 'submitted' | 'completed' | 'cancelled';
     initiationRegionId: string;
     destinationRegionId: string;
     initiation: InitiationReqVO;
@@ -447,12 +466,12 @@ declare namespace VerykType {
     labelFile?: LabelFile;
 
     created?: string;
-  }
+  };
 
   type PackageResVO = {
     type: string;
     packages: PackageItemResVO[];
-  }
+  };
 
   type PackageItemResVO = {
     waybillNumber?: string;
@@ -464,26 +483,26 @@ declare namespace VerykType {
     };
     insurance?: Currency;
     additional?: Partial<PackageAdditional>;
-    sinsured?: number, // Veryk insurance, available when fedex
-  }
+    sinsured?: number; // Veryk insurance, available when fedex
+  };
 
   type Price = {
     msrp?: Currency;
     details?: PriceDetail[];
     charges?: PriceDetail[];
-  }
+  };
 
   type PriceDetail = {
     code: string;
     description: string;
     price: Currency;
-  }
+  };
 
   type PaymentResVO = {
     dateTime: string;
     description: string;
     subtotal: Currency;
-  }
+  };
 
   type ShipmentPageReqVO = {
     limit: number;
@@ -492,13 +511,13 @@ declare namespace VerykType {
     startDate?: string;
     endDate?: string;
     lastEvaluatedKey?: Record<string, any>;
-  }
+  };
 
   type LabelFile = {
     label: string;
     invoice?: string;
     delivery?: string;
-  }
+  };
 
   type TrackingInfoApiResVO = {
     id: string;
@@ -523,6 +542,6 @@ declare namespace VerykType {
       PRC: string;
       EST: string;
       GMT: string;
-    }
-  }
+    };
+  };
 }

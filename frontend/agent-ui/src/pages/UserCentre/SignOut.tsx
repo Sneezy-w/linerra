@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
-import { useModel, history } from '@umijs/max';
-import { message } from 'antd';
 import { clearSessionToken } from '@/access';
+import { history, useModel } from '@umijs/max';
+import { message } from 'antd';
+import React, { useEffect } from 'react';
 
 const SignOut: React.FC = () => {
   const { setInitialState } = useModel('@@initialState');

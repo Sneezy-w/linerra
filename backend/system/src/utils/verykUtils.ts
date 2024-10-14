@@ -2,8 +2,8 @@ import crypto from 'crypto';
 import axios from 'axios';
 import { ServiceError } from './serviceError';
 import { QuoteApiReq } from '../models/veryk/quote.entity';
-import { ProvinceApiReq } from '../models/veryk.entity';
 import { ShipmentApiReq } from '../models/veryk/shipment.entity';
+
 import logger from './logger';
 
 const verykApiUrl = process.env.VERYK_API_URL;
@@ -67,7 +67,14 @@ export async function getRegion(params: { id?: string }, acceptLanguage?: string
   return getResponseData(response);
 }
 
-export async function getProvince(params: ProvinceApiReq, acceptLanguage?: string) {
+export async function getProvince(
+  params: {
+    region_id: string,
+    name?: string,
+    code?: string
+  },
+  acceptLanguage?: string
+) {
   const url = buildUrl('province');
   const headers = acceptLanguage ? { 'Accept-Language': acceptLanguage } : {};
 

@@ -1,83 +1,116 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ProForm, ProFormText, ProFormSelect, ProFormDigit } from '@ant-design/pro-form';
-import { Steps, Row, Col, Card, Form, Select, Input, InputNumber, Button, Space, Typography } from 'antd';
-import ProTable from '@ant-design/pro-table';
-import { FooterToolbar, ModalForm, PageContainer, ProCard, ProFormDigitRange, ProFormField, ProFormFieldSet, ProFormGroup, ProFormInstance, ProFormList, ProFormListProps, ProFormTextArea, ProList } from '@ant-design/pro-components';
-import { ContactsFilled, ContactsOutlined, QuestionCircleOutlined } from '@ant-design/icons';
-import { useAccess, useModel } from '@umijs/max';
-import { useAsyncEffect, useRequest } from 'ahooks';
-import { ProFormDependency } from '@ant-design/pro-components';
-import { postQuote, postShipment, postShipmentSave, postShipmentSubmit } from '@/services/service/verykApi';
-import { getAllCarrierIds, getCarrierServiceById } from '@/models/carriers';
-import { getRegionById } from '@/models/regions';
 import { No, Yes, YesNoOptions } from '@/constant/constant';
-import DimensionInput from './DimensionInput';
+import { getCarrierServiceById } from '@/models/carriers';
+import { getRegionById } from '@/models/regions';
+import { postShipmentSave, postShipmentSubmit } from '@/services/service/verykApi';
+import { ContactsOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import {
+  FooterToolbar,
+  ModalForm,
+  ProCard,
+  ProFormDependency,
+  ProFormInstance,
+  ProFormList,
+  ProFormListProps,
+  ProList,
+} from '@ant-design/pro-components';
+import { ProForm, ProFormDigit, ProFormSelect, ProFormText } from '@ant-design/pro-form';
+import { history, useModel } from '@umijs/max';
+import { Button, Typography } from 'antd';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { testShipmentFormData } from '../models/shipmentForm';
-import { history } from '@umijs/max';
-
+import DimensionInput from './DimensionInput';
 
 const { Text, Title } = Typography;
 
 const showAddress3 = (service: VerykType.Service | undefined) => {
   return ['dhl', 'ups', 'purolator'].includes(service?.carrier?.groupCode || '');
-}
+};
 
 const singleParcelPackage = (service: VerykType.Service | undefined) => {
   return ['canadapost'].includes(service?.carrier?.groupCode || '');
-}
+};
 
 const showDestinationLocalizedButton = (destinationRegion: VerykType.Region | undefined) => {
   return ['CN', 'HK', 'TW', 'MO'].includes(destinationRegion?.id || '');
-}
+};
 
-const showPackageAdditionalDC = (service: VerykType.Service | undefined, destinationRegion: VerykType.Region | undefined) => {
+const showPackageAdditionalDC = (
+  service: VerykType.Service | undefined,
+  destinationRegion: VerykType.Region | undefined,
+) => {
   //Delivery Confirmation(available when UPS and ship to CA)
-  return ['ups'].includes(service?.carrier?.groupCode || '') && ['CA'].includes(destinationRegion?.id || '');
-}
+  return (
+    ['ups'].includes(service?.carrier?.groupCode || '') &&
+    ['CA'].includes(destinationRegion?.id || '')
+  );
+};
 
-const showPackageAdditionalCOD = (service: VerykType.Service | undefined, destinationRegion: VerykType.Region | undefined, packageType: string) => {
+const showPackageAdditionalCOD = (
+  service: VerykType.Service | undefined,
+  destinationRegion: VerykType.Region | undefined,
+  packageType: string,
+) => {
   // Collect on Delivery(UPS and ship to U.S. or Canada available, ship to U.S. should not be a Env)
-  return ['ups'].includes(service?.carrier?.groupCode || '') && ['US', 'CA'].includes(destinationRegion?.id || '') && packageType !== 'env';
-}
+  return (
+    ['ups'].includes(service?.carrier?.groupCode || '') &&
+    ['US', 'CA'].includes(destinationRegion?.id || '') &&
+    packageType !== 'env'
+  );
+};
 
 const showPackageAdditionalAH = (service: VerykType.Service | undefined, packageType: string) => {
   // Additional Handling(UPS and package should not be a Env available)
   return ['ups'].includes(service?.carrier?.groupCode || '') && packageType !== 'env';
-}
+};
 
 const showPackageAdditionalReferenceNumber = (service: VerykType.Service | undefined) => {
   // UPS Reference Number
   return ['ups'].includes(service?.carrier?.groupCode || '');
-}
+};
 
-const showPackageAdditionalUAE = (service: VerykType.Service | undefined, destinationRegion: VerykType.Region | undefined) => {
+const showPackageAdditionalUAE = (
+  service: VerykType.Service | undefined,
+  destinationRegion: VerykType.Region | undefined,
+) => {
   // To the UAE(available when Fedex and ship to AE)
-  return ['fedex'].includes(service?.carrier?.groupCode || '') && ['AE'].includes(destinationRegion?.id || '');
-}
+  return (
+    ['fedex'].includes(service?.carrier?.groupCode || '') &&
+    ['AE'].includes(destinationRegion?.id || '')
+  );
+};
 
 const showPackageAdditionalIM = (service: VerykType.Service | undefined) => {
   // UPS description
   return ['ups'].includes(service?.carrier?.groupCode || '');
-}
+};
 
-const showPackageAdditionalPackCode = (service: VerykType.Service | undefined, destinationRegion: VerykType.Region | undefined) => {
+const showPackageAdditionalPackCode = (
+  service: VerykType.Service | undefined,
+  destinationRegion: VerykType.Region | undefined,
+) => {
   // Package description(available when Fedex and ship to CA,US,PR)
-  return ['fedex'].includes(service?.carrier?.groupCode || '') && ['CA', 'US', 'PR'].includes(destinationRegion?.id || '');
-}
+  return (
+    ['fedex'].includes(service?.carrier?.groupCode || '') &&
+    ['CA', 'US', 'PR'].includes(destinationRegion?.id || '')
+  );
+};
 
 const showProductsCard = (
   service: VerykType.Service | undefined,
   initiationRegion: VerykType.Region | undefined,
   destinationRegion: VerykType.Region | undefined,
-  packageType: string | undefined
+  packageType: string | undefined,
 ) => {
   // required when the regions are different between shipper and receiver address
   // It's not required when the package type is Env for UPS,DHL,Purolator
-  if (packageType === 'env' && ['ups', 'dhl', 'purolator'].includes(service?.carrier?.groupCode || '')) {
+  if (
+    packageType === 'env' &&
+    ['ups', 'dhl', 'purolator'].includes(service?.carrier?.groupCode || '')
+  ) {
     return false;
   }
   return initiationRegion?.id !== destinationRegion?.id;
-}
+};
 
 const labelFormatItemsByGroupCode = (
   service: VerykType.Service | undefined,
@@ -85,7 +118,7 @@ const labelFormatItemsByGroupCode = (
   labelFormatUPSItems: API.Service.DictItem[] | undefined,
   labelFormatPurolatorItems: API.Service.DictItem[] | undefined,
   labelFormatCanadaPostItems: API.Service.DictItem[] | undefined,
-  labelFormatFedexItems: API.Service.DictItem[] | undefined
+  labelFormatFedexItems: API.Service.DictItem[] | undefined,
 ) => {
   const groupCode = service?.carrier?.groupCode;
   switch (groupCode) {
@@ -102,13 +135,13 @@ const labelFormatItemsByGroupCode = (
     default:
       return [];
   }
-}
+};
 
 const productUnitItemsByGroupCode = (
   service: VerykType.Service | undefined,
   productUnitDHLItems: API.Service.DictItem[] | undefined,
   productUnitUPSItems: API.Service.DictItem[] | undefined,
-  productUnitFedexItems: API.Service.DictItem[] | undefined
+  productUnitFedexItems: API.Service.DictItem[] | undefined,
 ) => {
   const groupCode = service?.carrier?.groupCode;
   switch (groupCode) {
@@ -121,42 +154,41 @@ const productUnitItemsByGroupCode = (
     default:
       return [];
   }
-}
+};
 
 const showProductOrigin = (service: VerykType.Service | undefined) => {
   // available when UPS,DHL,Fedex,Purolator
   return ['ups', 'dhl', 'fedex', 'purolator'].includes(service?.carrier?.groupCode || '');
-}
+};
 
 const showProductHSCode = (service: VerykType.Service | undefined) => {
   // available when UPS,DHL
   return ['ups', 'dhl'].includes(service?.carrier?.groupCode || '');
-}
+};
 
 const isProductHSCodeRequired = (service: VerykType.Service | undefined) => {
   // available when UPS,DHL
   return ['ups-import'].includes(service?.carrier?.code || '');
-}
+};
 
 const showShipmentAdditionalDC = (
   service: VerykType.Service | undefined,
-  destinationRegion: VerykType.Region | undefined
+  destinationRegion: VerykType.Region | undefined,
 ) => {
   // Delivery Confirmation(available when UPS,Canada Post) UPS: available when not ship to CA
   if (['ups'].includes(service?.carrier?.groupCode || '')) {
     return !['CA'].includes(destinationRegion?.id || '');
   }
   return ['canadapost'].includes(service?.carrier?.groupCode || '');
-}
+};
 
 const showShipmentAdditionalDCType = (
   service: VerykType.Service | undefined,
   dcState: string | undefined,
 ) => {
   // available when UPS
-  return ['ups'].includes(service?.carrier?.groupCode || '')
-    && dcState === Yes
-}
+  return ['ups'].includes(service?.carrier?.groupCode || '') && dcState === Yes;
+};
 
 const showShipmentAdditionalSO = (
   service: VerykType.Service | undefined,
@@ -164,41 +196,47 @@ const showShipmentAdditionalSO = (
   ladState: string | undefined,
 ) => {
   // Signature(available when Canada Post) and DC type is true and not LAD
-  return ['canadapost'].includes(service?.carrier?.groupCode || '')
-    && dcState === Yes
-    && ladState !== Yes
-}
+  return (
+    ['canadapost'].includes(service?.carrier?.groupCode || '') &&
+    dcState === Yes &&
+    ladState !== Yes
+  );
+};
 
 const showShipmentAdditionalSOType = (soState: string | undefined) => {
   // available when Canada Post and SO state is true
   return soState === Yes;
-}
+};
 
 const showShipmentAdditionalHFP = (
   service: VerykType.Service | undefined,
   destinationRegion: VerykType.Region | undefined,
   dnsState: string | undefined,
-  ladState: string | undefined
+  ladState: string | undefined,
 ) => {
   // Card for pickup(available when Canada Post TO CA) and not DNS and not LAD
-  return ['canadapost'].includes(service?.carrier?.groupCode || '')
-    && ['CA'].includes(destinationRegion?.id || '')
-    && dnsState !== Yes
-    && ladState !== Yes;
-}
+  return (
+    ['canadapost'].includes(service?.carrier?.groupCode || '') &&
+    ['CA'].includes(destinationRegion?.id || '') &&
+    dnsState !== Yes &&
+    ladState !== Yes
+  );
+};
 
 const showShipmentAdditionalDNS = (
   service: VerykType.Service | undefined,
   destinationRegion: VerykType.Region | undefined,
   hfpState: string | undefined,
-  ladState: string | undefined
+  ladState: string | undefined,
 ) => {
   // Do not safe drop(available when Canada Post TO CA) and not HFP and not LAD
-  return ['canadapost'].includes(service?.carrier?.groupCode || '')
-    && ['CA'].includes(destinationRegion?.id || '')
-    && hfpState !== Yes
-    && ladState !== Yes;
-}
+  return (
+    ['canadapost'].includes(service?.carrier?.groupCode || '') &&
+    ['CA'].includes(destinationRegion?.id || '') &&
+    hfpState !== Yes &&
+    ladState !== Yes
+  );
+};
 
 const showShipmentAdditionalLAD = (
   service: VerykType.Service | undefined,
@@ -208,32 +246,41 @@ const showShipmentAdditionalLAD = (
   dnsState: string | undefined,
 ) => {
   // Leave at door - do not card(available when Canada Post TO CA) and not SO and not HFP and not DNS
-  return ['canadapost'].includes(service?.carrier?.groupCode || '')
-    && ['CA'].includes(destinationRegion?.id || '')
-    && soState !== Yes
-    && hfpState !== Yes
-    && dnsState !== Yes;
-}
+  return (
+    ['canadapost'].includes(service?.carrier?.groupCode || '') &&
+    ['CA'].includes(destinationRegion?.id || '') &&
+    soState !== Yes &&
+    hfpState !== Yes &&
+    dnsState !== Yes
+  );
+};
 
 const showShipmentAdditional_RFE = (
   service: VerykType.Service | undefined,
   destinationRegion: VerykType.Region | undefined,
 ) => {
   // Reason For Export(available where Canada Post/ups and not ship to CA)
-  return ['canadapost', 'ups'].includes(service?.carrier?.groupCode || '')
-    && !['CA'].includes(destinationRegion?.id || '');
-}
+  return (
+    ['canadapost', 'ups'].includes(service?.carrier?.groupCode || '') &&
+    !['CA'].includes(destinationRegion?.id || '')
+  );
+};
 
-const showShipmentAdditional_RFEOtherReason = (service: VerykType.Service | undefined, rfeState: string | undefined) => {
+const showShipmentAdditional_RFEOtherReason = (
+  service: VerykType.Service | undefined,
+  rfeState: string | undefined,
+) => {
   // Other Reason(required when state is OTH(canada post) or OTHER(ups))
-  return (rfeState === 'OTH' && ['canadapost'].includes(service?.carrier?.groupCode || ''))
-    || (rfeState === 'OTHER' && ['ups'].includes(service?.carrier?.groupCode || ''));
-}
+  return (
+    (rfeState === 'OTH' && ['canadapost'].includes(service?.carrier?.groupCode || '')) ||
+    (rfeState === 'OTHER' && ['ups'].includes(service?.carrier?.groupCode || ''))
+  );
+};
 
 const shipmentAdditionalREFStateItemsByGroupCode = (
   service: VerykType.Service | undefined,
   shipmentAdditionalREFStateCanadaPostItems: API.Service.DictItem[] | undefined,
-  shipmentAdditionalREFStateUPSItems: API.Service.DictItem[] | undefined
+  shipmentAdditionalREFStateUPSItems: API.Service.DictItem[] | undefined,
 ) => {
   const groupCode = service?.carrier?.groupCode;
   switch (groupCode) {
@@ -244,35 +291,33 @@ const shipmentAdditionalREFStateItemsByGroupCode = (
     default:
       return [];
   }
-}
+};
 
 const showShipmentAdditionalEDI = (
   service: VerykType.Service | undefined,
   initiationRegion: VerykType.Region | undefined,
   destinationRegion: VerykType.Region | undefined,
   packageType: string | undefined,
-  dITState: string | undefined
+  dITState: string | undefined,
 ) => {
   // E-Commercial Invoice(available where DHL,UPS,FedEx) International non-document packages
-  return ['dhl', 'ups', 'fedex'].includes(service?.carrier?.groupCode || '')
-    && initiationRegion?.id !== destinationRegion?.id
-    && packageType !== 'env'
-    && dITState !== Yes;
-}
+  return (
+    ['dhl', 'ups', 'fedex'].includes(service?.carrier?.groupCode || '') &&
+    initiationRegion?.id !== destinationRegion?.id &&
+    packageType !== 'env' &&
+    dITState !== Yes
+  );
+};
 
-const showShipmentAdditionalSignature = (
-  service: VerykType.Service | undefined,
-) => {
+const showShipmentAdditionalSignature = (service: VerykType.Service | undefined) => {
   // Delivery Confirmation(available when Fedex,Purolator)
-  return ['fedex', 'purolator'].includes(service?.carrier?.groupCode || '')
-}
+  return ['fedex', 'purolator'].includes(service?.carrier?.groupCode || '');
+};
 
-const showShipmentAdditionalSignatureType = (
-  signatureState: string | undefined
-) => {
+const showShipmentAdditionalSignatureType = (signatureState: string | undefined) => {
   // Signature Type(required where state is true)
   return signatureState === Yes;
-}
+};
 
 const shipmentAdditionalSignatureTypeItemsByGroupCodeAndRegion = (
   service: VerykType.Service | undefined,
@@ -280,7 +325,7 @@ const shipmentAdditionalSignatureTypeItemsByGroupCodeAndRegion = (
   destinationRegion: VerykType.Region | undefined,
   shipmentAdditionalSignatureTypeFedexItems: API.Service.DictItem[] | undefined,
   shipmentAdditionalSignatureTypePurolatorItems: API.Service.DictItem[] | undefined,
-  shipmentAdditionalSignatureTypePurolatorInternationalItems: API.Service.DictItem[] | undefined
+  shipmentAdditionalSignatureTypePurolatorInternationalItems: API.Service.DictItem[] | undefined,
 ) => {
   const groupCode = service?.carrier?.groupCode;
   switch (groupCode) {
@@ -294,49 +339,45 @@ const shipmentAdditionalSignatureTypeItemsByGroupCodeAndRegion = (
     default:
       return [];
   }
-}
+};
 
-const showShipmentAdditionalRS = (
-  service: VerykType.Service | undefined,
-) => {
+const showShipmentAdditionalRS = (service: VerykType.Service | undefined) => {
   // Return Service(available when UPS)
-  return ['ups'].includes(service?.carrier?.groupCode || '')
-}
+  return ['ups'].includes(service?.carrier?.groupCode || '');
+};
 
-const showShipmentAdditionalRSCode = (
-  rsState: string | undefined
-) => {
+const showShipmentAdditionalRSCode = (rsState: string | undefined) => {
   // Return Service Code(available when UPS) and state is true
   return rsState === Yes;
-}
+};
 
-const showShipmentAdditionalRSDescription = (
-  rsState: string | undefined
-) => {
+const showShipmentAdditionalRSDescription = (rsState: string | undefined) => {
   // Return Service Description(available when UPS) and state is true
   return rsState === Yes;
-}
+};
 
 const showShipmentAdditionalDG = (
   service: VerykType.Service | undefined,
   destinationRegion: VerykType.Region | undefined,
-  packageType: string | undefined
+  packageType: string | undefined,
 ) => {
   // Dangerous Goods(available when DHL,Fedex and not ship to CA and not document)
-  return ['dhl', 'fedex'].includes(service?.carrier?.groupCode || '')
-    && !['CA'].includes(destinationRegion?.id || '')
-    && packageType !== 'env';
-}
+  return (
+    ['dhl', 'fedex'].includes(service?.carrier?.groupCode || '') &&
+    !['CA'].includes(destinationRegion?.id || '') &&
+    packageType !== 'env'
+  );
+};
 
 const showShipmentAdditionalDGType = (dgState: string | undefined) => {
   // Dangerous Goods Type(available when DHL) and state is true
   return dgState === Yes;
-}
+};
 
 const shipmentAdditionalDGTypeItemsByGroupCode = (
   service: VerykType.Service | undefined,
   shipmentAdditionalDGTypeDHLItems: API.Service.DictItem[] | undefined,
-  shipmentAdditionalDGTypeFedexItems: API.Service.DictItem[] | undefined
+  shipmentAdditionalDGTypeFedexItems: API.Service.DictItem[] | undefined,
 ) => {
   const groupCode = service?.carrier?.groupCode;
   switch (groupCode) {
@@ -347,62 +388,68 @@ const shipmentAdditionalDGTypeItemsByGroupCode = (
     default:
       return [];
   }
-}
+};
 
 const showShipmentAdditionalDIT = (
   service: VerykType.Service | undefined,
-  destinationRegion: VerykType.Region | undefined
+  destinationRegion: VerykType.Region | undefined,
 ) => {
   // Use DHL Official Invoice(available when DHL and not ship to CA)
-  return ['dhl'].includes(service?.carrier?.groupCode || '')
-    && !['CA'].includes(destinationRegion?.id || '');
-}
+  return (
+    ['dhl'].includes(service?.carrier?.groupCode || '') &&
+    !['CA'].includes(destinationRegion?.id || '')
+  );
+};
 
 const showShipmentAdditionalDITType = (ditState: string | undefined) => {
   // Use DHL Official Invoice Type(available when DHL) and state is true
   return ditState === Yes;
-}
+};
 
 const showShipmentAdditionalTermsOfTrade = (
   service: VerykType.Service | undefined,
   destinationRegion: VerykType.Region | undefined,
-  packageType: string | undefined
+  packageType: string | undefined,
 ) => {
   // Terms of Trade(available when Fedex and not ship to CA and not document)
-  return ['fedex'].includes(service?.carrier?.groupCode || '')
-    && !['CA'].includes(destinationRegion?.id || '')
-    && packageType !== 'env';
-}
+  return (
+    ['fedex'].includes(service?.carrier?.groupCode || '') &&
+    !['CA'].includes(destinationRegion?.id || '') &&
+    packageType !== 'env'
+  );
+};
 
 const showShipmentAdditionalIOSS = (
   service: VerykType.Service | undefined,
   destinationRegion: VerykType.Region | undefined,
-  packageType: string | undefined
+  packageType: string | undefined,
 ) => {
   // IOSS(available when Canada Post,Fedex(not document)) not available when ship to CA
   const isShipToCA = ['CA'].includes(destinationRegion?.id || '');
   const isFedex = ['fedex'].includes(service?.carrier?.groupCode || '');
   const isCanadaPost = ['canadapost'].includes(service?.carrier?.groupCode || '');
   const isNotDocument = packageType !== 'env';
-  return !isShipToCA && (isFedex && isNotDocument || isCanadaPost);
-}
+  return !isShipToCA && ((isFedex && isNotDocument) || isCanadaPost);
+};
 
-const showShipmentAdditionalIOSSType = (service: VerykType.Service | undefined, iossState: string | undefined) => {
+const showShipmentAdditionalIOSSType = (
+  service: VerykType.Service | undefined,
+  iossState: string | undefined,
+) => {
   // IOSS Type(available when Fedex) and state is true
   return ['fedex'].includes(service?.carrier?.groupCode || '') && iossState === Yes;
-}
+};
 
 const showShipmentAdditionalIOSSId = (iossState: string | undefined) => {
   // IOSS ID(required when state is true)
   return iossState === Yes;
-}
-
+};
 
 const DestinationLocalizedModalForm: React.FC<{
-  modalVisit: boolean,
-  setModalVisit: (modalVisit: boolean) => void,
-  onFinish: (values: any) => Promise<boolean | void>
-  destinationRegion: VerykType.Region | undefined
+  modalVisit: boolean;
+  setModalVisit: (modalVisit: boolean) => void;
+  onFinish: (values: any) => Promise<boolean | void>;
+  destinationRegion: VerykType.Region | undefined;
 }> = ({ modalVisit, setModalVisit, onFinish, destinationRegion }) => {
   return (
     <ModalForm
@@ -411,15 +458,14 @@ const DestinationLocalizedModalForm: React.FC<{
       onFinish={(values) => {
         return onFinish({
           ...values.destinationLocalized,
-          regionId: destinationRegion?.id
+          regionId: destinationRegion?.id,
         });
       }}
       onOpenChange={setModalVisit}
-      layout='horizontal'
-      labelAlign='right'
+      layout="horizontal"
+      labelAlign="right"
       labelCol={{ span: 5 }}
     >
-
       <ProFormText
         name={['destinationLocalized', 'name']}
         label="Contact Name"
@@ -450,10 +496,17 @@ const DestinationLocalizedModalForm: React.FC<{
         rules={[{ required: true, message: 'Please enter an address' }]}
       />
 
-      <ProFormText name={['destinationLocalized', 'postalCode']} label="Postal Code" placeholder="Required."
-        rules={[{ required: true, message: 'Please enter a postal code' }]} />
+      <ProFormText
+        name={['destinationLocalized', 'postalCode']}
+        label="Postal Code"
+        placeholder="Required."
+        rules={[{ required: true, message: 'Please enter a postal code' }]}
+      />
 
-      <ProFormText name={['destinationLocalized', 'province']} label="Province/State" placeholder="Required."
+      <ProFormText
+        name={['destinationLocalized', 'province']}
+        label="Province/State"
+        placeholder="Required."
         rules={[{ required: true, message: 'Please enter a province/state' }]}
         //convertValue={(value) => value?.name || ''}
         transform={(value) => {
@@ -462,10 +515,10 @@ const DestinationLocalizedModalForm: React.FC<{
               province: {
                 id: '0',
                 name: value,
-                code: ''
-              }
-            }
-          }
+                code: '',
+              },
+            },
+          };
         }}
       />
 
@@ -475,8 +528,6 @@ const DestinationLocalizedModalForm: React.FC<{
         placeholder="Required."
         rules={[{ required: true, message: 'Please enter a city' }]}
       />
-
-
     </ModalForm>
   );
 };
@@ -496,7 +547,7 @@ const ShipmentForm: React.FC = () => {
     setOperationLoading,
     setQuoteFormInitialValues,
     //setShipmentFormInitialValues,
-    shipmentFormInitialValues
+    shipmentFormInitialValues,
   } = useModel('Shipping.shipmentForm', (model) => ({
     //selectedService: model.selectedService,
     //quoteFormData: model.quoteFormData,
@@ -527,7 +578,7 @@ const ShipmentForm: React.FC = () => {
 
   const { allCarriers, carriersLoading } = useModel('carriers', (model) => ({
     allCarriers: model.carriers || [],
-    carriersLoading: model.loading
+    carriersLoading: model.loading,
   }));
   const {
     addressTypeItems,
@@ -556,7 +607,7 @@ const ShipmentForm: React.FC = () => {
     shipmentAdditionalDITTypeItems,
     shipmentAdditionalIOSSTypeItems,
     shipmentAdditionalTermsOfTradeStateItems,
-    dictsLoading
+    dictsLoading,
   } = useModel('dicts', (model) => ({
     addressTypeItems: model.dicts?.addressType,
     packageTypeItems: model.dicts?.packageType,
@@ -576,17 +627,18 @@ const ShipmentForm: React.FC = () => {
     shipmentAdditionalREFStateCanadaPostItems: model.dicts?.shipmentAdditionalREFStateCanadaPost,
     shipmentAdditionalREFStateUPSItems: model.dicts?.shipmentAdditionalREFStateUPS,
     shipmentAdditionalSignatureTypeFedexItems: model.dicts?.shipmentAdditionalSignatureTypeFedex,
-    shipmentAdditionalSignatureTypePurolatorItems: model.dicts?.shipmentAdditionalSignatureTypePurolator,
-    shipmentAdditionalSignatureTypePurolatorInternationalItems: model.dicts?.shipmentAdditionalSignatureTypePurolatorInternational,
+    shipmentAdditionalSignatureTypePurolatorItems:
+      model.dicts?.shipmentAdditionalSignatureTypePurolator,
+    shipmentAdditionalSignatureTypePurolatorInternationalItems:
+      model.dicts?.shipmentAdditionalSignatureTypePurolatorInternational,
     shipmentAdditionalRSCodeItems: model.dicts?.shipmentAdditionalRSCode,
     shipmentAdditionalDGTypeDHLItems: model.dicts?.shipmentAdditionalDGTypeDHL,
     shipmentAdditionalDGTypeFedexItems: model.dicts?.shipmentAdditionalDGTypeFedex,
     shipmentAdditionalDITTypeItems: model.dicts?.shipmentAdditionalDITType,
     shipmentAdditionalIOSSTypeItems: model.dicts?.shipmentAdditionalIOSSType,
     shipmentAdditionalTermsOfTradeStateItems: model.dicts?.shipmentAdditionalTermsOfTradeState,
-    dictsLoading: model.loading
+    dictsLoading: model.loading,
   }));
-
 
   // useEffect(() => {
   //   if (selectedService) {
@@ -606,9 +658,16 @@ const ShipmentForm: React.FC = () => {
       labelFormatUPSItems,
       labelFormatPurolatorItems,
       labelFormatCanadaPostItems,
-      labelFormatFedexItems
+      labelFormatFedexItems,
     );
-  }, [service, labelFormatDHLItems, labelFormatUPSItems, labelFormatPurolatorItems, labelFormatCanadaPostItems, labelFormatFedexItems]);
+  }, [
+    service,
+    labelFormatDHLItems,
+    labelFormatUPSItems,
+    labelFormatPurolatorItems,
+    labelFormatCanadaPostItems,
+    labelFormatFedexItems,
+  ]);
 
   const productUnitItems = useMemo(() => {
     if (!service) return [];
@@ -616,7 +675,7 @@ const ShipmentForm: React.FC = () => {
       service,
       productUnitDHLItems,
       productUnitUPSItems,
-      productUnitFedexItems
+      productUnitFedexItems,
     );
   }, [service, productUnitDHLItems, productUnitUPSItems, productUnitFedexItems]);
 
@@ -625,7 +684,7 @@ const ShipmentForm: React.FC = () => {
     return shipmentAdditionalDGTypeItemsByGroupCode(
       service,
       shipmentAdditionalDGTypeDHLItems,
-      shipmentAdditionalDGTypeFedexItems
+      shipmentAdditionalDGTypeFedexItems,
     );
   }, [service, shipmentAdditionalDGTypeDHLItems, shipmentAdditionalDGTypeFedexItems]);
 
@@ -634,10 +693,9 @@ const ShipmentForm: React.FC = () => {
     return shipmentAdditionalREFStateItemsByGroupCode(
       service,
       shipmentAdditionalREFStateCanadaPostItems,
-      shipmentAdditionalREFStateUPSItems
+      shipmentAdditionalREFStateUPSItems,
     );
   }, [service, shipmentAdditionalREFStateCanadaPostItems, shipmentAdditionalREFStateUPSItems]);
-
 
   // useEffect(() => {
   //   if (quoteFormData && serviceId) {
@@ -663,15 +721,14 @@ const ShipmentForm: React.FC = () => {
     return dictsLoading || carriersLoading || dataLoading;
   }, [dictsLoading, carriersLoading, dataLoading]);
 
-
   const [localizedModalVisit, setLocalizedModalVisit] = useState(false);
 
   const localizedModalOnFinish = useCallback(async (values: any) => {
     console.log(values);
     formRef.current?.setFieldsValue({
       destinationLocalized: {
-        ...values
-      }
+        ...values,
+      },
     });
     setLocalizedModalVisit(false);
   }, []);
@@ -718,17 +775,20 @@ const ShipmentForm: React.FC = () => {
     // }
   }, []);
 
-  const handleSave = useCallback(async (formData: any) => {
-    setOperationLoading(true);
-    console.log(formData);
-    console.log(formRef.current?.getFieldsFormatValue?.());
-    const result = await postShipmentSave(formData);
-    console.log(result);
-    history.push(`/shipping/shipment/${result.data?.number}`);
+  const handleSave = useCallback(
+    async (formData: any) => {
+      setOperationLoading(true);
+      console.log(formData);
+      console.log(formRef.current?.getFieldsFormatValue?.());
+      const result = await postShipmentSave(formData);
+      console.log(result);
+      history.push(`/shipping/shipment/${result.data?.number}`);
 
-    //formRef.current?.setFieldsValue(result.data);
-    setOperationLoading(false);
-  }, [setOperationLoading, formRef]);
+      //formRef.current?.setFieldsValue(result.data);
+      setOperationLoading(false);
+    },
+    [setOperationLoading, formRef],
+  );
 
   const handleSubmit = useCallback(async () => {
     setOperationLoading(true);
@@ -742,15 +802,11 @@ const ShipmentForm: React.FC = () => {
       setCurrentStep(3);
     } catch (errorInfo) {
       //console.log('validate error:', errorInfo);
-
     }
     setOperationLoading(false);
-
   }, [setOperationLoading, setCurrentStep, setOrderNumber, formRef]);
 
-
   const handleReQuote = useCallback(async () => {
-
     const currentFormData = formRef.current?.getFieldsFormatValue?.();
 
     const quoteFormData = {
@@ -768,387 +824,422 @@ const ShipmentForm: React.FC = () => {
       },
       package: {
         type: currentFormData?.package?.type,
-        packages: [{
-          weight: currentFormData?.package?.packages?.[0]?.weight,
-          ...(currentFormData?.package?.packages?.[0]?.dimension && { dimension: currentFormData?.package?.packages?.[0]?.dimension }),
-          ...(currentFormData?.package?.packages?.[0]?.insurance && { insurance: currentFormData?.package?.packages?.[0]?.insurance }),
-        }]
+        packages: [
+          {
+            weight: currentFormData?.package?.packages?.[0]?.weight,
+            ...(currentFormData?.package?.packages?.[0]?.dimension && {
+              dimension: currentFormData?.package?.packages?.[0]?.dimension,
+            }),
+            ...(currentFormData?.package?.packages?.[0]?.insurance && {
+              insurance: currentFormData?.package?.packages?.[0]?.insurance,
+            }),
+          },
+        ],
       },
       option: {
         ...(currentFormData?.option?.memo && { memo: currentFormData?.option?.memo }),
-        ...(currentFormData?.option?.packingFee && { packingFee: currentFormData?.option?.packingFee }),
-      }
-    }
+        ...(currentFormData?.option?.packingFee && {
+          packingFee: currentFormData?.option?.packingFee,
+        }),
+      },
+    };
     setQuoteFormInitialValues(quoteFormData);
 
     setQuoteFormData(undefined);
     setCurrentStep(0);
-
-
   }, [setQuoteFormData, setCurrentStep, setQuoteFormInitialValues, formRef]);
 
-  const packagesProFormListRender = (params: Record<string, any>) => (meta: any, index: any, action: any, count: any) => {
-    const weightInput = <ProFormDigit name='weight' label='Weight' rules={[{ required: true, message: 'Please enter weight' }]} fieldProps={{
-      addonAfter: 'lb',
-      precision: 2
-    }} />
-
-    const dimensionAndInsuranceInput = params?.package?.type === 'parcel' && (
-      <>
-        <ProForm.Item label='Dimensions' name='dimension' rules={[{
-          validator: (_, value) => {
-            if (!value?.length || !value?.width || !value?.height) {
-              return Promise.reject(new Error('Please enter all dimensions'));
-            }
-            return Promise.resolve();
-          }
-        }]}>
-          <DimensionInput />
-        </ProForm.Item>
-
-        <ProFormDigit name='insurance' label='Carrier Insurance' min={0} placeholder='Optional.'
+  const packagesProFormListRender =
+    (params: Record<string, any>) => (meta: any, index: any, action: any, count: any) => {
+      const weightInput = (
+        <ProFormDigit
+          name="weight"
+          label="Weight"
+          rules={[{ required: true, message: 'Please enter weight' }]}
           fieldProps={{
-            addonAfter: '$',
-            precision: 2
+            addonAfter: 'lb',
+            precision: 2,
           }}
-          extra={
-            <Text type="secondary" >
-              <QuestionCircleOutlined style={{ marginRight: 4 }} />
-              Lost claims require receipt and other proof of value declared !
-            </Text>
-          } />
-      </>
-    )
-
-    const DCInput = showPackageAdditionalDC(service, destinationRegion) && (
-      <>
-        <ProFormSelect
-          name={['additional', 'DC', 'state']}
-          label='Delivery Confirmation'
-          options={YesNoOptions}
-          allowClear={false}
-          rules={[{ required: true, message: 'Please select Delivery Confirmation' }]}
-          placeholder="Required."
-          initialValue={No}
         />
-        <ProFormDependency name={[['additional', 'DC', 'state']]}>
-          {({ additional }) => {
-            if (additional?.DC?.state === Yes) {
-              return <ProFormSelect
-                name={['additional', 'DC', 'type']}
-                label='Confirmation Type'
-                options={packageAdditionalDCTypeItems}
-                allowClear={false}
-                placeholder="Required."
-                rules={[{ required: true, message: 'Please select Delivery Confirmation Type' }]}
-              />
+      );
+
+      const dimensionAndInsuranceInput = params?.package?.type === 'parcel' && (
+        <>
+          <ProForm.Item
+            label="Dimensions"
+            name="dimension"
+            rules={[
+              {
+                validator: (_, value) => {
+                  if (!value?.length || !value?.width || !value?.height) {
+                    return Promise.reject(new Error('Please enter all dimensions'));
+                  }
+                  return Promise.resolve();
+                },
+              },
+            ]}
+          >
+            <DimensionInput />
+          </ProForm.Item>
+
+          <ProFormDigit
+            name="insurance"
+            label="Carrier Insurance"
+            min={0}
+            placeholder="Optional."
+            fieldProps={{
+              addonAfter: '$',
+              precision: 2,
+            }}
+            extra={
+              <Text type="secondary">
+                <QuestionCircleOutlined style={{ marginRight: 4 }} />
+                Lost claims require receipt and other proof of value declared !
+              </Text>
             }
-          }}
-        </ProFormDependency>
-      </>
-    )
+          />
+        </>
+      );
 
-    const CODInput = showPackageAdditionalCOD(service, destinationRegion, params?.package?.type) && (
-      <>
-        <ProFormSelect
-          name={['additional', 'COD', 'state']}
-          label='Collect on Delivery?'
-          options={YesNoOptions}
-          allowClear={false}
-          placeholder="Required."
-          initialValue={No}
-          rules={[{ required: true, message: 'Please select Collect on Delivery' }]}
-          extra={
-            <Text type="secondary" >
-              <QuestionCircleOutlined style={{ marginRight: 4 }} />
-              CA to US COD is not allowed for package Letter/Envelope
-            </Text>
-          }
-        />
-        <ProFormDependency name={[['additional', 'COD', 'state']]}>
-          {({ additional }) => {
-            if (additional?.COD?.state === Yes) {
-              return (
-                <>
-                  <ProFormDigit
-                    name={['additional', 'COD', 'amount']}
-                    label='COD Amount'
-                    min={0}
-                    placeholder="Required."
-                    rules={[{ required: true, message: 'Please enter COD Amount' }]}
-                    fieldProps={{
-                      precision: 2
-                    }} />
+      const DCInput = showPackageAdditionalDC(service, destinationRegion) && (
+        <>
+          <ProFormSelect
+            name={['additional', 'DC', 'state']}
+            label="Delivery Confirmation"
+            options={YesNoOptions}
+            allowClear={false}
+            rules={[{ required: true, message: 'Please select Delivery Confirmation' }]}
+            placeholder="Required."
+            initialValue={No}
+          />
+          <ProFormDependency name={[['additional', 'DC', 'state']]}>
+            {({ additional }) => {
+              if (additional?.DC?.state === Yes) {
+                return (
                   <ProFormSelect
-                    name={['additional', 'COD', 'fund_type']}
-                    label='Fund Type'
-                    options={packageAdditionalCODFundTypeItems}
+                    name={['additional', 'DC', 'type']}
+                    label="Confirmation Type"
+                    options={packageAdditionalDCTypeItems}
                     allowClear={false}
                     placeholder="Required."
-                    rules={[{ required: true, message: 'Please select Fund Type' }]}
+                    rules={[
+                      { required: true, message: 'Please select Delivery Confirmation Type' },
+                    ]}
                   />
-                </>
-              )
+                );
+              }
+            }}
+          </ProFormDependency>
+        </>
+      );
+
+      const CODInput = showPackageAdditionalCOD(
+        service,
+        destinationRegion,
+        params?.package?.type,
+      ) && (
+        <>
+          <ProFormSelect
+            name={['additional', 'COD', 'state']}
+            label="Collect on Delivery?"
+            options={YesNoOptions}
+            allowClear={false}
+            placeholder="Required."
+            initialValue={No}
+            rules={[{ required: true, message: 'Please select Collect on Delivery' }]}
+            extra={
+              <Text type="secondary">
+                <QuestionCircleOutlined style={{ marginRight: 4 }} />
+                CA to US COD is not allowed for package Letter/Envelope
+              </Text>
             }
-          }}
-        </ProFormDependency>
-      </>
-    )
+          />
+          <ProFormDependency name={[['additional', 'COD', 'state']]}>
+            {({ additional }) => {
+              if (additional?.COD?.state === Yes) {
+                return (
+                  <>
+                    <ProFormDigit
+                      name={['additional', 'COD', 'amount']}
+                      label="COD Amount"
+                      min={0}
+                      placeholder="Required."
+                      rules={[{ required: true, message: 'Please enter COD Amount' }]}
+                      fieldProps={{
+                        precision: 2,
+                      }}
+                    />
+                    <ProFormSelect
+                      name={['additional', 'COD', 'fund_type']}
+                      label="Fund Type"
+                      options={packageAdditionalCODFundTypeItems}
+                      allowClear={false}
+                      placeholder="Required."
+                      rules={[{ required: true, message: 'Please select Fund Type' }]}
+                    />
+                  </>
+                );
+              }
+            }}
+          </ProFormDependency>
+        </>
+      );
 
-    const AHInput = showPackageAdditionalAH(service, params?.package?.type) && (
-      <>
-        <ProFormSelect
-          name={['additional', 'AH', 'state']}
-          label='Additional Handling?'
-          options={YesNoOptions}
-          initialValue={No}
-          allowClear={false}
-          placeholder="Required."
-          rules={[{ required: true, message: 'Please select Additional Handling' }]}
-        />
-      </>
-    )
+      const AHInput = showPackageAdditionalAH(service, params?.package?.type) && (
+        <>
+          <ProFormSelect
+            name={['additional', 'AH', 'state']}
+            label="Additional Handling?"
+            options={YesNoOptions}
+            initialValue={No}
+            allowClear={false}
+            placeholder="Required."
+            rules={[{ required: true, message: 'Please select Additional Handling' }]}
+          />
+        </>
+      );
 
-    const ReferenceNumberInput = showPackageAdditionalReferenceNumber(service) && (
-      <>
-        <ProFormSelect
-          name={['additional', 'ReferenceNumber', 'state']}
-          label='Reference Number?'
-          options={YesNoOptions}
-          initialValue={No}
-          allowClear={false}
-          placeholder="Required."
-          rules={[{ required: true, message: 'Please select Reference Number' }]}
-        />
-        <ProFormDependency name={[['additional', 'ReferenceNumber', 'state']]}>
-          {({ additional }) => {
-            if (additional?.ReferenceNumber?.state === Yes) {
-              return <ProFormText
-                name={['additional', 'ReferenceNumber', 'number']}
-                label='Number'
-                placeholder='Required.'
-                rules={[{ required: true, message: 'Please enter Reference Number' }]}
-              />
+      const ReferenceNumberInput = showPackageAdditionalReferenceNumber(service) && (
+        <>
+          <ProFormSelect
+            name={['additional', 'ReferenceNumber', 'state']}
+            label="Reference Number?"
+            options={YesNoOptions}
+            initialValue={No}
+            allowClear={false}
+            placeholder="Required."
+            rules={[{ required: true, message: 'Please select Reference Number' }]}
+          />
+          <ProFormDependency name={[['additional', 'ReferenceNumber', 'state']]}>
+            {({ additional }) => {
+              if (additional?.ReferenceNumber?.state === Yes) {
+                return (
+                  <ProFormText
+                    name={['additional', 'ReferenceNumber', 'number']}
+                    label="Number"
+                    placeholder="Required."
+                    rules={[{ required: true, message: 'Please enter Reference Number' }]}
+                  />
+                );
+              }
+            }}
+          </ProFormDependency>
+        </>
+      );
+
+      const UAEInput = showPackageAdditionalUAE(service, destinationRegion) && (
+        <>
+          <ProFormSelect
+            name={['additional', 'info', 'state']}
+            label="To the UAE?"
+            options={[{ label: 'Yes', value: Yes }]}
+            allowClear={false}
+            placeholder="Required."
+            rules={[{ required: true, message: 'Please select To the UAE' }]}
+          />
+          <ProFormText
+            name={['additional', 'info', 'ItemDescriptionForClearance']}
+            label="Description For Clearance"
+            placeholder="Required."
+            rules={[{ required: true, message: 'Please enter Description For Clearance' }]}
+          />
+        </>
+      );
+
+      const IMInput = showPackageAdditionalIM(service) && (
+        <>
+          <ProFormSelect
+            name={['additional', 'IM', 'state']}
+            label="Description?"
+            options={YesNoOptions}
+            initialValue={No}
+            allowClear={false}
+            rules={[{ required: true, message: 'Please select UPS Description' }]}
+            placeholder="Required."
+            extra={
+              <Text type="secondary">
+                <QuestionCircleOutlined style={{ marginRight: 4 }} />
+                Destination is mandatory for Mexico.
+              </Text>
             }
-          }}
-        </ProFormDependency>
-      </>
-    )
+          />
+          <ProFormDependency name={[['additional', 'IM', 'state']]}>
+            {({ additional }) => {
+              if (additional?.IM?.state === Yes) {
+                return (
+                  <ProFormText
+                    name={['additional', 'IM', 'description']}
+                    label="Text description"
+                    placeholder="Required."
+                    rules={[{ required: true, message: 'Please enter UPS Description' }]}
+                  />
+                );
+              }
+            }}
+          </ProFormDependency>
+        </>
+      );
 
-    const UAEInput = (showPackageAdditionalUAE(service, destinationRegion)) && (
-      <>
-        <ProFormSelect
-          name={['additional', 'info', 'state']}
-          label='To the UAE?'
-          options={[{ label: 'Yes', value: Yes }]}
-          allowClear={false}
-          placeholder="Required."
+      const packCodeInput = showPackageAdditionalPackCode(service, destinationRegion) && (
+        <>
+          <ProFormSelect
+            name={['additional', 'packcode', 'state']}
+            label="Package description?"
+            options={packCodeStateItems}
+            allowClear={false}
+            rules={[{ required: true, message: 'Please select Pack Code' }]}
+            placeholder="Required."
+          />
+        </>
+      );
 
-          rules={[{ required: true, message: 'Please select To the UAE' }]}
-        />
+      return (
+        <>
+          {weightInput}
+
+          {dimensionAndInsuranceInput}
+
+          {DCInput}
+
+          {CODInput}
+
+          {AHInput}
+
+          {ReferenceNumberInput}
+
+          {UAEInput}
+
+          {IMInput}
+
+          {packCodeInput}
+        </>
+      );
+    };
+
+  const productsProFormListRender =
+    (params: Record<string, any>) => (meta: any, index: any, action: any, count: any) => {
+      const isFedexEnv = service?.carrier?.groupCode === 'fedex' && params?.package?.type === 'env';
+
+      const nameInput = (
         <ProFormText
-          name={['additional', 'info', 'ItemDescriptionForClearance']}
-          label='Description For Clearance'
-          placeholder='Required.'
-          rules={[{ required: true, message: 'Please enter Description For Clearance' }]}
-        />
-      </>
-    )
-
-    const IMInput = (showPackageAdditionalIM(service)) && (
-      <>
-        <ProFormSelect
-          name={['additional', 'IM', 'state']}
-          label='Description?'
-          options={YesNoOptions}
-          initialValue={No}
-          allowClear={false}
-          rules={[{ required: true, message: 'Please select UPS Description' }]}
+          name={['name']}
+          label={service?.carrier?.groupCode === 'canadapost' ? 'Product' : 'Description'}
           placeholder="Required."
+          rules={[{ required: true, message: 'Please enter a product name' }]}
           extra={
-            <Text type="secondary" >
-              <QuestionCircleOutlined style={{ marginRight: 4 }} />
-              Destination is mandatory for Mexico.
-            </Text>
+            isFedexEnv && (
+              <Text type="secondary">
+                <QuestionCircleOutlined style={{ marginRight: 4 }} />
+                &quot;Documents&quot;, &quot;Documentation&quot;, &quot;Document&quot; are
+                incomplete descriptions and not accepted by Customs. An example of an acceptable
+                description is &quot;Birth Certificate.&quot; Clearance delays may result if the
+                contents are not completely and accurately described.
+              </Text>
+            )
           }
         />
-        <ProFormDependency name={[['additional', 'IM', 'state']]}>
-          {({ additional }) => {
-            if (additional?.IM?.state === Yes) {
-              return <ProFormText
-                name={['additional', 'IM', 'description']}
-                label='Text description'
-                placeholder='Required.'
-                rules={[{ required: true, message: 'Please enter UPS Description' }]}
-              />
-            }
-          }}
-        </ProFormDependency>
-      </>
-    )
+      );
 
-    const packCodeInput = (showPackageAdditionalPackCode(service, destinationRegion)) && (
-      <>
-        <ProFormSelect
-          name={['additional', 'packcode', 'state']}
-          label='Package description?'
-          options={packCodeStateItems}
-          allowClear={false}
-          rules={[{ required: true, message: 'Please select Pack Code' }]}
+      if (isFedexEnv) {
+        return <>{nameInput}</>;
+      }
+
+      const qtyInput = (
+        <ProFormDigit
+          name={['qty']}
+          label="Quantity"
           placeholder="Required."
+          rules={[{ required: true, message: 'Please enter a quantity' }]}
+          fieldProps={{
+            precision: 0,
+          }}
         />
-      </>
-    )
+      );
 
-    return (<>
+      const priceInput = (
+        <ProFormDigit
+          name={['price']}
+          label="Unit Price(CAD)"
+          placeholder="Required."
+          rules={[{ required: true, message: 'Please enter a price' }]}
+          fieldProps={{
+            precision: 2,
+          }}
+        />
+      );
 
-      {weightInput}
+      const unitInput = productUnitItems?.length > 0 && (
+        <ProFormSelect
+          name={['unit']}
+          label="Unit"
+          placeholder="Required."
+          rules={[{ required: true, message: 'Please select a unit' }]}
+          options={productUnitItems}
+        />
+      );
 
-      {dimensionAndInsuranceInput}
+      const originInput = showProductOrigin(service) && (
+        <ProFormSelect
+          fieldProps={{
+            showSearch: true,
+            allowClear: false,
+            filterOption: (input, option) =>
+              (option?.label ?? '').toLowerCase().includes(input.toLowerCase()) ||
+              (option?.value ?? '').toLowerCase().includes(input.toLowerCase()),
+          }}
+          placeholder="Required."
+          name={['origin']}
+          label="Origin"
+          options={regions.map((region) => ({ label: region.name, value: region.id }))}
+          rules={[{ required: true, message: 'Please select a origin' }]}
+        />
+      );
 
-      {DCInput}
+      const productHSCodeRequired = isProductHSCodeRequired(service);
 
-      {CODInput}
-
-      {AHInput}
-
-      {ReferenceNumberInput}
-
-      {UAEInput}
-
-      {IMInput}
-
-      {packCodeInput}
-
-    </>)
-  }
-
-  const productsProFormListRender = (params: Record<string, any>) => (meta: any, index: any, action: any, count: any) => {
-
-    const isFedexEnv = service?.carrier?.groupCode === 'fedex' && params?.package?.type === 'env';
-
-    const nameInput = (
-      <ProFormText
-        name={['name']}
-        label={service?.carrier?.groupCode === 'canadapost' ? 'Product' : 'Description'}
-        placeholder="Required."
-        rules={[{ required: true, message: 'Please enter a product name' }]}
-        extra={
-          (
-            isFedexEnv &&
-            <Text type="secondary">
-              <QuestionCircleOutlined style={{ marginRight: 4 }} />
-              &quot;Documents&quot;, &quot;Documentation&quot;, &quot;Document&quot; are incomplete descriptions and not accepted by Customs. An example of an acceptable description is &quot;Birth Certificate.&quot; Clearance delays may result if the contents are not completely and accurately described.
-            </Text>
-          )
-        }
-      />
-    )
-
-    if (isFedexEnv) {
-      return (<>
-        {nameInput}
-      </>)
-    }
-
-    const qtyInput = (
-      <ProFormDigit
-        name={['qty']}
-        label="Quantity"
-        placeholder="Required."
-        rules={[{ required: true, message: 'Please enter a quantity' }]}
-        fieldProps={{
-          precision: 0,
-        }}
-      />
-    )
-
-    const priceInput = (
-      <ProFormDigit
-        name={['price']}
-        label="Unit Price(CAD)"
-        placeholder="Required."
-        rules={[{ required: true, message: 'Please enter a price' }]}
-        fieldProps={{
-          precision: 2,
-        }}
-      />
-    )
-
-    const unitInput = productUnitItems?.length > 0 && (
-      <ProFormSelect
-        name={['unit']}
-        label="Unit"
-        placeholder="Required."
-        rules={[{ required: true, message: 'Please select a unit' }]}
-        options={productUnitItems}
-      />
-    )
-
-    const originInput = (
-      showProductOrigin(service) &&
-      <ProFormSelect
-        fieldProps={{
-          showSearch: true,
-          allowClear: false,
-          filterOption: (input, option) =>
-            (option?.label ?? '').toLowerCase().includes(input.toLowerCase()) ||
-            (option?.value ?? '').toLowerCase().includes(input.toLowerCase()),
-        }}
-        placeholder="Required."
-        name={['origin']}
-        label="Origin"
-        options={regions.map((region) => ({ label: region.name, value: region.id }))}
-        rules={[{ required: true, message: 'Please select a origin' }]}
-      />
-    )
-
-    const productHSCodeRequired = isProductHSCodeRequired(service);
-
-    const HScodeInput = showProductHSCode(service) && (
-      <ProFormText
-        name={['HScode']}
-        label="HS Code"
-        placeholder={productHSCodeRequired ? "Required." : "Optional."}
-        rules={productHSCodeRequired ? [{ required: true, message: 'Please enter a HS code' }] : undefined}
-      />
-    )
-    return (<>
-      {nameInput}
-      {qtyInput}
-      {priceInput}
-      {unitInput}
-      {originInput}
-      {HScodeInput}
-    </>)
-  }
-
-
-
+      const HScodeInput = showProductHSCode(service) && (
+        <ProFormText
+          name={['HScode']}
+          label="HS Code"
+          placeholder={productHSCodeRequired ? 'Required.' : 'Optional.'}
+          rules={
+            productHSCodeRequired
+              ? [{ required: true, message: 'Please enter a HS code' }]
+              : undefined
+          }
+        />
+      );
+      return (
+        <>
+          {nameInput}
+          {qtyInput}
+          {priceInput}
+          {unitInput}
+          {originInput}
+          {HScodeInput}
+        </>
+      );
+    };
 
   return (
     <>
       {/* <ProCard loading={loading} ghost direction='row' wrap gutter={[16, 0]}> */}
 
-
       <ProCard
         bordered
         title="Carrier & Service"
         headerBordered
-        type='inner'
+        type="inner"
         style={{ margin: '16px 8px 0' }}
         loading={loading}
         colSpan={24}
-
       >
         <ProList<VerykType.Service>
           dataSource={service ? [service] : []}
           rowKey="id"
           metas={{
             title: {
-              render: (_, record) => (
-                <Title level={5}>{record?.carrier?.name}</Title>
-              ),
+              render: (_, record) => <Title level={5}>{record?.carrier?.name}</Title>,
             },
             description: {
               render: (_, record) => (
@@ -1157,14 +1248,16 @@ const ShipmentForm: React.FC = () => {
             },
             avatar: {
               render: (_, record) => (
-                <img src={record?.carrier?.logo} alt={record?.carrier?.name} style={{ width: '54px', height: '54px' }} />
+                <img
+                  src={record?.carrier?.logo}
+                  alt={record?.carrier?.name}
+                  style={{ width: '54px', height: '54px' }}
+                />
               ),
             },
             actions: {
-              render: (_, record) => (
-                <Button onClick={handleReQuote}>Re-Quote</Button>
-              ),
-            }
+              render: (_, record) => <Button onClick={handleReQuote}>Re-Quote</Button>,
+            },
           }}
         />
       </ProCard>
@@ -1173,7 +1266,7 @@ const ShipmentForm: React.FC = () => {
         // shipmentFormInitialValues &&
         <ProForm
           layout="horizontal"
-          labelAlign='right'
+          labelAlign="right"
           style={{ width: '100%' }}
           labelCol={{ span: 6 }}
           labelWrap={true}
@@ -1185,15 +1278,22 @@ const ShipmentForm: React.FC = () => {
           submitter={{
             render: (_, dom) => {
               //console.log("dom", dom);
-              return (
-                loading ? null :
-                  <FooterToolbar>
-                    <Button type="default" loading={operationLoading} onClick={() => {
+              return loading ? null : (
+                <FooterToolbar>
+                  <Button
+                    type="default"
+                    loading={operationLoading}
+                    onClick={() => {
                       formRef.current?.setFieldsValue(testShipmentFormData);
-                    }}>Set Test Data</Button>
-                    {dom}
-                    <Button type="primary" onClick={handleSubmit} loading={operationLoading}>Submit</Button>
-                  </FooterToolbar>
+                    }}
+                  >
+                    Set Test Data
+                  </Button>
+                  {dom}
+                  <Button type="primary" onClick={handleSubmit} loading={operationLoading}>
+                    Submit
+                  </Button>
+                </FooterToolbar>
               );
             },
             searchConfig: {
@@ -1206,25 +1306,22 @@ const ShipmentForm: React.FC = () => {
               loading: operationLoading,
             },
           }}
-
         >
-
           <ProFormText name="number" hidden />
           <ProFormText name="serviceId" hidden />
 
           <ProForm.Item name="destinationLocalized" hidden />
           <ProForm.Item name="price" hidden />
 
-
-          <ProCard ghost gutter={[16, 16]} direction='row' type='inner'>
-
-
-
-
-            <ProCard colSpan={12} ghost direction='column' gutter={[0, 16]} loading={loading}>
-              <ProCard bordered title="SHIP FROM" headerBordered type='inner' extra={
-                <Button type="primary" icon={<ContactsOutlined />} />
-              }>
+          <ProCard ghost gutter={[16, 16]} direction="row" type="inner">
+            <ProCard colSpan={12} ghost direction="column" gutter={[0, 16]} loading={loading}>
+              <ProCard
+                bordered
+                title="SHIP FROM"
+                headerBordered
+                type="inner"
+                extra={<Button type="primary" icon={<ContactsOutlined />} />}
+              >
                 <ProFormText
                   name={['initiation', 'name']}
                   label="Contact Name"
@@ -1284,74 +1381,98 @@ const ShipmentForm: React.FC = () => {
                   options={regions.map((region) => ({ label: region.name, value: region.id }))}
                   rules={[{ required: true, message: 'Please select a country' }]}
                 />
-                <ProFormText name={['initiation', 'postalCode']} label="Postal Code" placeholder="Required."
-                  rules={[{ required: true, message: 'Please enter a postal code' }]} />
+                <ProFormText
+                  name={['initiation', 'postalCode']}
+                  label="Postal Code"
+                  placeholder="Required."
+                  rules={[{ required: true, message: 'Please enter a postal code' }]}
+                />
                 <ProFormDependency name={[['initiation', 'regionId']]}>
                   {({ initiation }) => {
                     // console.log("initiation", initiation);
 
-                    const provinces = provinceRecord[initiation?.regionId || 'CA']
+                    const provinces = provinceRecord[initiation?.regionId || 'CA'];
 
                     if (provinces?.length > 0) {
-                      return <ProFormSelect
-                        name={['initiation', 'province', 'code']}
-                        label="Province/State"
-                        placeholder="Required."
-                        options={provinces.map((province) => ({ label: province.name, value: province.code }))}
-                        rules={[{ required: true, message: 'Please select a province/state' }]}
-                        transform={(value) => {
-                          return {
-                            initiation: {
-                              province: {
-                                id: provinces.find((p) => p.code === value)?.id,
-                                name: provinces.find((p) => p.code === value)?.name,
-                                code: value
-                              }
-                            }
-                          }
-                        }}
-                      />
-
+                      return (
+                        <ProFormSelect
+                          name={['initiation', 'province', 'code']}
+                          label="Province/State"
+                          placeholder="Required."
+                          options={provinces.map((province) => ({
+                            label: province.name,
+                            value: province.code,
+                          }))}
+                          rules={[{ required: true, message: 'Please select a province/state' }]}
+                          transform={(value) => {
+                            return {
+                              initiation: {
+                                province: {
+                                  id: provinces.find((p) => p.code === value)?.id,
+                                  name: provinces.find((p) => p.code === value)?.name,
+                                  code: value,
+                                },
+                              },
+                            };
+                          }}
+                        />
+                      );
                     } else {
-                      return <ProFormText name={['initiation', 'province', 'name']} label="Province/State" placeholder="Required."
-                        rules={[{ required: true, message: 'Please enter a province/state' }]}
-                        transform={(value) => {
-                          // console.log("initiation text transform", value);
-                          return {
-                            initiation: {
-                              province: {
-                                id: '0',
-                                name: value,
-                                code: ''
-                              }
-                            }
-                          }
-                        }}
-                      //convertValue={(value) => value?.name || ''}
-                      />
+                      return (
+                        <ProFormText
+                          name={['initiation', 'province', 'name']}
+                          label="Province/State"
+                          placeholder="Required."
+                          rules={[{ required: true, message: 'Please enter a province/state' }]}
+                          transform={(value) => {
+                            // console.log("initiation text transform", value);
+                            return {
+                              initiation: {
+                                province: {
+                                  id: '0',
+                                  name: value,
+                                  code: '',
+                                },
+                              },
+                            };
+                          }}
+                          //convertValue={(value) => value?.name || ''}
+                        />
+                      );
                     }
                   }}
                 </ProFormDependency>
 
-                <ProFormText name={['initiation', 'city']} label="City" placeholder="Required." rules={[{ required: true, message: 'Please enter a city' }]} />
-
-
-
+                <ProFormText
+                  name={['initiation', 'city']}
+                  label="City"
+                  placeholder="Required."
+                  rules={[{ required: true, message: 'Please enter a city' }]}
+                />
               </ProCard>
 
-              <ProCard bordered title="Options" headerBordered type='inner'>
+              <ProCard bordered title="Options" headerBordered type="inner">
                 <ProFormSelect
                   name={['option', 'labelFormat']}
                   label="Label Format"
                   options={labelFormatItems}
                 />
-                <ProFormDigit name={['option', 'packingFee']} label="Packing Fee" min={0} placeholder="Optional." fieldProps={{
-                  addonBefore: '$',
-                  precision: 2
-                }} />
-                <ProFormText name={['option', 'memo']} label="Remark" placeholder="Optional."
+                <ProFormDigit
+                  name={['option', 'packingFee']}
+                  label="Packing Fee"
+                  min={0}
+                  placeholder="Optional."
+                  fieldProps={{
+                    addonBefore: '$',
+                    precision: 2,
+                  }}
+                />
+                <ProFormText
+                  name={['option', 'memo']}
+                  label="Remark"
+                  placeholder="Optional."
                   extra={
-                    <Text type="secondary" >
+                    <Text type="secondary">
                       <QuestionCircleOutlined style={{ marginRight: 4 }} />
                       The Remark is for operational reference only.
                     </Text>
@@ -1359,7 +1480,7 @@ const ShipmentForm: React.FC = () => {
                 />
               </ProCard>
 
-              <ProCard bordered title="Value-added Services" headerBordered type='inner'>
+              <ProCard bordered title="Value-added Services" headerBordered type="inner">
                 {/* <ProForm.Group labelLayout='twoLine' > */}
                 {showShipmentAdditionalDC(service, destinationRegion) && (
                   <>
@@ -1370,9 +1491,13 @@ const ShipmentForm: React.FC = () => {
                       placeholder="Required."
                       initialValue={No}
                       rules={[{ required: true, message: 'Please select a delivery confirmation' }]}
-
                     />
-                    <ProFormDependency name={[['sadditional', 'DC', 'state'], ['sadditional', 'LAD', 'state']]}>
+                    <ProFormDependency
+                      name={[
+                        ['sadditional', 'DC', 'state'],
+                        ['sadditional', 'LAD', 'state'],
+                      ]}
+                    >
                       {({ sadditional }) => {
                         const dcState = sadditional?.DC?.state;
                         const ladState = sadditional?.LAD?.state;
@@ -1382,7 +1507,9 @@ const ShipmentForm: React.FC = () => {
                             label="Confirmation Type"
                             options={shipmentAdditionalDCTypeItems}
                             placeholder="Required."
-                            rules={[{ required: true, message: 'Please select a delivery confirmation' }]}
+                            rules={[
+                              { required: true, message: 'Please select a delivery confirmation' },
+                            ]}
                           />
                         );
 
@@ -1395,7 +1522,6 @@ const ShipmentForm: React.FC = () => {
                               initialValue={No}
                               placeholder="Required."
                               rules={[{ required: true, message: 'Please select a signature' }]}
-
                             />
                             <ProFormDependency name={[['sadditional', 'SO', 'state']]}>
                               {({ sadditional }) => {
@@ -1406,14 +1532,12 @@ const ShipmentForm: React.FC = () => {
                                     label="Signature Type"
                                     options={shipmentAdditionalSOTypeItems}
                                     placeholder="Required."
-                                    rules={[{ required: true, message: 'Please select a signature type' }]}
+                                    rules={[
+                                      { required: true, message: 'Please select a signature type' },
+                                    ]}
                                   />
                                 );
-                                return (
-                                  <>
-                                    {soTypeInput}
-                                  </>
-                                );
+                                return <>{soTypeInput}</>;
                               }}
                             </ProFormDependency>
                           </>
@@ -1424,13 +1548,13 @@ const ShipmentForm: React.FC = () => {
                             {dcTypeInput}
                             {soInput}
                           </>
-                        )
+                        );
                       }}
                     </ProFormDependency>
                   </>
                 )}
 
-                {(showShipmentAdditionalSignature(service)) && (
+                {showShipmentAdditionalSignature(service) && (
                   <>
                     <ProFormSelect
                       name={['sadditional', 'signature', 'state']}
@@ -1439,12 +1563,12 @@ const ShipmentForm: React.FC = () => {
                       initialValue={No}
                       placeholder="Required."
                       rules={[{ required: true, message: 'Please select a signature' }]}
-
                       extra={
-                        (service?.carrier?.groupCode === 'fedex' &&
+                        service?.carrier?.groupCode === 'fedex' && (
                           <Text type="secondary">
                             <QuestionCircleOutlined style={{ marginRight: 4 }} />
-                            In Canada and the U.S., Indirect Signature Required is available for residential shipments only.
+                            In Canada and the U.S., Indirect Signature Required is available for
+                            residential shipments only.
                           </Text>
                         )
                       }
@@ -1452,38 +1576,45 @@ const ShipmentForm: React.FC = () => {
                     <ProFormDependency name={[['sadditional', 'signature', 'state']]}>
                       {({ sadditional }) => {
                         const signatureState = sadditional?.signature?.state;
-                        const signatureTypeInput = showShipmentAdditionalSignatureType(signatureState) && (
+                        const signatureTypeInput = showShipmentAdditionalSignatureType(
+                          signatureState,
+                        ) && (
                           <ProFormSelect
                             name={['sadditional', 'signature', 'type']}
                             label="Confirmation Type"
-                            options={
-                              shipmentAdditionalSignatureTypeItemsByGroupCodeAndRegion(
-                                service,
-                                initiationRegion,
-                                destinationRegion,
-                                shipmentAdditionalSignatureTypeFedexItems,
-                                shipmentAdditionalSignatureTypePurolatorItems,
-                                shipmentAdditionalSignatureTypePurolatorInternationalItems
-                              )}
+                            options={shipmentAdditionalSignatureTypeItemsByGroupCodeAndRegion(
+                              service,
+                              initiationRegion,
+                              destinationRegion,
+                              shipmentAdditionalSignatureTypeFedexItems,
+                              shipmentAdditionalSignatureTypePurolatorItems,
+                              shipmentAdditionalSignatureTypePurolatorInternationalItems,
+                            )}
                             placeholder="Required."
                             rules={[{ required: true, message: 'Please select a signature type' }]}
                           />
                         );
-                        return (
-                          <>
-                            {signatureTypeInput}
-                          </>
-                        );
+                        return <>{signatureTypeInput}</>;
                       }}
                     </ProFormDependency>
                   </>
                 )}
 
-                <ProFormDependency name={[['sadditional', 'DNS', 'state'], ['sadditional', 'LAD', 'state']]}>
+                <ProFormDependency
+                  name={[
+                    ['sadditional', 'DNS', 'state'],
+                    ['sadditional', 'LAD', 'state'],
+                  ]}
+                >
                   {({ sadditional }) => {
                     const dnsState = sadditional?.DNS?.state;
                     const ladState = sadditional?.LAD?.state;
-                    const hfpInput = showShipmentAdditionalHFP(service, destinationRegion, dnsState, ladState) && (
+                    const hfpInput = showShipmentAdditionalHFP(
+                      service,
+                      destinationRegion,
+                      dnsState,
+                      ladState,
+                    ) && (
                       <ProFormSelect
                         name={['sadditional', 'HFP', 'state']}
                         label="Card for pickup?"
@@ -1491,22 +1622,27 @@ const ShipmentForm: React.FC = () => {
                         initialValue={No}
                         placeholder="Required."
                         rules={[{ required: true, message: 'Please select a card for pickup' }]}
-
                       />
                     );
-                    return (
-                      <>
-                        {hfpInput}
-                      </>
-                    );
+                    return <>{hfpInput}</>;
                   }}
                 </ProFormDependency>
 
-                <ProFormDependency name={[['sadditional', 'HFP', 'state'], ['sadditional', 'LAD', 'state']]}>
+                <ProFormDependency
+                  name={[
+                    ['sadditional', 'HFP', 'state'],
+                    ['sadditional', 'LAD', 'state'],
+                  ]}
+                >
                   {({ sadditional }) => {
                     const hfpState = sadditional?.HFP?.state;
                     const ladState = sadditional?.LAD?.state;
-                    const dnsInput = showShipmentAdditionalDNS(service, destinationRegion, hfpState, ladState) && (
+                    const dnsInput = showShipmentAdditionalDNS(
+                      service,
+                      destinationRegion,
+                      hfpState,
+                      ladState,
+                    ) && (
                       <ProFormSelect
                         name={['sadditional', 'DNS', 'state']}
                         label="Do not safe drop?"
@@ -1514,41 +1650,48 @@ const ShipmentForm: React.FC = () => {
                         initialValue={No}
                         placeholder="Required."
                         rules={[{ required: true, message: 'Please select a do not safe drop' }]}
-
                       />
                     );
-                    return (
-                      <>
-                        {dnsInput}
-                      </>
-                    );
+                    return <>{dnsInput}</>;
                   }}
                 </ProFormDependency>
 
-                <ProFormDependency name={[['sadditional', 'SO', 'state'], ['sadditional', 'DNS', 'state'], ['sadditional', 'HFP', 'state']]}>
+                <ProFormDependency
+                  name={[
+                    ['sadditional', 'SO', 'state'],
+                    ['sadditional', 'DNS', 'state'],
+                    ['sadditional', 'HFP', 'state'],
+                  ]}
+                >
                   {({ sadditional }) => {
                     const soState = sadditional?.SO?.state;
                     const hfpState = sadditional?.HFP?.state;
                     const dnsState = sadditional?.DNS?.state;
 
-                    const ladInput = showShipmentAdditionalLAD(service, destinationRegion, soState, hfpState, dnsState) && (
+                    const ladInput = showShipmentAdditionalLAD(
+                      service,
+                      destinationRegion,
+                      soState,
+                      hfpState,
+                      dnsState,
+                    ) && (
                       <ProFormSelect
                         name={['sadditional', 'LAD', 'state']}
                         label="Leave at door - do not card?"
                         options={YesNoOptions}
                         initialValue={No}
                         placeholder="Required."
-                        rules={[{ required: true, message: 'Please select a leave at door - do not card' }]}
+                        rules={[
+                          {
+                            required: true,
+                            message: 'Please select a leave at door - do not card',
+                          },
+                        ]}
                       />
                     );
-                    return (
-                      <>
-                        {ladInput}
-                      </>
-                    );
+                    return <>{ladInput}</>;
                   }}
                 </ProFormDependency>
-
 
                 {showShipmentAdditionalDIT(service, destinationRegion) && (
                   <>
@@ -1558,7 +1701,9 @@ const ShipmentForm: React.FC = () => {
                       options={YesNoOptions}
                       placeholder="Required."
                       initialValue={No}
-                      rules={[{ required: true, message: 'Please select if use DHL official invoice' }]}
+                      rules={[
+                        { required: true, message: 'Please select if use DHL official invoice' },
+                      ]}
                     />
                     <ProFormDependency name={[['sadditional', 'DIT', 'state']]}>
                       {({ sadditional }) => {
@@ -1572,46 +1717,55 @@ const ShipmentForm: React.FC = () => {
                             rules={[{ required: true, message: 'Please select a invoice type' }]}
                           />
                         );
-                        return (
-                          <>
-                            {ditTypeInput}
-                          </>
-                        );
+                        return <>{ditTypeInput}</>;
                       }}
                     </ProFormDependency>
                   </>
                 )}
 
-
-                <ProFormDependency name={[['package', 'type'], ['sadditional', 'DIT', 'state']]}>
+                <ProFormDependency
+                  name={[
+                    ['package', 'type'],
+                    ['sadditional', 'DIT', 'state'],
+                  ]}
+                >
                   {(params) => {
-                    const ediInput = showShipmentAdditionalEDI(service, initiationRegion, destinationRegion, params?.package?.type, params?.sadditional?.DIT?.state) && (
+                    const ediInput = showShipmentAdditionalEDI(
+                      service,
+                      initiationRegion,
+                      destinationRegion,
+                      params?.package?.type,
+                      params?.sadditional?.DIT?.state,
+                    ) && (
                       <ProFormSelect
                         name={['sadditional', 'EDI', 'state']}
                         label="E-Commercial Invoice?"
                         options={YesNoOptions}
                         initialValue={No}
                         placeholder="Required."
-                        rules={[{ required: true, message: 'Please select a e-commercial invoice' }]}
+                        rules={[
+                          { required: true, message: 'Please select a e-commercial invoice' },
+                        ]}
                         extra={
                           <Text type="secondary">
                             <QuestionCircleOutlined style={{ marginRight: 4 }} />
-                            This option is for paperless shipment. Select &quot;No&quot; if you want to print commercial invoice.
+                            This option is for paperless shipment. Select &quot;No&quot; if you want
+                            to print commercial invoice.
                           </Text>
                         }
                       />
                     );
-                    return (
-                      <>
-                        {ediInput}
-                      </>
-                    );
+                    return <>{ediInput}</>;
                   }}
                 </ProFormDependency>
 
                 <ProFormDependency name={[['package', 'type']]}>
                   {(params) => {
-                    const dgInput = showShipmentAdditionalDG(service, destinationRegion, params?.package?.type) && (
+                    const dgInput = showShipmentAdditionalDG(
+                      service,
+                      destinationRegion,
+                      params?.package?.type,
+                    ) && (
                       <>
                         <ProFormSelect
                           name={['sadditional', 'DG', 'state']}
@@ -1630,26 +1784,22 @@ const ShipmentForm: React.FC = () => {
                                 label="Select type"
                                 options={shipmentAdditionalDGTypeItems}
                                 placeholder="Required."
-                                rules={[{ required: true, message: 'Please select a dangerous goods type' }]}
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: 'Please select a dangerous goods type',
+                                  },
+                                ]}
                               />
                             );
-                            return (
-                              <>
-                                {dgTypeInput}
-                              </>
-                            );
+                            return <>{dgTypeInput}</>;
                           }}
                         </ProFormDependency>
                       </>
                     );
-                    return (
-                      <>
-                        {dgInput}
-                      </>
-                    );
+                    return <>{dgInput}</>;
                   }}
                 </ProFormDependency>
-
 
                 {showShipmentAdditionalRS(service) && (
                   <>
@@ -1676,7 +1826,9 @@ const ShipmentForm: React.FC = () => {
                             label="Type"
                             options={shipmentAdditionalRSCodeItems}
                             placeholder="Required."
-                            rules={[{ required: true, message: 'Please select a return service type' }]}
+                            rules={[
+                              { required: true, message: 'Please select a return service type' },
+                            ]}
                           />
                         );
                         const rsDescriptionInput = showShipmentAdditionalRSDescription(rsState) && (
@@ -1684,7 +1836,12 @@ const ShipmentForm: React.FC = () => {
                             name={['sadditional', 'RS', 'description']}
                             label="DESC"
                             placeholder="Required."
-                            rules={[{ required: true, message: 'Please enter a return service description' }]}
+                            rules={[
+                              {
+                                required: true,
+                                message: 'Please enter a return service description',
+                              },
+                            ]}
                           />
                         );
                         return (
@@ -1710,28 +1867,32 @@ const ShipmentForm: React.FC = () => {
                     <ProFormDependency name={[['sadditional', '_RFE', 'state']]}>
                       {({ sadditional }) => {
                         const rfeState = sadditional?._RFE?.state;
-                        const rfeOtherReasonInput = showShipmentAdditional_RFEOtherReason(service, rfeState) && (
+                        const rfeOtherReasonInput = showShipmentAdditional_RFEOtherReason(
+                          service,
+                          rfeState,
+                        ) && (
                           <ProFormText
                             name={['sadditional', '_RFE', 'otherReason']}
                             label="Other Reason"
                             placeholder="Required."
-                            rules={[{ required: true, message: 'Please enter other reason for export' }]}
+                            rules={[
+                              { required: true, message: 'Please enter other reason for export' },
+                            ]}
                           />
                         );
-                        return (
-                          <>
-                            {rfeOtherReasonInput}
-                          </>
-                        );
+                        return <>{rfeOtherReasonInput}</>;
                       }}
-
                     </ProFormDependency>
                   </>
                 )}
 
                 <ProFormDependency name={[['package', 'type']]}>
                   {(params) => {
-                    const termsOfTradeInput = showShipmentAdditionalTermsOfTrade(service, destinationRegion, params?.package?.type) && (
+                    const termsOfTradeInput = showShipmentAdditionalTermsOfTrade(
+                      service,
+                      destinationRegion,
+                      params?.package?.type,
+                    ) && (
                       <ProFormSelect
                         name={['sadditional', 'TermsOfTrade', 'state']}
                         label="Terms of Trade?"
@@ -1746,18 +1907,17 @@ const ShipmentForm: React.FC = () => {
                         }
                       />
                     );
-                    return (
-                      <>
-                        {termsOfTradeInput}
-                      </>
-                    );
+                    return <>{termsOfTradeInput}</>;
                   }}
                 </ProFormDependency>
 
-
                 <ProFormDependency name={[['package', 'type']]}>
                   {(params) => {
-                    const iossInput = showShipmentAdditionalIOSS(service, destinationRegion, params?.package?.type) && (
+                    const iossInput = showShipmentAdditionalIOSS(
+                      service,
+                      destinationRegion,
+                      params?.package?.type,
+                    ) && (
                       <>
                         <ProFormSelect
                           name={['sadditional', 'IOSS', 'state']}
@@ -1770,7 +1930,10 @@ const ShipmentForm: React.FC = () => {
                         <ProFormDependency name={[['sadditional', 'IOSS', 'state']]}>
                           {({ sadditional }) => {
                             const iossState = sadditional?.IOSS?.state;
-                            const iossTypeInput = showShipmentAdditionalIOSSType(service, iossState) && (
+                            const iossTypeInput = showShipmentAdditionalIOSSType(
+                              service,
+                              iossState,
+                            ) && (
                               <ProFormSelect
                                 name={['sadditional', 'IOSS', 'type']}
                                 label="IOSS ID"
@@ -1785,14 +1948,16 @@ const ShipmentForm: React.FC = () => {
                                 label="IOSS ID"
                                 placeholder="Required."
                                 rules={[{ required: true, message: 'Please enter a IOSS ID' }]}
-                                extra={(
+                                extra={
                                   service?.carrier?.groupCode === 'canadapost' && (
                                     <Text type="secondary">
                                       <QuestionCircleOutlined style={{ marginRight: 4 }} />
-                                      (Character String – up to 13 characters) Optional field to enter Tax Registration Numbers or IDs (e.g. Tax ID, IRS No., VAT, IOSS number) for electronic transmission to the receiving post. Note: IOSS should be entered as ‘IMxxxxxxxxxx’.
+                                      (Character String – up to 13 characters) Optional field to
+                                      enter Tax Registration Numbers or IDs (e.g. Tax ID, IRS No.,
+                                      VAT, IOSS number) for electronic transmission to the receiving
+                                      post. Note: IOSS should be entered as ‘IMxxxxxxxxxx’.
                                     </Text>
                                   )
-                                )
                                 }
                               />
                             );
@@ -1806,25 +1971,22 @@ const ShipmentForm: React.FC = () => {
                         </ProFormDependency>
                       </>
                     );
-                    return (
-                      <>
-                        {iossInput}
-                      </>
-                    );
+                    return <>{iossInput}</>;
                   }}
                 </ProFormDependency>
 
                 {/* </ProForm.Group> */}
               </ProCard>
-
             </ProCard>
 
-
-            <ProCard colSpan={12} ghost direction='column' gutter={[0, 16]} loading={loading}>
-              <ProCard bordered title="SHIP TO" headerBordered type='inner' extra={
-                <Button type="primary" icon={<ContactsOutlined />} />
-              }>
-
+            <ProCard colSpan={12} ghost direction="column" gutter={[0, 16]} loading={loading}>
+              <ProCard
+                bordered
+                title="SHIP TO"
+                headerBordered
+                type="inner"
+                extra={<Button type="primary" icon={<ContactsOutlined />} />}
+              >
                 <ProFormText
                   name={['destination', 'name']}
                   label="Contact Name"
@@ -1884,65 +2046,88 @@ const ShipmentForm: React.FC = () => {
                   options={regions.map((region) => ({ label: region.name, value: region.id }))}
                   extra={
                     showDestinationLocalizedButton(destinationRegion) && (
-                      <Text type="secondary" >
+                      <Text type="secondary">
                         Do you want to enter Chinese address?
-                        <Button type="link" color='primary' onClick={() => setLocalizedModalVisit(true)}>Edit</Button>
+                        <Button
+                          type="link"
+                          color="primary"
+                          onClick={() => setLocalizedModalVisit(true)}
+                        >
+                          Edit
+                        </Button>
                       </Text>
-
                     )
                   }
                   rules={[{ required: true, message: 'Please select a country' }]}
                 />
-                <ProFormText name={['destination', 'postalCode']} label="Postal Code" placeholder="Required."
-                  rules={[{ required: true, message: 'Please enter a postal code' }]} />
+                <ProFormText
+                  name={['destination', 'postalCode']}
+                  label="Postal Code"
+                  placeholder="Required."
+                  rules={[{ required: true, message: 'Please enter a postal code' }]}
+                />
                 <ProFormDependency name={[['destination', 'regionId']]}>
                   {({ destination }) => {
                     // console.log("destination", destination);
-                    const provinces = provinceRecord[destination?.regionId || 'CA']
+                    const provinces = provinceRecord[destination?.regionId || 'CA'];
 
                     if (provinces?.length > 0) {
-                      return <ProFormSelect
-                        name={['destination', 'province', 'code']}
-                        label="Province/State"
-                        placeholder="Required."
-                        options={provinces.map((province) => ({ label: province.name, value: province.code }))}
-                        rules={[{ required: true, message: 'Please select a province/state' }]}
-                        transform={(value) => {
-                          // console.log("destination select transform", value);
-                          return {
-                            destination: {
-                              province: {
-                                id: provinces.find((p) => p.code === value)?.id,
-                                name: provinces.find((p) => p.code === value)?.name,
-                                code: value
-                              }
-                            }
-                          }
-                        }}
-                      //convertValue={(value) => value.code}
-                      />
+                      return (
+                        <ProFormSelect
+                          name={['destination', 'province', 'code']}
+                          label="Province/State"
+                          placeholder="Required."
+                          options={provinces.map((province) => ({
+                            label: province.name,
+                            value: province.code,
+                          }))}
+                          rules={[{ required: true, message: 'Please select a province/state' }]}
+                          transform={(value) => {
+                            // console.log("destination select transform", value);
+                            return {
+                              destination: {
+                                province: {
+                                  id: provinces.find((p) => p.code === value)?.id,
+                                  name: provinces.find((p) => p.code === value)?.name,
+                                  code: value,
+                                },
+                              },
+                            };
+                          }}
+                          //convertValue={(value) => value.code}
+                        />
+                      );
                     } else {
-                      return <ProFormText name={['destination', 'province', 'name']} label="Province/State" placeholder="Required."
-                        rules={[{ required: true, message: 'Please enter a province/state' }]}
-                        transform={(value) => {
-                          // console.log("destination text transform", value);
-                          return {
-                            destination: {
-                              province: {
-                                id: '0',
-                                name: value,
-                                code: ''
-                              }
-                            }
-                          }
-                        }}
-                      //convertValue={(value) => value?.name || ''}
-                      />
+                      return (
+                        <ProFormText
+                          name={['destination', 'province', 'name']}
+                          label="Province/State"
+                          placeholder="Required."
+                          rules={[{ required: true, message: 'Please enter a province/state' }]}
+                          transform={(value) => {
+                            // console.log("destination text transform", value);
+                            return {
+                              destination: {
+                                province: {
+                                  id: '0',
+                                  name: value,
+                                  code: '',
+                                },
+                              },
+                            };
+                          }}
+                          //convertValue={(value) => value?.name || ''}
+                        />
+                      );
                     }
                   }}
                 </ProFormDependency>
-                <ProFormText name={['destination', 'city']} label="City" placeholder="Required." rules={[{ required: true, message: 'Please enter a city' }]} />
-
+                <ProFormText
+                  name={['destination', 'city']}
+                  label="City"
+                  placeholder="Required."
+                  rules={[{ required: true, message: 'Please enter a city' }]}
+                />
 
                 <ProFormSelect
                   name={['destination', 'type']}
@@ -1952,17 +2137,15 @@ const ShipmentForm: React.FC = () => {
                   placeholder="Required."
                   rules={[{ required: true, message: 'Please select an address type' }]}
                   extra={
-                    <Text type="secondary" >
+                    <Text type="secondary">
                       <QuestionCircleOutlined style={{ marginRight: 4 }} />
                       Residential Surcharge may apply.
                     </Text>
                   }
                 />
-
-
               </ProCard>
 
-              <ProCard bordered title="Packages" headerBordered type='inner'>
+              <ProCard bordered title="Packages" headerBordered type="inner">
                 <ProFormSelect
                   name={['package', 'type']}
                   label="Package Type"
@@ -1972,9 +2155,11 @@ const ShipmentForm: React.FC = () => {
                   options={packageTypeItems}
                   rules={[{ required: true, message: 'Please select a package type' }]}
                   extra={
-                    <Text type="secondary" >
+                    <Text type="secondary">
                       <QuestionCircleOutlined style={{ marginRight: 4 }} />
-                      Select “Env” for courier brand envelope; “Pak” for courier brand box; “Parcel” for regular cardboard box. Plase NOTE that the type of “Pak” is not support for DHL.
+                      Select “Env” for courier brand envelope; “Pak” for courier brand box; “Parcel”
+                      for regular cardboard box. Plase NOTE that the type of “Pak” is not support
+                      for DHL.
                     </Text>
                   }
                 />
@@ -1984,7 +2169,10 @@ const ShipmentForm: React.FC = () => {
                       name: ['package', 'packages'],
                       label: 'Packages',
                       min: 1,
-                      max: (singleParcelPackage(service) || params?.package?.type !== 'parcel') ? 1 : undefined,
+                      max:
+                        singleParcelPackage(service) || params?.package?.type !== 'parcel'
+                          ? 1
+                          : undefined,
                       itemRender: ({ listDom, action }, { record, index }) => {
                         return (
                           <ProCard
@@ -1992,27 +2180,32 @@ const ShipmentForm: React.FC = () => {
                             extra={action}
                             title={`Package #${index + 1}`}
                             headerBordered
-                            type='default'
+                            type="default"
                           >
                             {listDom}
                           </ProCard>
                         );
-                      }
-                    }
+                      },
+                    };
 
-
-                    return <ProFormList {...formListProps}>
-                      {packagesProFormListRender(params)}
-                    </ProFormList>;
+                    return (
+                      <ProFormList {...formListProps}>
+                        {packagesProFormListRender(params)}
+                      </ProFormList>
+                    );
                   }}
                 </ProFormDependency>
-
               </ProCard>
 
               <ProFormDependency name={[['package', 'type']]}>
                 {(params) => {
                   return (
-                    showProductsCard(service, initiationRegion, destinationRegion, params?.package?.type) && (
+                    showProductsCard(
+                      service,
+                      initiationRegion,
+                      destinationRegion,
+                      params?.package?.type,
+                    ) && (
                       <ProCard bordered title="Products" headerBordered>
                         <ProFormList
                           name={['product']}
@@ -2035,14 +2228,12 @@ const ShipmentForm: React.FC = () => {
                         </ProFormList>
                       </ProCard>
                     )
-                  )
+                  );
                 }}
-
               </ProFormDependency>
-
             </ProCard>
           </ProCard>
-        </ProForm >
+        </ProForm>
       }
       <DestinationLocalizedModalForm
         modalVisit={localizedModalVisit}
@@ -2057,5 +2248,3 @@ const ShipmentForm: React.FC = () => {
 };
 
 export default ShipmentForm;
-
-

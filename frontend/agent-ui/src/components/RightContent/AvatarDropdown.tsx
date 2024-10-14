@@ -1,4 +1,4 @@
-import { outLogin } from '@/services/ant-design-pro/api';
+import { clearSessionToken } from '@/access';
 import { LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import { history, useModel } from '@umijs/max';
 import { Spin } from 'antd';
@@ -8,7 +8,6 @@ import type { MenuInfo } from 'rc-menu/lib/interface';
 import React, { useCallback } from 'react';
 import { flushSync } from 'react-dom';
 import HeaderDropdown from '../HeaderDropdown';
-import { clearSessionToken } from '@/access';
 
 export type GlobalHeaderRightProps = {
   menu?: boolean;
@@ -104,20 +103,20 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, childre
   const menuItems = [
     ...(menu
       ? [
-        {
-          key: 'center',
-          icon: <UserOutlined />,
-          label: 'Personal Center',
-        },
-        {
-          key: 'settings',
-          icon: <SettingOutlined />,
-          label: 'Personal Settings',
-        },
-        {
-          type: 'divider' as const,
-        },
-      ]
+          {
+            key: 'center',
+            icon: <UserOutlined />,
+            label: 'Personal Center',
+          },
+          {
+            key: 'settings',
+            icon: <SettingOutlined />,
+            label: 'Personal Settings',
+          },
+          {
+            type: 'divider' as const,
+          },
+        ]
       : []),
     {
       key: 'logout',

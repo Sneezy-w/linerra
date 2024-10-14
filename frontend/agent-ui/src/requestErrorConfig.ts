@@ -1,10 +1,18 @@
-﻿import type { RequestOptions } from '@@/plugin-request/request';
-import type { RequestConfig } from '@umijs/max';
+﻿import type { RequestConfig } from '@umijs/max';
+import { history } from '@umijs/max';
 import { message, notification } from 'antd';
-import { clearSessionToken, getAccessToken, getIdToken, getSessionId, isNeedLogin, isNeedRefreshToken, isTokenExpired, setSessionToken } from './access';
-import { history, Link } from '@umijs/max';
-import { refreshToken } from './services/service/agent';
 import _ from 'lodash';
+import {
+  clearSessionToken,
+  getAccessToken,
+  getIdToken,
+  getSessionId,
+  isNeedLogin,
+  isNeedRefreshToken,
+  isTokenExpired,
+  setSessionToken,
+} from './access';
+import { refreshToken } from './services/service/agent';
 
 const loginPath = '/user/login';
 
@@ -25,23 +33,31 @@ interface ResponseStructure {
   showType?: ErrorShowType;
 }
 
-const handleLoginExpired = _.debounce(() => {
-  message.error('Login expired, please login again.');
-  clearSessionToken();
-  history.push(loginPath);
-}, 250, { leading: true, trailing: false });
+const handleLoginExpired = _.debounce(
+  () => {
+    message.error('Login expired, please login again.');
+    clearSessionToken();
+    history.push(loginPath);
+  },
+  250,
+  { leading: true, trailing: false },
+);
 
-const handleReturnToLogin = _.debounce(() => {
-  //message.error('Login expired, please login again.');
-  //clearSessionToken();
-  history.push(loginPath);
-}, 250, { leading: true, trailing: false });
+const handleReturnToLogin = _.debounce(
+  () => {
+    //message.error('Login expired, please login again.');
+    //clearSessionToken();
+    history.push(loginPath);
+  },
+  250,
+  { leading: true, trailing: false },
+);
 
 let isRefreshing = false;
 let refreshSubscribers: Array<(token: string) => void> = [];
 
 function onRefreshed(token: string) {
-  refreshSubscribers.map(cb => cb(token));
+  refreshSubscribers.map((cb) => cb(token));
 }
 
 function addRefreshSubscriber(cb: (token: string) => void) {
@@ -143,12 +159,12 @@ export const errorConfig: RequestConfig = {
         message.error('None response! Please retry.');
       } else {
         // There was an error sending the request
-        if (error.name === "TokenExpiredError") {
+        if (error.name === 'TokenExpiredError') {
           // clearSessionToken();
           // message.error('Login expired, please login again.');
           // history.push(loginPath);
           handleLoginExpired();
-        } else if (error.name === "ReturnToLoginError") {
+        } else if (error.name === 'ReturnToLoginError') {
           handleReturnToLogin();
         } else {
           message.error('Request error, please retry.');
@@ -169,16 +185,19 @@ export const errorConfig: RequestConfig = {
         if (isNeedLogin()) {
           //clearSessionToken();
           //history.push(loginPath);
-          const needLoginError = new Error("Please login.");
+          const needLoginError = new Error('Please login.');
           if (isTokenExpired()) {
-            needLoginError.name = "TokenExpiredError";
+            needLoginError.name = 'TokenExpiredError';
           } else {
-            needLoginError.name = "ReturnToLoginError";
+            needLoginError.name = 'ReturnToLoginError';
           }
           throw needLoginError;
           //return config;
         }
-        if (config?.url?.includes('api/agents/refreshToken') && config?.headers?.['Authorization']) {
+        if (
+          config?.url?.includes('api/agents/refreshToken') &&
+          config?.headers?.['Authorization']
+        ) {
           return config;
         }
         const accessToken = getAccessToken();
@@ -186,7 +205,7 @@ export const errorConfig: RequestConfig = {
         const sessionId = getSessionId();
         config.headers = {
           ...config.headers,
-          'Authorization': `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
           'Identity-Token': idToken || '',
           'Session-Id': sessionId || '',
         };
@@ -217,14 +236,13 @@ export const errorConfig: RequestConfig = {
             addRefreshSubscriber((token: string) => {
               config.headers = {
                 ...config.headers,
-                'Authorization': `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
               };
               resolve(config);
             });
           });
         }
       }
-
 
       return { ...config };
     },

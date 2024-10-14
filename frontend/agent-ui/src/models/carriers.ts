@@ -1,28 +1,35 @@
-import { getAccessToken } from "@/access";
-import { getAvailableCarriers, getCarriers } from "@/services/service/verykApi";
-import { useModel } from "@umijs/max";
-import { useRequest } from "ahooks";
-import { useEffect } from "react";
+import { getAccessToken } from '@/access';
+import { getCarriers } from '@/services/service/verykApi';
+import { useModel } from '@umijs/max';
+import { useRequest } from 'ahooks';
+import { useEffect } from 'react';
 
 export default () => {
-  const { data: carriers, loading, runAsync: fetchCarriersAsync, run: fetchCarriers } = useRequest(async () => {
-    const response: API.R<VerykType.Carrier[]> = await getCarriers({
-      skipErrorHandler: true,
-    });
-    return response.data?.map((carrier) => {
-      return {
-        ...carrier,
-        logo: `/images/logos/${carrier.groupCode}.png`,
-      }
-    });
-  }, {
-    manual: true,
-  });
+  const {
+    data: carriers,
+    loading,
+    runAsync: fetchCarriersAsync,
+    run: fetchCarriers,
+  } = useRequest(
+    async () => {
+      const response: API.R<VerykType.Carrier[]> = await getCarriers({
+        skipErrorHandler: true,
+      });
+      return response.data?.map((carrier) => {
+        return {
+          ...carrier,
+          logo: `/images/logos/${carrier.groupCode}.png`,
+        };
+      });
+    },
+    {
+      manual: true,
+    },
+  );
 
   const { currentUser } = useModel('@@initialState', (model) => ({
     currentUser: model.initialState?.currentUser,
   }));
-
 
   useEffect(() => {
     const accessToken = getAccessToken();
@@ -30,8 +37,6 @@ export default () => {
       fetchCarriers();
     }
   }, [currentUser]);
-
-
 
   // const getAllCarriers = () => async () => {
   //   let loadedCarriers: VerykType.Carrier[] | undefined = carriers;
@@ -105,7 +110,10 @@ export const getCarrierById = (carriers: VerykType.Carrier[] | undefined, carrie
   return carriers?.find((carrier) => carrier.id === carrierId);
 };
 
-export const getCarrierServiceById = (carriers: VerykType.Carrier[] | undefined, serviceId: string) => {
+export const getCarrierServiceById = (
+  carriers: VerykType.Carrier[] | undefined,
+  serviceId: string,
+) => {
   let foundService: VerykType.Service | undefined;
   carriers?.forEach((carrier) => {
     if (foundService) {
@@ -120,4 +128,3 @@ export const getCarrierServiceById = (carriers: VerykType.Carrier[] | undefined,
   });
   return foundService;
 };
-

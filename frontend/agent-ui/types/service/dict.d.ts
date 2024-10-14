@@ -5,5 +5,4 @@ declare namespace API.Service {
     value: any;
     label: string;
   };
-
 }

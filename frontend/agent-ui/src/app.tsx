@@ -1,17 +1,15 @@
-import { Footer, Question, SelectLang, AvatarDropdown, AvatarName } from '@/components';
+import { AvatarDropdown, AvatarName, Footer, Question, SelectLang } from '@/components';
 import { LinkOutlined } from '@ant-design/icons';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
-import { PageLoading, SettingDrawer } from '@ant-design/pro-components';
+import { SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
-import { history, Link, useIntl } from '@umijs/max';
+import { history, Link } from '@umijs/max';
 import defaultSettings from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
 //import { currentUser as queryCurrentUser } from '@/services/ant-design-pro/api';
-import React from 'react';
+import { getAccessToken, setSessionToken } from './access';
 import { getUserInfo, handleGoogleCallback } from './services/service/agent';
 import { getDicts } from './services/service/dict';
-import { getAccessToken, setSessionToken } from './access';
-import { message } from 'antd';
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
 
@@ -37,7 +35,8 @@ export async function getInitialState(): Promise<{
       });
       if (response.data) {
         response.data.name = 'test';
-        response.data.avatar = 'https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png';
+        response.data.avatar =
+          'https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png';
       }
       return response.data as API.CurrentUser;
     } catch (error) {
@@ -82,7 +81,6 @@ export async function getInitialState(): Promise<{
       loading: false,
     };
   } else {
-
     const searchParams = new URLSearchParams(location.search);
     const code = searchParams.get('code');
     if (code) {
@@ -108,15 +106,12 @@ export async function getInitialState(): Promise<{
         loading: false,
       };
     }
-
-
   }
   return initialState;
 }
 
 // ProLayout supported api https://procomponents.ant.design/components/layout
 export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState, loading }) => {
-
   return {
     actionsRender: () => [<Question key="doc" />, <SelectLang key="SelectLang" />],
     avatarProps: {
@@ -163,11 +158,11 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState, loa
     ],
     links: isDev
       ? [
-        <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
-          <LinkOutlined />
-          <span>OpenAPI Document</span>
-        </Link>,
-      ]
+          <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
+            <LinkOutlined />
+            <span>OpenAPI Document</span>
+          </Link>,
+        ]
       : [],
     menuHeaderRender: undefined,
     //loading: initialState ? false : true,

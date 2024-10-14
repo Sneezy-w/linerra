@@ -1,32 +1,15 @@
+import { clearSessionToken, setSessionToken } from '@/access';
 import { Footer } from '@/components';
-import { handleGoogleCallback, initiateGoogleSignIn, signIn, signUp } from '@/services/service/agent';
-import { getFakeCaptcha } from '@/services/ant-design-pro/login';
-import {
-  AlipayCircleOutlined,
-  LockOutlined,
-  MailOutlined,
-  MobileOutlined,
-  TaobaoCircleOutlined,
-  UserOutlined,
-  WeiboCircleOutlined,
-  GoogleOutlined,
-  GoogleCircleFilled
-} from '@ant-design/icons';
-import {
-  LoginForm,
-  PageLoading,
-  ProFormCaptcha,
-  ProFormCheckbox,
-  ProFormText,
-} from '@ant-design/pro-components';
-import { FormattedMessage, history, SelectLang, useIntl, useModel, Helmet } from '@umijs/max';
-import { Alert, message, Spin, Tabs } from 'antd';
-import Settings from '../../../../config/defaultSettings';
-import React, { useEffect, useState } from 'react';
-import { flushSync } from 'react-dom';
-import { createStyles } from 'antd-style';
-import { clearSessionToken, getAccessToken, setSessionToken } from '@/access';
 import Loading from '@/components/Loading';
+import { initiateGoogleSignIn, signIn, signUp } from '@/services/service/agent';
+import { GoogleCircleFilled, LockOutlined, MailOutlined } from '@ant-design/icons';
+import { LoginForm, ProFormText } from '@ant-design/pro-components';
+import { FormattedMessage, Helmet, history, SelectLang, useIntl, useModel } from '@umijs/max';
+import { message, Tabs } from 'antd';
+import { createStyles } from 'antd-style';
+import React, { useState } from 'react';
+import { flushSync } from 'react-dom';
+import Settings from '../../../../config/defaultSettings';
 
 const useStyles = createStyles(({ token }) => {
   return {
@@ -77,7 +60,9 @@ const ActionIcons = () => {
       <TaobaoCircleOutlined key="TaobaoCircleOutlined" className={styles.action} />
       <WeiboCircleOutlined key="WeiboCircleOutlined" className={styles.action} /> */}
       {/* <Spin spinning={isGoogleLoading} size="small"> */}
-      <GoogleCircleFilled key="GoogleOutlined" className={styles.action}
+      <GoogleCircleFilled
+        key="GoogleOutlined"
+        className={styles.action}
         onClick={async () => {
           setIsLoading(true);
           try {
@@ -92,7 +77,8 @@ const ActionIcons = () => {
           } finally {
             //setIsLoading(false);
           }
-        }} />
+        }}
+      />
       {/* </Spin> */}
     </>
   );
@@ -156,11 +142,7 @@ const Login: React.FC = () => {
   //   }
   // };
 
-
-
-
   // useEffect(() => {
-
 
   //   const searchParams = new URLSearchParams(location.search);
 
@@ -191,7 +173,6 @@ const Login: React.FC = () => {
   //         //const urlParams = new URL(window.location.href).searchParams;
   //         setIsLoading(false);
   //         history.push(searchParams.get('redirect') || '/');
-
 
   //       } else {
   //         setIsLoading(false);
@@ -279,9 +260,11 @@ const Login: React.FC = () => {
           logo={<img alt="logo" src="/logo.svg" />}
           title="Ant Design"
           subTitle={intl.formatMessage({ id: 'pages.layouts.userLayout.title' })}
-          initialValues={{
-            // autoLogin: true,
-          }}
+          initialValues={
+            {
+              // autoLogin: true,
+            }
+          }
           actions={[
             <FormattedMessage
               key="loginWith"
@@ -292,13 +275,16 @@ const Login: React.FC = () => {
           ]}
           submitter={{
             searchConfig: {
-              submitText: type === 'signIn' ? intl.formatMessage({
-                id: 'loginForm.submitText',
-                defaultMessage: 'Login',
-              }) : intl.formatMessage({
-                id: 'signUpForm.submitText',
-                defaultMessage: 'Register',
-              }),
+              submitText:
+                type === 'signIn'
+                  ? intl.formatMessage({
+                      id: 'loginForm.submitText',
+                      defaultMessage: 'Login',
+                    })
+                  : intl.formatMessage({
+                      id: 'signUpForm.submitText',
+                      defaultMessage: 'Register',
+                    }),
             },
           }}
           onFinish={async (values) => {

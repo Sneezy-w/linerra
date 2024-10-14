@@ -1,6 +1,5 @@
 import { request } from '@umijs/max';
 
-
 /** login POST /api/agents/signIn
  * @param body login params
  * @param options request config
@@ -35,14 +34,12 @@ export async function signUp(body: API.Service.SignUpParams, options?: Record<st
   });
 }
 
-
 export async function getUserInfo(options?: Record<string, any>) {
   return request<API.R<API.UserInfo>>('/api/agents/getUserInfo', {
     method: 'GET',
     ...(options || {}),
   });
 }
-
 
 /** refresh token POST /api/agents/refreshToken */
 export async function refreshToken(options?: Record<string, any>) {
@@ -77,4 +74,3 @@ export async function handleGoogleCallback(code: string, options?: Record<string
     ...(options || {}),
   });
 }
-

@@ -1,16 +1,27 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { PageContainer, ProCard, } from '@ant-design/pro-components';
-import { Tag, Typography, Space, Button, Table, Dropdown, MenuProps, Row, Col, Divider, Timeline } from 'antd';
-import { Box } from 'lucide-react';
-import { getDictItem } from '@/models/dicts';
-import { Link, useModel } from '@umijs/max';
-import { getNationalPhoneNumber, getPriceDetails, getTotal, getTotalPaid } from '../utils/utils';
-import { getRegionById } from '@/models/regions';
-import { CalendarOutlined, CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
-import moment from 'moment';
 import { getCarrierServiceById } from '@/models/carriers';
+import { getDictItem } from '@/models/dicts';
+import { getRegionById } from '@/models/regions';
 import { getTracking } from '@/services/service/verykApi';
+import { CalendarOutlined, CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { ProCard } from '@ant-design/pro-components';
+import { Link, useModel } from '@umijs/max';
 import { useRequest } from 'ahooks';
+import {
+  Button,
+  Col,
+  Divider,
+  Dropdown,
+  MenuProps,
+  Row,
+  Space,
+  Tag,
+  Timeline,
+  Typography,
+} from 'antd';
+import { Box } from 'lucide-react';
+import moment from 'moment';
+import React, { useMemo } from 'react';
+import { getNationalPhoneNumber, getTotalPaid } from '../utils/utils';
 
 // const trackingInfos: VerykType.TrackingInfoApiResVO[] = [
 //   {
@@ -684,56 +695,58 @@ import { useRequest } from 'ahooks';
 const { Title, Text, Paragraph } = Typography;
 
 const ShipmentDetail: React.FC<{
-  shipment: VerykType.ShipmentDetailResVO & { service: ReturnType<typeof getCarrierServiceById> }
-  printLabelDropdownMenu: MenuProps['items']
-  signedLabelUrlLoading: boolean,
-  priceDetails: VerykType.PriceDetail[],
-  totalPrice: { symbol: string, value: string }
-}>
-  = ({ shipment, printLabelDropdownMenu, signedLabelUrlLoading, priceDetails, totalPrice }) => {
-    // We'll use the shipment prop to populate the data
+  shipment: VerykType.ShipmentDetailResVO & { service: ReturnType<typeof getCarrierServiceById> };
+  printLabelDropdownMenu: MenuProps['items'];
+  signedLabelUrlLoading: boolean;
+  priceDetails: VerykType.PriceDetail[];
+  totalPrice: { symbol: string; value: string };
+}> = ({ shipment, printLabelDropdownMenu, signedLabelUrlLoading, priceDetails, totalPrice }) => {
+  // We'll use the shipment prop to populate the data
 
-    const { dicts, loading: dictsLoading } = useModel('dicts', (model) => ({
-      dicts: model.dicts,
-      loading: model.loading
-    }))
+  const { dicts, loading: dictsLoading } = useModel('dicts', (model) => ({
+    dicts: model.dicts,
+    loading: model.loading,
+  }));
 
-    const { regions } = useModel('regions')
+  const { regions } = useModel('regions');
 
-    const totalPaid = useMemo(() => getTotalPaid(shipment.payments), [shipment.payments])
+  const totalPaid = useMemo(() => getTotalPaid(shipment.payments), [shipment.payments]);
 
-    // useEffect(() => {
-    //   getTracking(shipment.number).then((res) => {
-    //     setTrackingInfos(res.data || []);
-    //   });
-    // }, [shipment.number]);
+  // useEffect(() => {
+  //   getTracking(shipment.number).then((res) => {
+  //     setTrackingInfos(res.data || []);
+  //   });
+  // }, [shipment.number]);
 
-    const { data: trackingInfos, loading: trackingInfoLoading } = useRequest(async () => {
+  const { data: trackingInfos, loading: trackingInfoLoading } = useRequest(
+    async () => {
       if (!shipment.externalId) {
         return [];
       }
       const res = await getTracking(shipment.externalId);
       return res.data || [];
-    }, {
+    },
+    {
       refreshDeps: [shipment.externalId],
-    });
+    },
+  );
 
-    //const trackingInfos = useMemo(() => trackingInfoRes?.data || [], [trackingInfoRes]);
+  //const trackingInfos = useMemo(() => trackingInfoRes?.data || [], [trackingInfoRes]);
 
-    return (
-      <ProCard ghost gutter={[16, 16]} direction='row'>
-        <ProCard colSpan={14} ghost direction='column' gutter={[0, 16]}>
-          <ProCard
-            bordered
-            headerBordered
-            type='inner'
-            title={<>
-              <Space align='center' >
-                <Box style={
-                  {
+  return (
+    <ProCard ghost gutter={[16, 16]} direction="row">
+      <ProCard colSpan={14} ghost direction="column" gutter={[0, 16]}>
+        <ProCard
+          bordered
+          headerBordered
+          type="inner"
+          title={
+            <>
+              <Space align="center">
+                <Box
+                  style={{
                     verticalAlign: 'middle',
-                  }
-                }
+                  }}
                 />
                 <Text
                   style={{
@@ -742,343 +755,499 @@ const ShipmentDetail: React.FC<{
                   }}
                 >
                   {shipment.number}
-
                 </Text>
 
                 {shipment.externalId && <Text type="secondary">{shipment.externalId}</Text>}
               </Space>
-            </>}
-            extra={
-              <Text strong style={{ fontSize: '1.25em', color: '#b94a48' }}>
-                {getDictItem(dicts, "shipmentStatus", shipment.status)?.label}
-              </Text>
-            }
-            split='horizontal'
-          >
-            <ProCard direction='row' ghost>
-              <ProCard>
-                <Space align='center'>
-                  <img src={shipment.service?.carrier?.logo} alt={shipment.service?.carrier?.name} style={{ width: '54px', height: '54px' }} />
-                  <Space direction="vertical" size={0}>
-                    <Title level={5} style={{ margin: 0 }}>{shipment.service?.carrier?.name}</Title>
-                    <Text type="secondary">{shipment.service?.name} ({shipment.service?.code})</Text>
-                  </Space>
+            </>
+          }
+          extra={
+            <Text strong style={{ fontSize: '1.25em', color: '#b94a48' }}>
+              {getDictItem(dicts, 'shipmentStatus', shipment.status)?.label}
+            </Text>
+          }
+          split="horizontal"
+        >
+          <ProCard direction="row" ghost>
+            <ProCard>
+              <Space align="center">
+                <img
+                  src={shipment.service?.carrier?.logo}
+                  alt={shipment.service?.carrier?.name}
+                  style={{ width: '54px', height: '54px' }}
+                />
+                <Space direction="vertical" size={0}>
+                  <Title level={5} style={{ margin: 0 }}>
+                    {shipment.service?.carrier?.name}
+                  </Title>
+                  <Text type="secondary">
+                    {shipment.service?.name} ({shipment.service?.code})
+                  </Text>
                 </Space>
-              </ProCard>
-              <ProCard style={{ height: '100%' }}>
-                <Space
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    justifyContent: 'flex-end',
-                  }}
-                  align="center"
-                >
-                  {shipment.waybillNumber && <Text copyable>{shipment.waybillNumber}</Text>}
-                </Space>
-              </ProCard>
+              </Space>
             </ProCard>
-
-            <ProCard direction='row' ghost>
-              <ProCard
-                colSpan={12}
+            <ProCard style={{ height: '100%' }}>
+              <Space
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  justifyContent: 'flex-end',
+                }}
+                align="center"
               >
-                <Space align='start' direction='vertical' size={0}>
-                  <Title level={5} style={{ fontSize: '1em', margin: 0, color: 'gray' }}>SHIP FROM</Title>
-                  <Title level={5} style={{ fontSize: '1.25em', margin: 0 }}>{shipment.initiation.name}</Title>
-                  <Text style={{ fontSize: '0.75em', fontWeight: 700 }}>P: +{getNationalPhoneNumber(shipment.initiation.phone, shipment.initiation.regionId || '', regions)}</Text>
-                  <Text>{shipment.initiation.address}</Text>
-                  {shipment.initiation.address2 && <Text>{shipment.initiation.address2}</Text>}
-                  {shipment.initiation.address3 && <Text>{shipment.initiation.address3}</Text>}
-                  <Text>{shipment.initiation.city}, {shipment.initiation.province?.name} {shipment.initiation.postalCode}, {getRegionById(regions, shipment.initiation.regionId)?.name}</Text>
-                </Space>
-              </ProCard>
-              <ProCard
-                colSpan={12}
-              >
-                <Space direction="vertical" size={16}>
-                  <Space direction="vertical" size={0}>
-                    <Title level={5} style={{ fontSize: '1em', margin: 0, color: 'gray' }}>SHIP TO</Title>
-                    <Space>
-                      <Title level={5} style={{ fontSize: '1.25em', margin: 0 }}>{shipment.destination.name}</Title>
-                      <Tag color="green">{getDictItem(dicts, "addressType", shipment.destination.type)?.label}</Tag>
-                    </Space>
-                    <Text style={{ fontSize: '0.75em', fontWeight: 700 }}>P: +{getNationalPhoneNumber(shipment.destination.phone, shipment.destination.regionId, regions)}</Text>
-                    <Text>{shipment.destination.address}</Text>
-                    {shipment.destination.address2 && <Text>{shipment.destination.address2}</Text>}
-                    {shipment.destination.address3 && <Text>{shipment.destination.address3}</Text>}
-                    <Text>{shipment.destination.city}, {shipment.destination.province?.name} {shipment.destination.postalCode}, {getRegionById(regions, shipment.destination.regionId)?.name}</Text>
-                  </Space>
-
-                  {shipment.destinationLocalized && <Space direction="vertical" size={0}>
-                    <Title level={5} style={{ fontSize: '1.25em', margin: 0 }}>{shipment.destinationLocalized.name}</Title>
-                    <Text style={{ fontSize: '0.75em', fontWeight: 700 }}>P: +{getNationalPhoneNumber(shipment.destinationLocalized.phone, shipment.destinationLocalized.regionId, regions)}</Text>
-                    <Text> {shipment.destinationLocalized.province?.name}{shipment.destinationLocalized.city}{shipment.destinationLocalized.address}</Text>
-                    <Text>{getRegionById(regions, shipment.destinationLocalized.regionId)?.name} {shipment.destinationLocalized.postalCode}</Text>
-                  </Space>}
-                </Space>
-              </ProCard>
+                {shipment.waybillNumber && <Text copyable>{shipment.waybillNumber}</Text>}
+              </Space>
             </ProCard>
+          </ProCard>
 
-            <ProCard direction='row' ghost>
-              <ProCard style={{ height: '100%' }}>
-                <Space align='center' style={{ width: '100%', height: '100%' }}>
-                  <CalendarOutlined />
-                  <Text type="secondary">{moment(shipment.created).format('YYYY-MM-DD HH:mm:ss')}</Text>
+          <ProCard direction="row" ghost>
+            <ProCard colSpan={12}>
+              <Space align="start" direction="vertical" size={0}>
+                <Title level={5} style={{ fontSize: '1em', margin: 0, color: 'gray' }}>
+                  SHIP FROM
+                </Title>
+                <Title level={5} style={{ fontSize: '1.25em', margin: 0 }}>
+                  {shipment.initiation.name}
+                </Title>
+                <Text style={{ fontSize: '0.75em', fontWeight: 700 }}>
+                  P: +
+                  {getNationalPhoneNumber(
+                    shipment.initiation.phone,
+                    shipment.initiation.regionId || '',
+                    regions,
+                  )}
+                </Text>
+                <Text>{shipment.initiation.address}</Text>
+                {shipment.initiation.address2 && <Text>{shipment.initiation.address2}</Text>}
+                {shipment.initiation.address3 && <Text>{shipment.initiation.address3}</Text>}
+                <Text>
+                  {shipment.initiation.city}, {shipment.initiation.province?.name}{' '}
+                  {shipment.initiation.postalCode},{' '}
+                  {getRegionById(regions, shipment.initiation.regionId)?.name}
+                </Text>
+              </Space>
+            </ProCard>
+            <ProCard colSpan={12}>
+              <Space direction="vertical" size={16}>
+                <Space direction="vertical" size={0}>
+                  <Title level={5} style={{ fontSize: '1em', margin: 0, color: 'gray' }}>
+                    SHIP TO
+                  </Title>
+                  <Space>
+                    <Title level={5} style={{ fontSize: '1.25em', margin: 0 }}>
+                      {shipment.destination.name}
+                    </Title>
+                    <Tag color="green">
+                      {getDictItem(dicts, 'addressType', shipment.destination.type)?.label}
+                    </Tag>
+                  </Space>
+                  <Text style={{ fontSize: '0.75em', fontWeight: 700 }}>
+                    P: +
+                    {getNationalPhoneNumber(
+                      shipment.destination.phone,
+                      shipment.destination.regionId,
+                      regions,
+                    )}
+                  </Text>
+                  <Text>{shipment.destination.address}</Text>
+                  {shipment.destination.address2 && <Text>{shipment.destination.address2}</Text>}
+                  {shipment.destination.address3 && <Text>{shipment.destination.address3}</Text>}
+                  <Text>
+                    {shipment.destination.city}, {shipment.destination.province?.name}{' '}
+                    {shipment.destination.postalCode},{' '}
+                    {getRegionById(regions, shipment.destination.regionId)?.name}
+                  </Text>
                 </Space>
-              </ProCard>
-              <ProCard style={{ height: '100%' }}>
-                <Space
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    justifyContent: 'flex-end',
-                  }}
-                  align="center"
-                >
-                  {shipment.status === 'open' && <>
+
+                {shipment.destinationLocalized && (
+                  <Space direction="vertical" size={0}>
+                    <Title level={5} style={{ fontSize: '1.25em', margin: 0 }}>
+                      {shipment.destinationLocalized.name}
+                    </Title>
+                    <Text style={{ fontSize: '0.75em', fontWeight: 700 }}>
+                      P: +
+                      {getNationalPhoneNumber(
+                        shipment.destinationLocalized.phone,
+                        shipment.destinationLocalized.regionId,
+                        regions,
+                      )}
+                    </Text>
+                    <Text>
+                      {' '}
+                      {shipment.destinationLocalized.province?.name}
+                      {shipment.destinationLocalized.city}
+                      {shipment.destinationLocalized.address}
+                    </Text>
+                    <Text>
+                      {getRegionById(regions, shipment.destinationLocalized.regionId)?.name}{' '}
+                      {shipment.destinationLocalized.postalCode}
+                    </Text>
+                  </Space>
+                )}
+              </Space>
+            </ProCard>
+          </ProCard>
+
+          <ProCard direction="row" ghost>
+            <ProCard style={{ height: '100%' }}>
+              <Space align="center" style={{ width: '100%', height: '100%' }}>
+                <CalendarOutlined />
+                <Text type="secondary">
+                  {moment(shipment.created).format('YYYY-MM-DD HH:mm:ss')}
+                </Text>
+              </Space>
+            </ProCard>
+            <ProCard style={{ height: '100%' }}>
+              <Space
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  justifyContent: 'flex-end',
+                }}
+                align="center"
+              >
+                {shipment.status === 'open' && (
+                  <>
                     <Button color="primary" type="link">
                       <Link to={`/shipping/shipment/${shipment.number}`}>Edit</Link>
                     </Button>
-                  </>}
+                  </>
+                )}
 
-                  {shipment.status === 'submitted' &&
-                    <Dropdown
-                      menu={{ items: printLabelDropdownMenu }}
-                      disabled={signedLabelUrlLoading}
-                      placement="top"
-                    >
-                      <Button color="primary" type="link" loading={signedLabelUrlLoading}>
-                        Print Label
-                      </Button>
-                    </Dropdown>
-                  }
-
-                </Space>
-
-
-              </ProCard>
+                {shipment.status === 'submitted' && (
+                  <Dropdown
+                    menu={{ items: printLabelDropdownMenu }}
+                    disabled={signedLabelUrlLoading}
+                    placement="top"
+                  >
+                    <Button color="primary" type="link" loading={signedLabelUrlLoading}>
+                      Print Label
+                    </Button>
+                  </Dropdown>
+                )}
+              </Space>
             </ProCard>
-
           </ProCard>
+        </ProCard>
 
-          <ProCard
-            title={
-              <Space>
-                Packages
-                <Tag color="#c09853">{getDictItem(dicts, "packageType", shipment.package.type)?.label}</Tag>
-              </Space>
-            }
-            headerBordered
-            type='inner'
-            bordered
-            split='horizontal'
-          >
-            <ProCard direction='row'>
-              <Space>
-                <Text style={{ fontSize: '1.125em' }}>Total Packages: <span style={{ fontWeight: 700, color: '#b94a48' }}>{shipment.package.packages.length}</span></Text>
-                <Text style={{ fontSize: '1.125em' }}>Total Weight: <span style={{ fontWeight: 700, color: '#b94a48' }}>{shipment.package.packages.reduce((sum, pkg) => sum + pkg.weight, 0)} </span><sup>lb</sup></Text>
-              </Space>
-            </ProCard>
-            {shipment.package.packages.map((packageItem, index) => (
-              <ProCard
-                key={index}
-              >
-                <Title level={5}>Package #{index + 1}</Title>
-                <Space align="start" style={{ width: '100%', justifyContent: 'space-between' }}>
-                  {/* <ul>
+        <ProCard
+          title={
+            <Space>
+              Packages
+              <Tag color="#c09853">
+                {getDictItem(dicts, 'packageType', shipment.package.type)?.label}
+              </Tag>
+            </Space>
+          }
+          headerBordered
+          type="inner"
+          bordered
+          split="horizontal"
+        >
+          <ProCard direction="row">
+            <Space>
+              <Text style={{ fontSize: '1.125em' }}>
+                Total Packages:{' '}
+                <span style={{ fontWeight: 700, color: '#b94a48' }}>
+                  {shipment.package.packages.length}
+                </span>
+              </Text>
+              <Text style={{ fontSize: '1.125em' }}>
+                Total Weight:{' '}
+                <span style={{ fontWeight: 700, color: '#b94a48' }}>
+                  {shipment.package.packages.reduce((sum, pkg) => sum + pkg.weight, 0)}{' '}
+                </span>
+                <sup>lb</sup>
+              </Text>
+            </Space>
+          </ProCard>
+          {shipment.package.packages.map((packageItem, index) => (
+            <ProCard key={index}>
+              <Title level={5}>Package #{index + 1}</Title>
+              <Space align="start" style={{ width: '100%', justifyContent: 'space-between' }}>
+                {/* <ul>
                     <li>Weight: <strong>{Number(packageItem.weight)?.toFixed(2) || '0.00'}</strong> <sup>lb</sup></li>
                     <li>Dimensions: Dimensions: <strong>{Number(packageItem.dimension?.length)?.toFixed(2) || '0.00'}*{Number(packageItem.dimension?.width)?.toFixed(2) || '0.00'}*{Number(packageItem.dimension?.height)?.toFixed(2) || '0.00'}</strong> <sup>in</sup></li>
                     <li>Insurance: <span>{packageItem.insurance?.symbol || '$'}</span> <span>{Number(packageItem.insurance?.value).toFixed(2) || '0.00'}</span></li>
                   </ul> */}
-                  <Space direction="vertical" size={0} style={{ paddingInlineStart: '1rem' }}>
-                    <Text>Weight: <strong>{Number(packageItem.weight)?.toFixed(2) || '0.00'}</strong> <sup>lb</sup></Text>
-                    <Text>Dimensions: Dimensions: <strong>{Number(packageItem.dimension?.length)?.toFixed(2) || '0.00'}*{Number(packageItem.dimension?.width)?.toFixed(2) || '0.00'}*{Number(packageItem.dimension?.height)?.toFixed(2) || '0.00'}</strong> <sup>in</sup></Text>
-                    <Text>Insurance: <span>{packageItem.insurance?.symbol || '$'}</span> <span>{Number(packageItem.insurance?.value).toFixed(2) || '0.00'}</span></Text>
-                  </Space>
-                  <Space direction="vertical" align="end">
-                    {packageItem.waybillNumber && <Text copyable>{packageItem.waybillNumber}</Text>}
-                  </Space>
+                <Space direction="vertical" size={0} style={{ paddingInlineStart: '1rem' }}>
+                  <Text>
+                    Weight: <strong>{Number(packageItem.weight)?.toFixed(2) || '0.00'}</strong>{' '}
+                    <sup>lb</sup>
+                  </Text>
+                  <Text>
+                    Dimensions: Dimensions:{' '}
+                    <strong>
+                      {Number(packageItem.dimension?.length)?.toFixed(2) || '0.00'}*
+                      {Number(packageItem.dimension?.width)?.toFixed(2) || '0.00'}*
+                      {Number(packageItem.dimension?.height)?.toFixed(2) || '0.00'}
+                    </strong>{' '}
+                    <sup>in</sup>
+                  </Text>
+                  <Text>
+                    Insurance: <span>{packageItem.insurance?.symbol || '$'}</span>{' '}
+                    <span>{Number(packageItem.insurance?.value).toFixed(2) || '0.00'}</span>
+                  </Text>
                 </Space>
-              </ProCard>
-            ))}
-          </ProCard>
+                <Space direction="vertical" align="end">
+                  {packageItem.waybillNumber && <Text copyable>{packageItem.waybillNumber}</Text>}
+                </Space>
+              </Space>
+            </ProCard>
+          ))}
+        </ProCard>
 
-          {shipment.product && shipment.product.length > 0 && <ProCard
-            title="Products"
-            headerBordered
-            type='inner'
-            bordered
-            split='horizontal'
-          >
+        {shipment.product && shipment.product.length > 0 && (
+          <ProCard title="Products" headerBordered type="inner" bordered split="horizontal">
             {shipment.product.map((productItem, index) => (
-              <ProCard
-                key={index}
-              >
+              <ProCard key={index}>
                 <Title level={5}>Product #{index + 1}</Title>
-                <Row style={{ width: '100%' }} >
+                <Row style={{ width: '100%' }}>
                   <Col span={12}>
                     <Space direction="vertical" size={0} style={{ paddingInlineStart: '1rem' }}>
-                      <Text>Description: <Text strong italic>{productItem.name}</Text></Text>
-                      <Text>Quantity: <Text strong italic>{productItem.qty}</Text></Text>
-                      <Text>Unit Price(CAD): <Text strong italic>{Number(productItem.price).toFixed(2) || '0.00'}</Text></Text>
+                      <Text>
+                        Description:{' '}
+                        <Text strong italic>
+                          {productItem.name}
+                        </Text>
+                      </Text>
+                      <Text>
+                        Quantity:{' '}
+                        <Text strong italic>
+                          {productItem.qty}
+                        </Text>
+                      </Text>
+                      <Text>
+                        Unit Price(CAD):{' '}
+                        <Text strong italic>
+                          {Number(productItem.price).toFixed(2) || '0.00'}
+                        </Text>
+                      </Text>
                     </Space>
                   </Col>
                   <Col span={12}>
-                    <Space direction="vertical" size={0} >
-                      <Text>Unit: <Text strong italic>{productItem.unit}</Text></Text>
-                      <Text>Origin: <Text strong italic>{productItem.origin}</Text></Text>
-                      <Text>HSCode: <Text strong italic>{productItem.HScode}</Text></Text>
+                    <Space direction="vertical" size={0}>
+                      <Text>
+                        Unit:{' '}
+                        <Text strong italic>
+                          {productItem.unit}
+                        </Text>
+                      </Text>
+                      <Text>
+                        Origin:{' '}
+                        <Text strong italic>
+                          {productItem.origin}
+                        </Text>
+                      </Text>
+                      <Text>
+                        HSCode:{' '}
+                        <Text strong italic>
+                          {productItem.HScode}
+                        </Text>
+                      </Text>
                     </Space>
                   </Col>
                 </Row>
               </ProCard>
             ))}
           </ProCard>
-          }
+        )}
 
-          <ProCard
-            title="Options"
-            headerBordered
-            type='inner'
-            bordered
-          >
-            <Space align="start" style={{ width: '100%' }}>
-              <Space direction="vertical" size={0} style={{ paddingInlineStart: '1rem' }}>
-                <Text>Packing Fee: <span>$</span> <span>{Number(shipment?.option?.packingFee).toFixed(2) || '0.00'}</span></Text>
-                <Paragraph
-                  ellipsis={{
-                    rows: 1,
-                    expandable: 'collapsible',
-                  }}
-                >
-                  Remarks: {shipment.option?.memo}
-                </Paragraph>
-              </Space>
+        <ProCard title="Options" headerBordered type="inner" bordered>
+          <Space align="start" style={{ width: '100%' }}>
+            <Space direction="vertical" size={0} style={{ paddingInlineStart: '1rem' }}>
+              <Text>
+                Packing Fee: <span>$</span>{' '}
+                <span>{Number(shipment?.option?.packingFee).toFixed(2) || '0.00'}</span>
+              </Text>
+              <Paragraph
+                ellipsis={{
+                  rows: 1,
+                  expandable: 'collapsible',
+                }}
+              >
+                Remarks: {shipment.option?.memo}
+              </Paragraph>
             </Space>
-          </ProCard>
+          </Space>
         </ProCard>
+      </ProCard>
 
-        <ProCard colSpan={10} ghost direction='column' gutter={[0, 16]}>
-          <ProCard
-            title="Retail & Payment Details"
-            type='inner'
-            headerBordered
-            bordered
-          >
-
-            <Row>
+      <ProCard colSpan={10} ghost direction="column" gutter={[0, 16]}>
+        <ProCard title="Retail & Payment Details" type="inner" headerBordered bordered>
+          <Row>
+            <Col span={12}>
+              <Space direction="vertical" style={{ width: '100%' }} align="end">
+                <Title level={5} style={{ margin: 0 }}>
+                  Retail Details:
+                </Title>
+              </Space>
+              <Divider
+                dashed
+                style={{
+                  borderColor: 'grey',
+                  marginBlock: '0.5rem',
+                  width: '80%',
+                  minWidth: '80%',
+                  marginInlineStart: 'auto',
+                }}
+              />
+              <Space direction="vertical" style={{ width: '100%' }} align="end">
+                {shipment.price?.msrp?.value && Number(shipment.price?.msrp?.value) > 0 && (
+                  <Text>
+                    <strong>MSRP(pre-tax): </strong>
+                    <span style={{ color: '#a27676' }}>{shipment.price?.msrp?.symbol} </span>
+                    <del style={{ color: 'grey' }}>{shipment.price?.msrp?.value}</del>
+                  </Text>
+                )}
+                {priceDetails.map(
+                  (chargeDetail: VerykType.PriceDetail, index: number) =>
+                    Number(chargeDetail?.price?.value) && (
+                      <Text
+                        key={index}
+                        style={{ color: chargeDetail.code === 'freight' ? 'black' : 'grey' }}
+                      >
+                        <strong>{chargeDetail.description}: </strong>
+                        <span style={{ color: '#a27676' }}>{shipment.price?.msrp?.symbol} </span>
+                        <span style={{ color: 'red' }}>{chargeDetail?.price?.value}</span>
+                      </Text>
+                    ),
+                )}
+              </Space>
+              <Divider
+                dashed
+                style={{
+                  borderColor: 'grey',
+                  marginBlock: '0.5rem',
+                  width: '80%',
+                  minWidth: '80%',
+                  marginInlineStart: 'auto',
+                }}
+              />
+              <Space direction="vertical" style={{ width: '100%' }} align="end">
+                <Text strong>
+                  <b>Grand Total(CAD): </b>
+                  <span style={{ color: '#a27676' }}>{totalPrice.symbol || '$'} </span>
+                  <span style={{ color: 'red' }}>{totalPrice.value || '0.00'}</span>
+                </Text>
+              </Space>
+            </Col>
+            {shipment.payments && shipment.payments.length > 0 && (
               <Col span={12}>
-
                 <Space direction="vertical" style={{ width: '100%' }} align="end">
-                  <Title level={5} style={{ margin: 0 }}>Retail Details:</Title>
+                  <Title level={5} style={{ margin: 0 }}>
+                    Payment Details:
+                  </Title>
                 </Space>
-                <Divider dashed style={{
-                  borderColor: 'grey',
-                  marginBlock: '0.5rem',
-                  width: '80%',
-                  minWidth: '80%',
-                  marginInlineStart: 'auto'
-                }} />
-                <Space direction="vertical" style={{ width: '100%' }} align="end">
-                  {shipment.price?.msrp?.value && Number(shipment.price?.msrp?.value) > 0 &&
-                    <Text><strong>MSRP(pre-tax): </strong><span style={{ color: '#a27676' }}>{shipment.price?.msrp?.symbol} </span><del style={{ color: 'grey' }}>{shipment.price?.msrp?.value}</del>
-                    </Text>}
-                  {priceDetails.map((chargeDetail: VerykType.PriceDetail, index: number) => (
-                    (Number(chargeDetail?.price?.value) && <Text key={index} style={{ color: chargeDetail.code === 'freight' ? 'black' : 'grey' }}><strong>{chargeDetail.description}: </strong><span style={{ color: '#a27676' }}>{shipment.price?.msrp?.symbol} </span><span style={{ color: 'red' }}>{chargeDetail?.price?.value}</span></Text>)
-                  ))}
-                </Space>
-                <Divider dashed style={{
-                  borderColor: 'grey',
-                  marginBlock: '0.5rem',
-                  width: '80%',
-                  minWidth: '80%',
-                  marginInlineStart: 'auto'
-                }} />
-                <Space direction="vertical" style={{ width: '100%' }} align='end'>
-                  <Text strong><b>Grand Total(CAD): </b><span style={{ color: '#a27676' }}>{totalPrice.symbol || '$'} </span><span style={{ color: 'red' }}>{totalPrice.value || '0.00'}</span></Text>
-                </Space>
-              </Col>
-              {shipment.payments && shipment.payments.length > 0 && <Col span={12}>
-                <Space direction="vertical" style={{ width: '100%' }} align="end">
-                  <Title level={5} style={{ margin: 0 }}>Payment Details:</Title>
-                </Space>
-                <Divider dashed style={{
-                  borderColor: 'grey',
-                  marginBlock: '0.5rem',
-                  width: '80%',
-                  minWidth: '80%',
-                  marginInlineStart: 'auto'
-                }} />
+                <Divider
+                  dashed
+                  style={{
+                    borderColor: 'grey',
+                    marginBlock: '0.5rem',
+                    width: '80%',
+                    minWidth: '80%',
+                    marginInlineStart: 'auto',
+                  }}
+                />
 
                 <Space direction="vertical" style={{ width: '100%' }} align="end">
                   {shipment.payments.map((payment: VerykType.PaymentResVO, index: number) => (
-                    <Text key={index} style={{ color: 'black' }}><strong>{moment(Number(payment.dateTime) * 1000).format('YYYY-MM-DD')}: </strong><span style={{ color: '#a27676' }}>{payment.subtotal.symbol} </span><span style={{ color: 'red' }}>{payment.subtotal.value}</span></Text>
+                    <Text key={index} style={{ color: 'black' }}>
+                      <strong>
+                        {moment(Number(payment.dateTime) * 1000).format('YYYY-MM-DD')}:{' '}
+                      </strong>
+                      <span style={{ color: '#a27676' }}>{payment.subtotal.symbol} </span>
+                      <span style={{ color: 'red' }}>{payment.subtotal.value}</span>
+                    </Text>
                   ))}
                 </Space>
-                <Divider dashed style={{
-                  borderColor: 'grey',
-                  marginBlock: '0.5rem',
-                  width: '80%',
-                  minWidth: '80%',
-                  marginInlineStart: 'auto'
-                }} />
-                <Space direction="vertical" style={{ width: '100%' }} align='end'>
-                  <Text strong><b>Paid Amount: </b><span style={{ color: '#a27676' }}>{totalPaid.symbol || '$'} </span><span style={{ color: 'red' }}>{totalPaid.value || '0.00'}</span></Text>
+                <Divider
+                  dashed
+                  style={{
+                    borderColor: 'grey',
+                    marginBlock: '0.5rem',
+                    width: '80%',
+                    minWidth: '80%',
+                    marginInlineStart: 'auto',
+                  }}
+                />
+                <Space direction="vertical" style={{ width: '100%' }} align="end">
+                  <Text strong>
+                    <b>Paid Amount: </b>
+                    <span style={{ color: '#a27676' }}>{totalPaid.symbol || '$'} </span>
+                    <span style={{ color: 'red' }}>{totalPaid.value || '0.00'}</span>
+                  </Text>
                 </Space>
-              </Col>}
-            </Row>
+              </Col>
+            )}
+          </Row>
+        </ProCard>
 
-          </ProCard>
-
-          <ProCard
-            title="Tracking Status"
-            type='inner'
-            headerBordered
-            bordered
-            loading={trackingInfoLoading}
-          >
-            <Space direction="vertical" size="large" style={{ width: '100%' }}>
-              {trackingInfos?.map((tracking, index) => (
-                <Space key={index} direction="vertical" size={8} style={{ width: '100%' }}>
-                  <Space align="center">
-                    <Text strong copyable>{tracking.number}</Text>
-                    <Button color="danger" variant="solid" size="small" href={tracking.tracking_url} target="_blank">
-                      Track on {tracking.carrier.name}
-                    </Button>
-                    {/* <Tag color="red">{tracking.carrier.name}</Tag>
+        <ProCard
+          title="Tracking Status"
+          type="inner"
+          headerBordered
+          bordered
+          loading={trackingInfoLoading}
+        >
+          <Space direction="vertical" size="large" style={{ width: '100%' }}>
+            {trackingInfos?.map((tracking, index) => (
+              <Space key={index} direction="vertical" size={8} style={{ width: '100%' }}>
+                <Space align="center">
+                  <Text strong copyable>
+                    {tracking.number}
+                  </Text>
+                  <Button
+                    color="danger"
+                    variant="solid"
+                    size="small"
+                    href={tracking.tracking_url}
+                    target="_blank"
+                  >
+                    Track on {tracking.carrier.name}
+                  </Button>
+                  {/* <Tag color="red">{tracking.carrier.name}</Tag>
                   {tracking.carrier.code === 'ups' && (
                     <Tag color="orange">1Track</Tag>
                   )} */}
-                  </Space>
-                  <Divider style={{
+                </Space>
+                <Divider
+                  style={{
                     borderColor: 'grey',
                     marginBlock: '0.5rem',
-                  }} />
-                  <Timeline
-                    mode="left"
-                    items={tracking.list.map((event, eventIndex) => ({
-                      color: eventIndex === 0 ? 'green' : 'gray',
-                      children: (
-                        <Space direction="vertical" size={0}>
-                          <Text strong style={{ color: eventIndex === 0 ? 'green' : undefined }}>{moment.unix(Number(event.timestamp)).format('MM/DD/YY HH:mm')}</Text>
-                          <Text style={{ color: eventIndex === 0 ? 'green' : undefined }}>
-                            {event.location && <span>[{event.location}]</span>}
-                            {event.signed === 1 && <CheckCircleOutlined style={{ color: 'green', marginRight: '4px' }} />}
-                            {event.context}
-                          </Text>
-                        </Space>
-                      ),
-                      dot: eventIndex === 0 ? <ClockCircleOutlined style={{ fontSize: '16px' }} /> : undefined,
-                    }))}
-                  />
-                </Space>
-              ))}
-            </Space>
-          </ProCard>
+                  }}
+                />
+                <Timeline
+                  mode="left"
+                  items={tracking.list.map((event, eventIndex) => ({
+                    color: eventIndex === 0 ? 'green' : 'gray',
+                    children: (
+                      <Space direction="vertical" size={0}>
+                        <Text strong style={{ color: eventIndex === 0 ? 'green' : undefined }}>
+                          {moment.unix(Number(event.timestamp)).format('MM/DD/YY HH:mm')}
+                        </Text>
+                        <Text style={{ color: eventIndex === 0 ? 'green' : undefined }}>
+                          {event.location && <span>[{event.location}]</span>}
+                          {event.signed === 1 && (
+                            <CheckCircleOutlined style={{ color: 'green', marginRight: '4px' }} />
+                          )}
+                          {event.context}
+                        </Text>
+                      </Space>
+                    ),
+                    dot:
+                      eventIndex === 0 ? (
+                        <ClockCircleOutlined style={{ fontSize: '16px' }} />
+                      ) : undefined,
+                  }))}
+                />
+              </Space>
+            ))}
+          </Space>
         </ProCard>
       </ProCard>
-    );
-  };
+    </ProCard>
+  );
+};
 
 export default ShipmentDetail;

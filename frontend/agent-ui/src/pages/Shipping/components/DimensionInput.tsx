@@ -1,13 +1,14 @@
-import { ProForm, ProFormDigit, useControlModel, WithControlPropsType } from "@ant-design/pro-components";
-import { InputNumber, Space } from "antd";
+import { useControlModel, WithControlPropsType } from '@ant-design/pro-components';
+import { InputNumber, Space } from 'antd';
 
-const DimensionInput: React.FC = (props: WithControlPropsType<{
-  // other props...
-}>) => {
+const DimensionInput: React.FC = (
+  props: WithControlPropsType<{
+    // other props...
+  }>,
+) => {
   const model = useControlModel(props, ['length', 'width', 'height']);
 
   return (
-
     <Space.Compact>
       {/* <ProFormDigit name='length' noStyle fieldProps={{
         suffix: 'in',
@@ -31,31 +32,40 @@ const DimensionInput: React.FC = (props: WithControlPropsType<{
       }} /> */}
 
       {/* <ProForm.Item name='length' noStyle> */}
-      <InputNumber  {...{
-        suffix: 'in',
-        precision: 2,
-        style: { width: '100%' },
-        min: 0,
-        placeholder: 'Length',
-      }} {...model.length} />
+      <InputNumber
+        {...{
+          suffix: 'in',
+          precision: 2,
+          style: { width: '100%' },
+          min: 0,
+          placeholder: 'Length',
+        }}
+        {...model.length}
+      />
       {/* </ProForm.Item>
       <ProForm.Item name='width' noStyle> */}
-      <InputNumber  {...{
-        suffix: 'in',
-        precision: 2,
-        style: { width: '100%' },
-        min: 0,
-        placeholder: 'Width',
-      }} {...model.width} />
+      <InputNumber
+        {...{
+          suffix: 'in',
+          precision: 2,
+          style: { width: '100%' },
+          min: 0,
+          placeholder: 'Width',
+        }}
+        {...model.width}
+      />
       {/* </ProForm.Item>
       <ProForm.Item name='height' noStyle> */}
-      <InputNumber  {...{
-        suffix: 'in',
-        precision: 2,
-        style: { width: '100%' },
-        min: 0,
-        placeholder: 'Height',
-      }} {...model.height} />
+      <InputNumber
+        {...{
+          suffix: 'in',
+          precision: 2,
+          style: { width: '100%' },
+          min: 0,
+          placeholder: 'Height',
+        }}
+        {...model.height}
+      />
       {/* </ProForm.Item> */}
     </Space.Compact>
   );

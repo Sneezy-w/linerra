@@ -77,9 +77,14 @@ export function isNeedLogin() {
   const idTokenExpiresIn = getIdTokenExpiredAt();
   const accessToken = getAccessToken();
   const idToken = getIdToken();
-  return !accessToken || !idToken
-    || !accessTokenExpiresIn || !idTokenExpiresIn
-    || accessTokenExpiresIn < new Date() || idTokenExpiresIn < new Date();
+  return (
+    !accessToken ||
+    !idToken ||
+    !accessTokenExpiresIn ||
+    !idTokenExpiresIn ||
+    accessTokenExpiresIn < new Date() ||
+    idTokenExpiresIn < new Date()
+  );
 }
 
 export function isTokenExpired() {
@@ -92,6 +97,14 @@ export function isNeedRefreshToken() {
   const accessToken = getAccessToken();
   const idToken = getIdToken();
   const fifteenMinutesFromNow = new Date(Date.now() + 15 * 60 * 1000);
-  return (accessToken && accessTokenExpiresIn && (accessTokenExpiresIn > new Date() && accessTokenExpiresIn < fifteenMinutesFromNow))
-    || (idToken && idTokenExpiresIn && (idTokenExpiresIn > new Date() && idTokenExpiresIn < fifteenMinutesFromNow));
+  return (
+    (accessToken &&
+      accessTokenExpiresIn &&
+      accessTokenExpiresIn > new Date() &&
+      accessTokenExpiresIn < fifteenMinutesFromNow) ||
+    (idToken &&
+      idTokenExpiresIn &&
+      idTokenExpiresIn > new Date() &&
+      idTokenExpiresIn < fifteenMinutesFromNow)
+  );
 }

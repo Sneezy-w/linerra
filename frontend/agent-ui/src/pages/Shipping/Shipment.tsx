@@ -1,15 +1,13 @@
-import { ProCard, ProLayout } from '@ant-design/pro-components';
+import { ShipmentStatus } from '@/constant/constant';
+import { getShipment } from '@/services/service/verykApi';
+import { ProCard } from '@ant-design/pro-components';
+import { useModel, useParams } from '@umijs/max';
 import { Spin, Steps } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
+import OrderSuccess from './components/OrderSuccess';
 import QuoteForm from './components/QuoteForm';
 import SelectService from './components/SelectService';
-import { useModel, useParams } from '@umijs/max';
 import ShipmentForm from './components/ShipmentForm';
-import OrderSuccess from './components/OrderSuccess';
-import { LoadingOutlined } from '@ant-design/icons';
-import Loading from '@/components/Loading';
-import { getShipment } from '@/services/service/verykApi';
-import { ShipmentStatus } from '@/constant/constant';
 
 const { Step } = Steps;
 
@@ -33,20 +31,15 @@ const Shipment: React.FC = () => {
     if (number) {
       setCurrentStep(2);
       getShipment(number).then((res) => {
-
         if (res.data?.status !== ShipmentStatus.Open) {
           setOrderNumber(res.data?.number || '');
           setCurrentStep(3);
         } else {
           setSelectedServiceId(res.data?.serviceId);
 
-
           setShipmentFormInitialValues(res.data);
-
         }
         setDataLoading(false);
-
-
       });
     } else {
       setCurrentStep(0);
@@ -57,7 +50,6 @@ const Shipment: React.FC = () => {
         setDataLoading(false);
       });
     }
-
   }, [number]);
 
   const renderStepContent = () => {
@@ -65,9 +57,7 @@ const Shipment: React.FC = () => {
       case 0:
         return <QuoteForm />;
       case 1:
-        return (
-          <SelectService />
-        );
+        return <SelectService />;
       case 2:
         return <ShipmentForm />;
       case 3:
@@ -77,11 +67,10 @@ const Shipment: React.FC = () => {
     }
   };
 
-
   return (
     <>
       <Spin spinning={operationLoading}>
-        <ProCard ghost gutter={[16, 0]} direction='row' type='inner' wrap>
+        <ProCard ghost gutter={[16, 0]} direction="row" type="inner" wrap>
           <ProCard bordered colSpan={24}>
             <Steps current={currentStep}>
               <Step title="Quote" />
@@ -91,8 +80,7 @@ const Shipment: React.FC = () => {
             </Steps>
           </ProCard>
           {renderStepContent()}
-
-        </ProCard >
+        </ProCard>
       </Spin>
     </>
   );

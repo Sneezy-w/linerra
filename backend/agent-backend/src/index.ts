@@ -12,7 +12,6 @@ import { trace } from "@linerra/system/src/middlewares/trace";
 import { Request, Response } from 'express';
 import { ErrorShowType } from "@linerra/system/src/enum/errorShowType";
 import dictRoutes from "./routes/dictRoutes";
-import verykApiRoutes from "./routes/verykApiRoutes";
 import verykGeneralRoutes from './routes/verykGeneralRoutes';
 import { contextInjector } from '@linerra/system/src/middlewares/contextInjector';
 import verykShipmentRoutes from './routes/verykShipmentRoutes';
@@ -25,13 +24,13 @@ app.use(express.json());
 
 
 // requestLogger
-// app.use(expressWinston.logger({
-//   winstonInstance: logger,
-//   meta: true,
-//   msg: "HTTP {{req.method}} {{req.url}}",
-//   expressFormat: true,
-//   colorize: false,
-// }));
+app.use(expressWinston.logger({
+  winstonInstance: logger,
+  meta: true,
+  msg: "HTTP {{req.method}} {{req.url}}",
+  expressFormat: true,
+  colorize: false,
+}));
 
 app.use(trace);
 app.use(contextInjector);
@@ -63,7 +62,6 @@ app.use(performanceMonitor);
 
 app.use("/api/agents", agentRoutes);
 app.use("/api/dict", dictRoutes);
-app.use("/api/veryk", verykApiRoutes);
 app.use("/api/veryk/general", verykGeneralRoutes);
 app.use("/api/veryk/shipment", verykShipmentRoutes);
 
@@ -72,10 +70,9 @@ app.get('/health', (req, res) => {
 });
 
 
-// errorLogger
-// app.use(expressWinston.errorLogger({
-//   winstonInstance: logger,
-// }));
+app.use(expressWinston.errorLogger({
+  winstonInstance: logger,
+}));
 
 app.use(errorHandler);
 

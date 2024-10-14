@@ -28,5 +28,4 @@ declare namespace API.Service {
     accessToken: string;
     idToken: string;
   };
-
 }

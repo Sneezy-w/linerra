@@ -1,20 +1,27 @@
 // src/models/userModel.ts
-import { useAsyncEffect, useRequest } from 'ahooks';
-import { getDicts } from '../services/service/dict';
 import { getAccessToken } from '@/access';
-import { useCallback, useEffect } from 'react';
 import { useModel } from '@umijs/max';
-
+import { useRequest } from 'ahooks';
+import { useEffect } from 'react';
+import { getDicts } from '../services/service/dict';
 
 export default () => {
-  const { data: dicts, loading: loading, runAsync: fetchDictsAsync, run: fetchDicts } = useRequest(async () => {
-    const response: API.R<Record<string, API.Service.DictItem[]>> = await getDicts({
-      skipErrorHandler: true,
-    });
-    return response.data;
-  }, {
-    manual: true,
-  });
+  const {
+    data: dicts,
+    loading: loading,
+    runAsync: fetchDictsAsync,
+    run: fetchDicts,
+  } = useRequest(
+    async () => {
+      const response: API.R<Record<string, API.Service.DictItem[]>> = await getDicts({
+        skipErrorHandler: true,
+      });
+      return response.data;
+    },
+    {
+      manual: true,
+    },
+  );
 
   const { currentUser } = useModel('@@initialState', (model) => ({
     currentUser: model.initialState?.currentUser,
@@ -38,15 +45,26 @@ export default () => {
   };
 };
 
-export const getDictItems = (dicts: Record<string, API.Service.DictItem[]> | undefined, dictType: string) => {
+export const getDictItems = (
+  dicts: Record<string, API.Service.DictItem[]> | undefined,
+  dictType: string,
+) => {
   return dicts?.[dictType] || [];
 };
 
-export const getDictItem = (dicts: Record<string, API.Service.DictItem[]> | undefined, dictType: string, value: string | undefined) => {
+export const getDictItem = (
+  dicts: Record<string, API.Service.DictItem[]> | undefined,
+  dictType: string,
+  value: string | undefined,
+) => {
   return dicts?.[dictType]?.find((item) => item.value === value);
 };
 
-export const getDictItemCode = (dicts: Record<string, API.Service.DictItem[]> | undefined, dictType: string, value: string) => {
+export const getDictItemCode = (
+  dicts: Record<string, API.Service.DictItem[]> | undefined,
+  dictType: string,
+  value: string,
+) => {
   const dictItem = getDictItem(dicts, dictType, value);
   return dictItem?.code;
 };

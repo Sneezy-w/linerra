@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { history, useModel } from '@umijs/max';
 import { Alert, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { useModel, history } from '@umijs/max';
+import React, { useState } from 'react';
 
 const columns: ColumnsType<VerykType.Carrier> = [
   { dataIndex: 'id', key: 'id', align: 'left', width: '10%' },
@@ -58,10 +58,10 @@ const MyServices: React.FC = () => {
       })) || [],
   }));
 
-  const onTableRowExpand = (expanded: boolean, record: CarrierData) => {
+  const onTableRowExpand = (expanded: boolean, record: VerykType.Carrier) => {
     const keys = expanded
-      ? [...expandedRowKeys, record.key]
-      : expandedRowKeys.filter((k) => k !== record.key);
+      ? [...expandedRowKeys, record.id]
+      : expandedRowKeys.filter((k) => k !== record.id);
     setExpandedRowKeys(keys);
   };
 
@@ -83,9 +83,9 @@ const MyServices: React.FC = () => {
           expandedRowKeys,
         }}
         onRow={(record) => ({
-          onClick: () => onTableRowExpand(!expandedRowKeys.includes(record.key), record),
+          onClick: () => onTableRowExpand(!expandedRowKeys.includes(record.id), record),
         })}
-        dataSource={formattedCarriers}
+        dataSource={formattedCarriers as any}
         loading={loading}
         showHeader={false}
       />
