@@ -2,7 +2,7 @@ import { ShipmentDO, ShipmentEditResVO, ShipmentReqVO } from "../../models/veryk
 import { verykCarriers } from "../../constant/verykConstant";
 import { quoteApiResToResVO, quoteReqVOToApiReq } from "../../models/veryk/quote.convert";
 import { QuoteReqVO, QuoteResVO } from "../../models/veryk/quote.entity";
-import { quote, create, getLabel } from "../../utils/verykUtils";
+import { quote, create, getLabel, shipmentDetail } from "../../utils/verykUtils";
 import { shipmentApiResToApiUpdateDO, shipmentReqVOToApiReq, shipmentReqVOToDO } from "../../models/veryk/shipment.convert";
 import { generateOrderNumber, now } from "../../utils/utils";
 import { MainTable, Shipment } from "system/src/dynamodb/toolbox";
@@ -180,9 +180,14 @@ export class VerykShipmentService {
     }
     const shipmentApiRes = await create(apiReq, acceptLanguage)
     //console.log(shipmentApiRes);
-    const shipmentApiUpdateDO = shipmentApiResToApiUpdateDO(shipmentApiRes);
+    //console.log(JSON.stringify(shipmentApiRes.package.packages, null, 2));
 
     const labelFile = await this.saveAllLabelFile(shipmentApiRes.id, acceptLanguage);
+
+    const shipmentDetailApiRes = await shipmentDetail({ id: shipmentApiRes.id }, acceptLanguage);
+    console.log(JSON.stringify(shipmentDetailApiRes, null, 2));
+
+    const shipmentApiUpdateDO = shipmentApiResToApiUpdateDO(shipmentDetailApiRes);
     shipmentApiUpdateDO.labelFile = labelFile;
 
     //console.log(shipmentApiUpdateDO);
@@ -234,6 +239,15 @@ export class VerykShipmentService {
       await S3Service.instance.uploadLabelFile(invoiceKey, invoiceBuffer, invoiceFileType);
       labelFile.invoice = invoiceKey;
     }
+
+    if (labelApiRes.delivery) {
+      const { name: deliveryFileName, label: deliveryFileContent, type: deliveryFileType } = labelApiRes.delivery;
+      const deliveryBuffer = Buffer.from(deliveryFileContent as string, 'base64');
+      const deliveryKey = `delivery/${deliveryFileName}`;
+      await S3Service.instance.uploadLabelFile(deliveryKey, deliveryBuffer, deliveryFileType);
+      labelFile.delivery = deliveryKey;
+    }
+
     return labelFile;
   }
 }

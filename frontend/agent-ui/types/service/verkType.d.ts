@@ -496,7 +496,32 @@ declare namespace VerykType {
   type LabelFile = {
     label: string;
     invoice?: string;
+    delivery?: string;
+  }
+
+  type TrackingInfoApiResVO = {
+    id: string;
+    number: string;
+    carrier: {
+      id: string;
+      code: string;
+      group_code: string;
+      name: string;
+      region_id: string;
+    };
+    tracking_url: string;
+    list: TrackingEventApiResVO[];
+  };
+
+  type TrackingEventApiResVO = {
+    context: string;
+    timestamp: string | number;
+    location: string;
+    signed: string | number;
+    datetime: {
+      PRC: string;
+      EST: string;
+      GMT: string;
+    }
   }
 }
-
-

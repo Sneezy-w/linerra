@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PageContainer, ProCard, ProCardProps, ProForm, ProFormDateRangePicker, ProFormDateTimeRangePicker, ProFormInstance, ProFormSelect, ProFormText, QueryFilter } from '@ant-design/pro-components';
-import { Input, Select, DatePicker, Button, Space, Typography, Tag, Divider, List, Skeleton, TimeRangePickerProps, Row, Col, message, Spin, Flex, Dropdown, MenuProps } from 'antd';
+import { Input, Select, DatePicker, Button, Space, Typography, Tag, Divider, List, Skeleton, TimeRangePickerProps, Row, Col, message, Spin, Flex, Dropdown, MenuProps, Modal } from 'antd';
 import { BarcodeOutlined, CalendarOutlined, SearchOutlined, ShoppingOutlined } from '@ant-design/icons';
 import { ReactBarcode } from 'react-jsbarcode';
 import { Box, Package, MailOpen, Boxes } from 'lucide-react';
@@ -18,7 +18,9 @@ import { CountryCode, parsePhoneNumber } from 'libphonenumber-js';
 import { deleteShipment, getShipmentPage, getSignedLabelUrl } from '@/services/service/verykApi';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useAsyncFn } from 'react-use';
-import { getPriceDetails, getTotal } from './utils/utils';
+import { getNationalPhoneNumber, getPriceDetails, getTotal } from './utils/utils';
+import ShipmentDetail from './components/ShipmentDetail';
+import { useTheme } from 'antd-style';
 
 
 const { RangePicker } = DatePicker;
@@ -288,8 +290,20 @@ const ShipmentCard: React.FC<{ shipment: VerykType.ShipmentDetailResVO & { servi
       })
     }
 
+    if (shipment.labelFile?.delivery) {
+      items.push({
+        key: 'delivery',
+        label: <Typography.Link onClick={() => openLabelUrl(shipment.labelFile?.delivery)}>Delivery Label</Typography.Link>
+      })
+    }
+
     return items
   }, [shipment])
+
+  const [shipmentDetailModalVisible, setShipmentDetailModalVisible] = useState(false);
+
+  const token = useTheme();
+
 
 
   //const shipment = mockShipment[0]
@@ -316,35 +330,37 @@ const ShipmentCard: React.FC<{ shipment: VerykType.ShipmentDetailResVO & { servi
               </TLink>
             </Space> */}
 
-                <Link to={`/shipping/shipment/${shipment.number}`}>
-                  <Button
-                    color="primary"
-                    variant="link"
-                    icon={
-                      <Box style={
-                        {
-                          verticalAlign: 'middle',
-                        }
+
+                <Button
+                  color="primary"
+                  variant="link"
+                  icon={
+                    <Box style={
+                      {
+                        verticalAlign: 'middle',
                       }
-                      />
                     }
-                    style={{
+                    />
+                  }
+                  style={{
 
-                      fontSize: '1em',
-                      padding: 0,
-                    }}
-                  >
-                    {shipment.number}
+                    fontSize: '1em',
+                    padding: 0,
+                  }}
+                  onClick={() => setShipmentDetailModalVisible(true)}
+                >
+                  {shipment.number}
 
-                  </Button>
-                  <Text copyable={{ text: shipment.number }}
-                    style={{
-                      fontSize: '1em',
-                      position: 'relative',
-                      left: '0.2em',
-                      top: '-0.4em',
-                    }} />
-                </Link>
+
+                </Button>
+
+                <Text copyable={{ text: shipment.number }}
+                  style={{
+                    fontSize: '1em',
+                    position: 'relative',
+                    top: '-3px',
+                    left: '-4px',
+                  }} />
 
                 {shipment.externalId && <Text copyable type="secondary">{shipment.externalId}</Text>}
               </Space>
@@ -394,6 +410,10 @@ const ShipmentCard: React.FC<{ shipment: VerykType.ShipmentDetailResVO & { servi
                     {getDictItem(dicts, "packageType", shipment.package.type)?.label}
                   </Text>
                 </Space>
+              } bodyStyle={
+                {
+                  paddingBlock: 0,
+                }
               }>
 
 
@@ -427,7 +447,7 @@ const ShipmentCard: React.FC<{ shipment: VerykType.ShipmentDetailResVO & { servi
                       {shipment.destination.name}
                     </Text>
                     <Text style={{ fontSize: '0.75em' }}>
-                      {`P: +${getRegionById(regions, shipment.destination.regionId)?.phoneCode} ${parsePhoneNumber(shipment.destination.phone || '', shipment.destination.regionId.toLocaleUpperCase() as CountryCode).formatNational()}`}
+                      {`P: +${getNationalPhoneNumber(shipment.destination.phone, shipment.destination.regionId, regions)}`}
                     </Text>
                   </Space>
 
@@ -503,6 +523,25 @@ const ShipmentCard: React.FC<{ shipment: VerykType.ShipmentDetailResVO & { servi
               </ProCard>
             </ProCard>
           </ProCard>
+          <Modal
+            open={shipmentDetailModalVisible}
+            footer={null}
+            onCancel={() => setShipmentDetailModalVisible(false)}
+            width={"90%"}
+            styles={{
+              content: {
+                background: `linear-gradient(${token.colorBgContainer}, ${token.colorBgLayout} 28%)`
+              }
+            }}
+          >
+            <ShipmentDetail
+              shipment={shipment}
+              printLabelDropdownMenu={printLabelDropdownMenu}
+              signedLabelUrlLoading={signedLabelUrlLoading}
+              priceDetails={priceDetails}
+              totalPrice={totalPrice}
+            />
+          </Modal>
         </Spin>
       }
     </>

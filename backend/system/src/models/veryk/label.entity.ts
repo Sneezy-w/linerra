@@ -11,9 +11,16 @@ export interface LabelApiRes {
     size: number;
     label: string;
   }
+  delivery?: {
+    type: string;
+    name: string;
+    size: number;
+    label: string;
+  }
 }
 
 export interface LabelFile {
   label: string;
   invoice?: string;
+  delivery?: string;
 }
