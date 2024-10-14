@@ -796,17 +796,26 @@ const ShipmentDetail: React.FC<{
               <ProCard
                 colSpan={12}
               >
-                <Space direction="vertical" size={0}>
-                  <Title level={5} style={{ fontSize: '1em', margin: 0, color: 'gray' }}>SHIP TO</Title>
-                  <Space>
-                    <Title level={5} style={{ fontSize: '1.25em', margin: 0 }}>{shipment.destination.name}</Title>
-                    <Tag color="green">{getDictItem(dicts, "addressType", shipment.destination.type)?.label}</Tag>
+                <Space direction="vertical" size={16}>
+                  <Space direction="vertical" size={0}>
+                    <Title level={5} style={{ fontSize: '1em', margin: 0, color: 'gray' }}>SHIP TO</Title>
+                    <Space>
+                      <Title level={5} style={{ fontSize: '1.25em', margin: 0 }}>{shipment.destination.name}</Title>
+                      <Tag color="green">{getDictItem(dicts, "addressType", shipment.destination.type)?.label}</Tag>
+                    </Space>
+                    <Text style={{ fontSize: '0.75em', fontWeight: 700 }}>P: +{getNationalPhoneNumber(shipment.destination.phone, shipment.destination.regionId, regions)}</Text>
+                    <Text>{shipment.destination.address}</Text>
+                    {shipment.destination.address2 && <Text>{shipment.destination.address2}</Text>}
+                    {shipment.destination.address3 && <Text>{shipment.destination.address3}</Text>}
+                    <Text>{shipment.destination.city}, {shipment.destination.province?.name} {shipment.destination.postalCode}, {getRegionById(regions, shipment.destination.regionId)?.name}</Text>
                   </Space>
-                  <Text style={{ fontSize: '0.75em', fontWeight: 700 }}>P: +{getNationalPhoneNumber(shipment.destination.phone, shipment.destination.regionId, regions)}</Text>
-                  <Text>{shipment.destination.address}</Text>
-                  {shipment.destination.address2 && <Text>{shipment.destination.address2}</Text>}
-                  {shipment.destination.address3 && <Text>{shipment.destination.address3}</Text>}
-                  <Text>{shipment.destination.city}, {shipment.destination.province?.name} {shipment.destination.postalCode}, {getRegionById(regions, shipment.destination.regionId)?.name}</Text>
+
+                  {shipment.destinationLocalized && <Space direction="vertical" size={0}>
+                    <Title level={5} style={{ fontSize: '1.25em', margin: 0 }}>{shipment.destinationLocalized.name}</Title>
+                    <Text style={{ fontSize: '0.75em', fontWeight: 700 }}>P: +{getNationalPhoneNumber(shipment.destinationLocalized.phone, shipment.destinationLocalized.regionId, regions)}</Text>
+                    <Text> {shipment.destinationLocalized.province?.name}{shipment.destinationLocalized.city}{shipment.destinationLocalized.address}</Text>
+                    <Text>{getRegionById(regions, shipment.destinationLocalized.regionId)?.name} {shipment.destinationLocalized.postalCode}</Text>
+                  </Space>}
                 </Space>
               </ProCard>
             </ProCard>
