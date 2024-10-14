@@ -36,13 +36,13 @@
     "eslint": "^9.9.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4",
-    "serverless-offline": "^14.3.1"
+    "serverless-offline": "^14.3.2"
   },
   "scripts": {
     "lint": "eslint . --ext .ts,.js",
     "lint:fix": "eslint . --ext .ts,.js --fix",
     "build": "tsc",
-    "local:hw": "sls offline cloudside -s hw",
-    "local:gigi": "sls offline cloudside -s gigi"
+    "local": "sls offline cloudside -s dev",
+    "local:s": "sls offline cloudside -s"
   }
 }

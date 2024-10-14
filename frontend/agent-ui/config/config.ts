@@ -157,5 +157,7 @@ export default defineConfig({
   },
   esbuildMinifyIIFE: true,
   requestRecord: {},
-  tailwindcss: {},
+  tailwindcss: {
+    timeout: 10000,
+  },
 });

@@ -24,10 +24,15 @@ export default () => {
     return res.data
   }, [])
 
+  const [searchLoading, setSearchLoading] = useState(false)
+
+
   const searchShipments = useCallback(async (values: any) => {
+    setSearchLoading(true)
     const res = await fetchShipments(getSearchParams(values))
     setShipmentList(res?.items || [])
     setLastEvaluatedKey(res?.lastEvaluatedKey)
+    setSearchLoading(false)
   }, [fetchShipments, setShipmentList, setLastEvaluatedKey])
 
   const loadMoreShipments = useCallback(async () => {
@@ -47,6 +52,6 @@ export default () => {
     formRef,
     searchShipments,
     loadMoreShipments,
-
+    searchLoading
   }
 }

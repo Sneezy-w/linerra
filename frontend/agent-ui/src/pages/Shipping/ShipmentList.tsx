@@ -568,7 +568,7 @@ const ShipmentList = () => {
     loading: model.loading
   }))
   // const { regions } = useModel('regions')
-  const { shipmentList, searchShipments, loadMoreShipments, formRef, lastEvaluatedKey } = useModel('Shipping.shipmentList')
+  const { shipmentList, searchShipments, loadMoreShipments, formRef, lastEvaluatedKey, searchLoading } = useModel('Shipping.shipmentList')
 
   const loading = useMemo(() => carriersLoading || dictsLoading, [carriersLoading, dictsLoading])
   const shipments = useMemo(() => shipmentList.map(
@@ -580,13 +580,13 @@ const ShipmentList = () => {
     }
   ), [carriers, shipmentList])
 
-  const [initialSearchLoading, setInitialSearchLoading] = useState(false)
+  //const [initialSearchLoading, setInitialSearchLoading] = useState(false)
 
   useEffect(() => {
     if (formRef.current && !loading) {
-      setInitialSearchLoading(true)
+      //setInitialSearchLoading(true)
       searchShipments(formRef.current.getFieldsValue()).then(() => {
-        setInitialSearchLoading(false)
+        //setInitialSearchLoading(false)
       })
     }
   }, [formRef, loading])
@@ -646,13 +646,13 @@ const ShipmentList = () => {
             />
           </ProForm>
         </ProCard>
-        <Skeleton avatar paragraph={{ rows: 1 }} loading={initialSearchLoading} active >
-          {shipments.length > 0 &&
+        <Skeleton avatar paragraph={{ rows: 16 }} loading={searchLoading} active >
+          {shipments.length > 0 && !searchLoading &&
             <InfiniteScroll
               dataLength={shipments.length}
               next={loadMoreShipments}
               hasMore={!!lastEvaluatedKey}
-              loader={<Skeleton avatar paragraph={{ rows: 1 }} active />}
+              loader={<Skeleton avatar paragraph={{ rows: 8 }} active />}
               endMessage={<Divider plain>It is all, nothing more 🤐</Divider>}
             >
               <List
