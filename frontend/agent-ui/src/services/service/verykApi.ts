@@ -111,3 +111,11 @@ export async function getSignedLabelUrl(key: string, options?: Record<string, an
     ...(options || {}),
   });
 }
+
+export async function getTracking(keyword: string, options?: Record<string, any>) {
+  return request<API.R<VerykType.TrackingInfoApiResVO[]>>('/api/veryk/shipment/tracking', {
+    method: 'GET',
+    params: { keyword },
+    ...(options || {}),
+  });
+}

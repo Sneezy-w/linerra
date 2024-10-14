@@ -18,5 +18,6 @@ router.post("/page", verykShipmentController.getPage);
 router.get("/shipmentList", verykShipmentController.shipmentList);
 router.get("/shipmentDetail/:id", verykShipmentController.shipmentDetail);
 router.get("/getSignedLabelUrl", verykShipmentController.getSignedLabelUrl);
+router.get("/tracking", verykShipmentController.tracking);
 
 export default router;

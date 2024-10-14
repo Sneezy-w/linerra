@@ -528,6 +528,7 @@ const ShipmentCard: React.FC<{ shipment: VerykType.ShipmentDetailResVO & { servi
             footer={null}
             onCancel={() => setShipmentDetailModalVisible(false)}
             width={"90%"}
+            destroyOnClose
             styles={{
               content: {
                 background: `linear-gradient(${token.colorBgContainer}, ${token.colorBgLayout} 28%)`

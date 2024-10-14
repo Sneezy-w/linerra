@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { VerykShipmentService } from '@linerra/system/src/services/veryk/verykShipmentService';
 import { QuoteResVO } from '@linerra/system/src/models/veryk/quote.entity';
-import { shipmentDetail, shipmentList } from 'system/src/utils/verykUtils';
+import { shipmentDetail, shipmentList, tracking } from 'system/src/utils/verykUtils';
 import { shipmentDOToDetailResVO, shipmentDOToEditResVO } from 'system/src/models/veryk/shipment.convert';
 import _ from 'lodash';
 import { ShipmentDO } from '@linerra/system/src/models/veryk/shipment.entity';
@@ -91,6 +91,11 @@ export class VerykShipmentController {
       logger.error("Error getting label URL", error);
       res.fail('Error getting label URL', 'ErrorGettingLabelUrl', ErrorShowType.ERROR_MESSAGE, 500);
     }
+  }
+
+  async tracking(req: Request, res: Response) {
+    const trackingApiRes = await tracking({ keyword: req.query.keyword as string }, req.context.acceptLanguage);
+    res.ok(trackingApiRes);
   }
 
 

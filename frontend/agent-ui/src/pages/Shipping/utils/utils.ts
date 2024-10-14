@@ -18,7 +18,14 @@ export const getTotal = (price: VerykType.Price): VerykType.Currency => {
   }
 }
 
-export const getTotalPaid = (payments: VerykType.PaymentResVO[]): VerykType.Currency => {
+export const getTotalPaid = (payments: VerykType.PaymentResVO[] | undefined): VerykType.Currency => {
+  if (!payments || payments.length === 0) {
+    return {
+      symbol: '$',
+      value: '0.00',
+      code: 'CAD'
+    };
+  }
   const sum = payments.reduce((acc, curr) => Number(acc) + Number(curr.subtotal.value), 0)
 
   return {
