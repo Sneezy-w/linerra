@@ -69,4 +69,12 @@ export default {
   'pages.searchTable.tenThousand': '0000',
   'pages.searchTable.batchDeletion': 'deleção em lote',
   'pages.searchTable.batchApproval': 'aprovação em lote',
+  'pages.login.loginTab': 'Entrar',
+  'pages.login.registerTab': 'Registrar',
+  'pages.login.email.placeholder': 'E-mail',
+  'pages.login.email.required': 'Por favor, insira seu e-mail!',
+  'pages.login.email.invalid': 'Formato de e-mail inválido!',
+  'pages.register.success': 'Registro bem-sucedido!',
+  'loginForm.submitText': 'Entrar',
+  'signUpForm.submitText': 'Registrar',
 };

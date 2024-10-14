@@ -64,4 +64,12 @@ export default {
   'pages.searchTable.tenThousand': '萬',
   'pages.searchTable.batchDeletion': '批量刪除',
   'pages.searchTable.batchApproval': '批量審批',
+  'pages.login.loginTab': '登錄',
+  'pages.login.registerTab': '註冊',
+  'pages.login.email.placeholder': '電子郵箱',
+  'pages.login.email.required': '請輸入您的電子郵箱！',
+  'pages.login.email.invalid': '電子郵箱格式不正確！',
+  'pages.register.success': '註冊成功！',
+  'loginForm.submitText': '登錄',
+  'signUpForm.submitText': '註冊',
 };

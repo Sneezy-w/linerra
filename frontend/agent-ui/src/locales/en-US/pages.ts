@@ -67,4 +67,12 @@ export default {
   'pages.searchTable.tenThousand': '0000',
   'pages.searchTable.batchDeletion': 'batch deletion',
   'pages.searchTable.batchApproval': 'batch approval',
+  'pages.login.loginTab': 'Login',
+  'pages.login.registerTab': 'Register',
+  'pages.login.email.placeholder': 'Email',
+  'pages.login.email.required': 'Please enter your email!',
+  'pages.login.email.invalid': 'Invalid email format!',
+  'pages.register.success': 'Register successful!',
+  'loginForm.submitText': 'Login',
+  'signUpForm.submitText': 'Register',
 };

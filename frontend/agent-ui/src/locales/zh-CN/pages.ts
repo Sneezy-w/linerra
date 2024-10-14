@@ -64,4 +64,12 @@ export default {
   'pages.searchTable.tenThousand': '万',
   'pages.searchTable.batchDeletion': '批量删除',
   'pages.searchTable.batchApproval': '批量审批',
+  'pages.login.loginTab': '登录',
+  'pages.login.registerTab': '注册',
+  'pages.login.email.placeholder': '邮箱',
+  'pages.login.email.required': '请输入您的邮箱！',
+  'pages.login.email.invalid': '邮箱格式不正确！',
+  'pages.register.success': '注册成功！',
+  'loginForm.submitText': '登录',
+  'signUpForm.submitText': '注册',
 };
