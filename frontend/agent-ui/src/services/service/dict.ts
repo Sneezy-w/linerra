@@ -1,9 +1,8 @@
 import { request } from '@umijs/max';
 
-
-/** 获取字典数据
- * @param options 请求配置
- * @returns 字典数据
+/** get dicts GET /api/dict/getDicts
+ * @param options request config
+ * @returns dicts
  */
 export async function getDicts(options?: Record<string, any>) {
   return request<API.R<Record<string, API.Service.DictItem[]>>>('/api/dict/getDicts', {

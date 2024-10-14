@@ -19,7 +19,7 @@ const expandedRowRender = (record: VerykType.Carrier) => {
     { dataIndex: 'description', key: 'description', align: 'left', width: '35%' }, // Adjusted width
     {
       key: 'actions',
-      render: (_, service) => <a onClick={() => handleOrderClick(service, record)}>Order</a>,
+      render: (_, service) => <a>Order</a>,
       align: 'left',
       width: '10%',
     },
@@ -41,10 +41,10 @@ const handleOrderClick = (service: VerykType.Service, carrier: VerykType.Carrier
 };
 
 const MyServices: React.FC = () => {
-  const { carriers, modelLoading } = useModel('carrierModel');
+  const { carriers, loading } = useModel('carriers');
   const [expandedRowKeys, setExpandedRowKeys] = useState<React.Key[]>([]);
 
-  const formattedCarriers = carriers.map((carrier: VerykType.Carrier) => ({
+  const formattedCarriers = carriers?.map((carrier: VerykType.Carrier) => ({
     key: carrier.id,
     name: carrier.name,
     description: 'Description',
@@ -53,8 +53,8 @@ const MyServices: React.FC = () => {
       carrier.services?.map((service: VerykType.Service) => ({
         id: service.id,
         name: service.name,
-        eta: service.eta || 'N/A',
-        description: service.description || 'No description available',
+        //eta: service.eta || 'N/A',
+        //description: service.description || 'No description available',
       })) || [],
   }));
 
@@ -86,7 +86,7 @@ const MyServices: React.FC = () => {
           onClick: () => onTableRowExpand(!expandedRowKeys.includes(record.key), record),
         })}
         dataSource={formattedCarriers}
-        modelLoading={modelLoading}
+        loading={loading}
         showHeader={false}
       />
     </div>

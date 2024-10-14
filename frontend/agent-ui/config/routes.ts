@@ -54,11 +54,6 @@ export default [
     icon: 'car',
     routes: [
       {
-        path: '/shipping/quote',
-        name: 'quote',
-        component: './Shipping/Quote',
-      },
-      {
         path: '/shipping/shipment',
         name: 'shipment',
         component: './Shipping/Shipment',
@@ -78,16 +73,6 @@ export default [
             path: '/shipping/shipments/list',
             name: 'list',
             component: './Shipping/ShipmentList',
-          },
-          {
-            path: '/shipping/shipments/create',
-            name: 'create',
-            component: './Shipping/CreateOrder',
-          },
-          {
-            path: '/shipping/shipments/print-label',
-            name: 'printLabel',
-            component: './Shipping/PrintLabel',
           },
         ],
       },
@@ -120,33 +105,6 @@ export default [
     component: './404',
   },
   {
-    path: '/my-account',
-    name: 'myAccount',
-    icon: 'user',
-    routes: [
-      {
-        path: '/my-account/summary',
-        name: 'accountSummary',
-        component: './MyAccount/AccountSummary',
-      },
-      {
-        path: '/my-account/transactions',
-        name: 'transactionDetails',
-        component: './MyAccount/TransactionDetails',
-      },
-      {
-        path: '/my-account/payable',
-        name: 'accountPayable',
-        component: './MyAccount/AccountPayable',
-      },
-      {
-        path: '/my-account/invoices',
-        name: 'invoicesStatement',
-        component: './MyAccount/InvoicesStatement',
-      },
-    ],
-  },
-  {
     path: '/address-book',
     name: 'addressBook',
     icon: 'book',
@@ -156,11 +114,6 @@ export default [
         name: 'addressList',
         component: './AddressBook/AddressList',
       },
-      {
-        path: '/address-book/import',
-        name: 'importAddresses',
-        component: './AddressBook/ImportAddresses',
-      },
     ],
   },
   {
@@ -168,26 +121,6 @@ export default [
     name: 'userCentre',
     icon: 'user',
     routes: [
-      {
-        path: '/user-centre/my-account',
-        name: 'myAccount',
-        component: './UserCentre/MyAccount',
-      },
-      {
-        path: '/user-centre/change-email',
-        name: 'changeEmail',
-        component: './UserCentre/ChangeEmail',
-      },
-      {
-        path: '/user-centre/change-password',
-        name: 'changePassword',
-        component: './UserCentre/ChangePassword',
-      },
-      {
-        path: '/user-centre/upload-photo',
-        name: 'uploadPhoto',
-        component: './UserCentre/UploadPhoto',
-      },
       {
         path: '/user-centre/sign-out',
         name: 'signOut',
