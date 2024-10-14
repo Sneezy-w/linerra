@@ -31,6 +31,17 @@ const handleLoginExpired = _.debounce(() => {
   history.push(loginPath);
 }, 250, { leading: true, trailing: false });
 
+let isRefreshing = false;
+let refreshSubscribers: Array<(token: string) => void> = [];
+
+function onRefreshed(token: string) {
+  refreshSubscribers.map(cb => cb(token));
+}
+
+function addRefreshSubscriber(cb: (token: string) => void) {
+  refreshSubscribers.push(cb);
+}
+
 /**
  * @name 错误处理
  * pro 自带的错误处理， 可以在这里做自己的改动
@@ -169,11 +180,35 @@ export const errorConfig: RequestConfig = {
 
         if (isNeedRefreshToken() && !headers?.refreshToken) {
           //console.log("isNeedRefreshToken");
-          const refreshResult: API.R<API.Service.RefreshTokenResult> = await refreshToken();
-          if (refreshResult.success && refreshResult.data) {
-            const { accessToken, idToken } = refreshResult.data;
-            setSessionToken(accessToken, idToken);
+          if (!isRefreshing) {
+            isRefreshing = true;
+            try {
+              const refreshResult: API.R<API.Service.RefreshTokenResult> = await refreshToken();
+              if (refreshResult.success && refreshResult.data) {
+                const { accessToken, idToken } = refreshResult.data;
+                setSessionToken(accessToken, idToken);
+                onRefreshed(accessToken);
+              }
+            } catch (error) {
+              // Handle refresh token error
+              handleLoginExpired();
+              return Promise.reject(error);
+            } finally {
+              isRefreshing = false;
+              refreshSubscribers = [];
+            }
           }
+
+          // Wait for the token to be refreshed
+          return new Promise((resolve) => {
+            addRefreshSubscriber((token: string) => {
+              config.headers = {
+                ...config.headers,
+                'Authorization': `Bearer ${token}`,
+              };
+              resolve(config);
+            });
+          });
         }
       }
 
