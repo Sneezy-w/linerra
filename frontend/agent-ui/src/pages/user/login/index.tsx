@@ -497,14 +497,14 @@ const Login: React.FC = () => {
               /> */}
             </>
           )}
-          <div
+          {/* <div
             style={{
               marginBottom: 24,
             }}
           >
-            {/* <ProFormCheckbox noStyle name="autoLogin">
+            <ProFormCheckbox noStyle name="autoLogin">
               <FormattedMessage id="pages.login.rememberMe" defaultMessage="自动登录" />
-            </ProFormCheckbox> */}
+            </ProFormCheckbox>
             <a
               style={{
                 float: 'right',
@@ -512,7 +512,7 @@ const Login: React.FC = () => {
             >
               <FormattedMessage id="pages.login.forgotPassword" defaultMessage="忘记密码" />
             </a>
-          </div>
+          </div> */}
         </LoginForm>
       </div>
       <Footer />

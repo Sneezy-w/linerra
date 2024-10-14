@@ -81,6 +81,11 @@ export function isNeedLogin() {
     || !accessTokenExpiresIn || !idTokenExpiresIn
     || accessTokenExpiresIn < new Date() || idTokenExpiresIn < new Date();
 }
+
+export function isTokenExpired() {
+  return isNeedLogin() && getAccessToken();
+}
+
 export function isNeedRefreshToken() {
   const accessTokenExpiresIn = getAccessTokenExpiredAt();
   const idTokenExpiresIn = getIdTokenExpiredAt();

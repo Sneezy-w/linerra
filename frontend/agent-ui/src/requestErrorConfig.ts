@@ -1,7 +1,7 @@
 ﻿import type { RequestOptions } from '@@/plugin-request/request';
 import type { RequestConfig } from '@umijs/max';
 import { message, notification } from 'antd';
-import { clearSessionToken, getAccessToken, getIdToken, getSessionId, isNeedLogin, isNeedRefreshToken, setSessionToken } from './access';
+import { clearSessionToken, getAccessToken, getIdToken, getSessionId, isNeedLogin, isNeedRefreshToken, isTokenExpired, setSessionToken } from './access';
 import { history, Link } from '@umijs/max';
 import { refreshToken } from './services/service/agent';
 import _ from 'lodash';
@@ -28,6 +28,12 @@ interface ResponseStructure {
 const handleLoginExpired = _.debounce(() => {
   message.error('Login expired, please login again.');
   clearSessionToken();
+  history.push(loginPath);
+}, 250, { leading: true, trailing: false });
+
+const handleReturnToLogin = _.debounce(() => {
+  //message.error('Login expired, please login again.');
+  //clearSessionToken();
   history.push(loginPath);
 }, 250, { leading: true, trailing: false });
 
@@ -137,11 +143,13 @@ export const errorConfig: RequestConfig = {
         message.error('None response! Please retry.');
       } else {
         // 发送请求时出了点问题
-        if (error.name === "NeedLoginError") {
+        if (error.name === "TokenExpiredError") {
           // clearSessionToken();
           // message.error('Login expired, please login again.');
           // history.push(loginPath);
           handleLoginExpired();
+        } else if (error.name === "ReturnToLoginError") {
+          handleReturnToLogin();
         } else {
           message.error('Request error, please retry.');
         }
@@ -152,6 +160,7 @@ export const errorConfig: RequestConfig = {
   // 请求拦截器
   requestInterceptors: [
     async (config: RequestConfig) => {
+      //console.log("requestInterceptor", config);
       // 拦截请求配置，进行个性化处理。
       //const url = config?.url?.concat('?token = 123');
       const headers = config.headers;
@@ -160,8 +169,12 @@ export const errorConfig: RequestConfig = {
         if (isNeedLogin()) {
           //clearSessionToken();
           //history.push(loginPath);
-          const needLoginError = new Error("Login expired, please login again.");
-          needLoginError.name = "NeedLoginError";
+          const needLoginError = new Error("Please login.");
+          if (isTokenExpired()) {
+            needLoginError.name = "TokenExpiredError";
+          } else {
+            needLoginError.name = "ReturnToLoginError";
+          }
           throw needLoginError;
           //return config;
         }
