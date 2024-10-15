@@ -1,6 +1,7 @@
 const js = require('@eslint/js');
 const tsParser = require('@typescript-eslint/parser');
 const tsPlugin = require('@typescript-eslint/eslint-plugin');
+const globals = require('globals');
 
 module.exports = [
   {
@@ -25,6 +26,9 @@ module.exports = [
         ecmaVersion: 2018,
         sourceType: 'module',
       },
+      globals: {
+        ...globals.node
+      },
     },
     plugins: {
       '@typescript-eslint': tsPlugin,
@@ -37,7 +41,21 @@ module.exports = [
       'no-console': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': ['error', { 'argsIgnorePattern': '^_' }],
+      'no-unused-vars': ['error', {
+        'argsIgnorePattern': '^_',
+        "vars": "all",
+        "args": "none",
+        "ignoreRestSiblings": false,
+        "varsIgnorePattern": '^[A-Z]' // Ignore capitalized variables (enum members)
+      }],
+      '@typescript-eslint/no-unused-vars': ['error', {
+        'argsIgnorePattern': '^_',
+        "vars": "all",
+        "args": "none",
+        "ignoreRestSiblings": false,
+        "varsIgnorePattern": '^[A-Z]' // Ignore capitalized variables (enum members)
+
+      }],
     },
   },
 ];

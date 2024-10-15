@@ -3,6 +3,9 @@ import { accessVerifier, idTokenVerifier } from '@linerra/system/src/utils/token
 import logger from '@linerra/system/src/utils/logger';
 
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
   const token = req.headers.authorization?.split(' ')[1];
 
   if (!token) {
@@ -21,7 +24,7 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
     req.context.idToken = req.headers['identity-token'];
     req.context.sessionId = req.headers['session-id'];
 
-    const idTokenPayload = await idTokenVerifier.verify(req.context.idToken);
+    const idTokenPayload = await idTokenVerifier.verify(req.context.idToken as string);
     req.context.user = {
       sub: payload.sub,
       email: payload.email,

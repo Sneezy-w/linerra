@@ -27,6 +27,14 @@ provider:
   versionFunctions: false
   # httpApi:
   #   id: Fn::GetAtt: [HttpApi, Arn]
+  httpApi:
+    cors:
+      allowedOrigins:
+        - ${param:frontendUrl}
+      allowedHeaders:
+        - "*"
+      allowedMethods:
+        - "*"
   environment:
     AGENT_USER_POOL_ID: !Ref AgentUserPool
     AGENT_USER_POOL_CLIENT_ID: !Ref AgentUserPoolClient
@@ -81,6 +89,7 @@ functions:
     handler: src/index.handler
     events:
       - httpApi: "*"
+
 
 
 

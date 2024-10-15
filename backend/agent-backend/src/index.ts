@@ -4,6 +4,7 @@ import serverless from "serverless-http";
 import express from "express";
 import expressWinston from "express-winston";
 import dotenv from 'dotenv';
+//import cors from 'cors';
 import agentRoutes from "./routes/agentRoutes";
 import { errorHandler } from "@linerra/system/src/middlewares/errorHandler";
 import logger from "@linerra/system/src/utils/logger";
