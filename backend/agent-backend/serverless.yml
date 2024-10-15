@@ -67,8 +67,7 @@ provider:
             - dynamodb:DeleteItem
             - dynamodb:Query
             - dynamodb:Scan
-          Resource:
-            - Fn::GetAtt: [MainTable, Arn]
+          Resource: "*"
         - Effect: Allow
           Action:
             - s3:GetObject

@@ -158,11 +158,11 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState, loa
     ],
     links: isDev
       ? [
-          <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
-            <LinkOutlined />
-            <span>OpenAPI Document</span>
-          </Link>,
-        ]
+        <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
+          <LinkOutlined />
+          <span>OpenAPI Document</span>
+        </Link>,
+      ]
       : [],
     menuHeaderRender: undefined,
     //loading: initialState ? false : true,
@@ -202,4 +202,5 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState, loa
  */
 export const request = {
   ...errorConfig,
+  baseURL: process.env.NODE_ENV === 'production' ? process.env.API_URL : '',
 };
