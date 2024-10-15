@@ -46,7 +46,7 @@ export interface ServiceApiRes {
   message: string;
   zone_id: string;
   carrier_zone_id: number;
-  marketPrices: any[];
+  marketPrices: unknown[];
   charge_details: ChargeDetail[];
   token: string;
   is_standalone_account: number;
@@ -87,7 +87,7 @@ export interface ServiceResVO {
   message: string;
   zoneId: string;
   carrierZoneId: number;
-  marketPrices: any[];
+  marketPrices: unknown[];
   chargeDetails: ChargeDetail[];
   token: string;
   isStandaloneAccount: number;

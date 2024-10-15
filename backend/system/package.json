@@ -2,6 +2,8 @@
   "name": "@linerra/system",
   "version": "1.0.0",
   "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

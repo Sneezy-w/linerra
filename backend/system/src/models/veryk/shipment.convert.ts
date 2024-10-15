@@ -1,12 +1,12 @@
 import { ShipmentApiReq, ShipmentApiRes, ShipmentApiUpdateDO, ShipmentDetailResVO, ShipmentDO, ShipmentEditResVO, ShipmentReqVO } from "./shipment.entity";
-import { initiationReqVOToApiReq, destinationReqVOToApiReq, initiationReqVOToDO, destinationReqVOToDO, addressApiResToInitiationDO, addressApiResToDestinationDO } from "./address.convert";
+import { initiationReqVOToApiReq, destinationReqVOToApiReq, initiationReqVOToDO, destinationReqVOToDO } from "./address.convert";
 import { packageApiResToDO, packageDOToEditResVO, packageReqVOToApiReq, packageReqVOToDO } from "./package.convert";
 import { optionReqVOToApiReq } from "./option.convert";
 
 
 export const shipmentReqVOToApiReq = (shipmentReqVO: ShipmentReqVO): ShipmentApiReq => {
-  const { serviceId, initiation, destination, package: pkg, option, number,
-    //carrierId, airportTo,
+  const { serviceId, initiation, destination, package: pkg, option,
+    //carrierId, airportTo, number
     destinationLocalized, sadditional, product,
     ...rest } = shipmentReqVO;
   return {

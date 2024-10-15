@@ -14,13 +14,13 @@
     "@middy/http-json-body-parser": "^5.4.6",
     "@middy/http-security-headers": "^5.4.6",
     "amazon-cognito-identity-js": "^6.3.12",
-    "serverless-dynamodb": "^0.2.54",
     "aws-jwt-verify": "^4.0.1",
     "dotenv": "^16.4.5",
     "dynamodb-toolbox": "^1.10.2",
     "express": "^4.19.2",
     "express-winston": "^4.2.0",
     "joi": "^17.13.3",
+    "serverless-dynamodb": "^0.2.54",
     "serverless-http": "^3.2.0",
     "uuid": "^10.0.0",
     "winston": "^3.14.2"
@@ -34,13 +34,14 @@
     "@typescript-eslint/eslint-plugin": "^8.2.0",
     "@typescript-eslint/parser": "^8.2.0",
     "eslint": "^9.9.0",
+    "eslint-formatter-unix": "^8.40.0",
+    "serverless-offline": "^14.3.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.4",
-    "serverless-offline": "^14.3.2"
+    "typescript": "^5.5.4"
   },
   "scripts": {
-    "lint": "eslint . --ext .ts,.js",
-    "lint:fix": "eslint . --ext .ts,.js --fix",
+    "lint": "eslint . --format unix",
+    "lint:fix": "eslint . --fix --format unix",
     "build": "tsc",
     "local": "sls offline cloudside -s dev",
     "local:s": "sls offline cloudside -s"

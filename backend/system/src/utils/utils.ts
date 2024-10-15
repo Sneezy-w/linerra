@@ -10,7 +10,7 @@ export function generateOrderNumber(provider: string, stationNo: string): string
   return `${timestamp}${randomPart}${provider}${stationNo}`;
 }
 
-export const now = () => new Date().toISOString()
+export const now = () => new Date().toISOString();
 
 export const generateRandomString = (length: number) => {
   const randomChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';

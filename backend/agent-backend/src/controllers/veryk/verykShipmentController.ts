@@ -3,7 +3,7 @@ import { VerykShipmentService } from '@linerra/system/src/services/veryk/verykSh
 import { QuoteResVO } from '@linerra/system/src/models/veryk/quote.entity';
 import { shipmentDetail, shipmentList, tracking } from 'system/src/utils/verykUtils';
 import { shipmentDOToDetailResVO, shipmentDOToEditResVO } from 'system/src/models/veryk/shipment.convert';
-import _ from 'lodash';
+//import _ from 'lodash';
 import { ShipmentDO } from '@linerra/system/src/models/veryk/shipment.entity';
 import { S3Service } from '@linerra/system/src/services/s3Service';
 import { ErrorShowType } from '@linerra/system/src/enum/errorShowType';
@@ -38,6 +38,7 @@ export class VerykShipmentController {
       await verykShipmentService.delete(req.params.number);
       res.ok();
     } catch (error) {
+      logger.error("Error deleting shipment", error);
       res.fail("Only open shipment can be deleted", "ONLY_OPEN_SHIPMENT_CAN_BE_DELETED");
     }
   }

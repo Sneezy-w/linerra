@@ -1,10 +1,11 @@
-import { CognitoIdentityProviderClient, SignUpCommand, InitiateAuthCommand, SignUpCommandOutput, GetUserCommand } from "@aws-sdk/client-cognito-identity-provider";
+import { CognitoIdentityProviderClient, SignUpCommand, InitiateAuthCommand, SignUpCommandOutput, GetUserCommand, AuthenticationResultType } from "@aws-sdk/client-cognito-identity-provider";
 import { AuthenticationDetails, CognitoUser, CognitoUserPool } from 'amazon-cognito-identity-js';
 import logger from "../utils/logger";
 import { AgentSessionService } from "./agentSessionService";
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { generateRandomString } from "../utils/utils";
+import { ServiceError } from "../utils/serviceError";
 
 const client = new CognitoIdentityProviderClient({ region: process.env.AGENT_USER_POOL_REGION || process.env.AWS_REGION });
 
@@ -76,7 +77,7 @@ export class CognitoService {
   //     throw error;
   //   }
   // }
-  signIn(email: string, password: string): Promise<any> {
+  signIn(email: string, password: string) {
     //console.log(email, password);
     //console.log(process.env.AGENT_USER_POOL_ID, process.env.AGENT_USER_POOL_CLIENT_ID);
     return new Promise((resolve, reject) => {
@@ -110,7 +111,7 @@ export class CognitoService {
     });
   }
 
-  async refreshTokens(refreshToken: string): Promise<any> {
+  async refreshTokens(refreshToken: string): Promise<AuthenticationResultType | undefined> {
     const command = new InitiateAuthCommand({
       AuthFlow: 'REFRESH_TOKEN_AUTH',
       ClientId: this.clientId,
@@ -123,18 +124,21 @@ export class CognitoService {
       const response = await client.send(command);
       return response.AuthenticationResult;
     } catch (error) {
-      console.error('Error refreshing tokens:', error);
+      logger.error('Error refreshing tokens:', { error });
       throw error;
     }
   }
 
-  async handleTokenRefresh(userId: string, sessionId: string, accessToken: string, idToken: string): Promise<any> {
+  async handleTokenRefresh(userId: string, sessionId: string, accessToken: string, idToken: string) {
     const session = await this.agentSessionService.getSession(userId, sessionId);
     if (!session || session.expirationTime < Math.floor(Date.now() / 1000)) {
       throw new Error('Session expired or not found');
     }
 
     const tokens = await this.refreshTokens(session.refreshToken);
+    if (!tokens) {
+      throw new ServiceError('Failed to refresh tokens', "RefreshTokenFailed");
+    }
     await this.agentSessionService.updateSessionLastUsed(userId, sessionId);
 
     return {
@@ -194,7 +198,7 @@ export class CognitoService {
     // }
   }
 
-  async handleGoogleCallback(code: string): Promise<any> {
+  async handleGoogleCallback(code: string): Promise<unknown> {
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:8000";
     const tokenUrl = `${this.domain}/oauth2/token`;
     const params = new URLSearchParams();
@@ -215,7 +219,7 @@ export class CognitoService {
       const decodedToken = atob(id_token.split('.')[1]);
       const userId = JSON.parse(decodedToken).sub;
       return { idToken: id_token, accessToken: access_token, refreshToken: refresh_token, userId: userId };
-    } catch (error: any) {
+    } catch (error) {
       //console.log(error.response?.data);
       logger.error('Error handling Google callback', error);
       throw error;

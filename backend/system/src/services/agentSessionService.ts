@@ -1,4 +1,4 @@
-import { Table, Entity, schema, string, number, PutItemCommand, GetItemCommand, UpdateItemCommand } from 'dynamodb-toolbox';
+import { Table, Entity, PutItemCommand, GetItemCommand, UpdateItemCommand } from 'dynamodb-toolbox';
 import { v4 as uuidv4 } from 'uuid';
 import { AgentSession } from '../dynamodb/toolbox';
 
@@ -16,7 +16,7 @@ export class AgentSessionService {
     return sessionId;
   }
 
-  async getSession(userId: string, sessionId: string): Promise<any> {
+  async getSession(userId: string, sessionId: string) {
     const { Item } = await AgentSession.build(GetItemCommand).key({ userId, sessionId }).send();
     return Item;
   }

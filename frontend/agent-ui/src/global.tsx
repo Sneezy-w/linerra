@@ -15,7 +15,10 @@ const clearCache = () => {
           caches.delete(key);
         });
       })
-      .catch((e) => console.log(e));
+      .catch((e) => {
+        //console.log(e);
+        //message.error('Failed to clear cache');
+      });
   }
 };
 

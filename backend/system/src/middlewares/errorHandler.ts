@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { ServiceError } from '../utils/serviceError';
 import { ErrorShowType } from '../enum/errorShowType';
-import logger from '../utils/logger';
+// import logger from '../utils/logger';
 
 export const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
   // logger.error(err.message);

@@ -711,7 +711,6 @@ const ShipmentForm: React.FC = () => {
   // }, [quoteFormData, serviceId]);
   useEffect(() => {
     if (shipmentFormInitialValues && formRef.current) {
-      console.log(shipmentFormInitialValues);
       //formRef.current?.resetFields();
       formRef.current?.setFieldsValue(shipmentFormInitialValues);
     }
@@ -724,7 +723,6 @@ const ShipmentForm: React.FC = () => {
   const [localizedModalVisit, setLocalizedModalVisit] = useState(false);
 
   const localizedModalOnFinish = useCallback(async (values: any) => {
-    console.log(values);
     formRef.current?.setFieldsValue({
       destinationLocalized: {
         ...values,
@@ -778,10 +776,7 @@ const ShipmentForm: React.FC = () => {
   const handleSave = useCallback(
     async (formData: any) => {
       setOperationLoading(true);
-      console.log(formData);
-      console.log(formRef.current?.getFieldsFormatValue?.());
       const result = await postShipmentSave(formData);
-      console.log(result);
       history.push(`/shipping/shipment/${result.data?.number}`);
 
       //formRef.current?.setFieldsValue(result.data);
@@ -795,9 +790,7 @@ const ShipmentForm: React.FC = () => {
     //console.log(formData);
     try {
       const formData = await formRef.current?.validateFieldsReturnFormatValue?.();
-      console.log(formData);
       const result = await postShipmentSubmit(formData);
-      console.log(result);
       setOrderNumber(result.data?.number || '');
       setCurrentStep(3);
     } catch (errorInfo) {

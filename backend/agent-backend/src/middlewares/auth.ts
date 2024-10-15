@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { accessVerifier, idTokenVerifier } from '@linerra/system/src/utils/tokenVerifier';
-
+import logger from '@linerra/system/src/utils/logger';
 
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
   const token = req.headers.authorization?.split(' ')[1];
@@ -32,7 +32,7 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
 
     next();
   } catch (err) {
-    console.error('Token verification failed:', err);
+    logger.error('Token verification failed:', err);
     return res.status(401).json({ message: 'Invalid token' });
   }
 };

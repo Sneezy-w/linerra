@@ -1,10 +1,10 @@
-import { Table, Entity, schema, string, number, prefix, map, list, anyOf, nul } from 'dynamodb-toolbox';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
-import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb'
+import { Table, Entity, schema, string, number, prefix, map, list } from 'dynamodb-toolbox';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import Dicts from '../enum/dicts';
-import { InitiationDO, DestinationDO } from '../models/veryk/address.entity';
-import { PackageDO } from '../models/veryk/package.entity';
-import { now } from '../utils/utils';
+//import { InitiationDO, DestinationDO } from '../models/veryk/address.entity';
+//import { PackageDO } from '../models/veryk/package.entity';
+//import { now } from '../utils/utils';
 
 const dynamoClient = process.env.IS_OFFLINE ? new DynamoDBClient({
   region: 'localhost',
@@ -303,14 +303,14 @@ export const Shipment = new Entity({
       invoice: string().optional(),
       delivery: string().optional(),
     }).optional(),
-  }).and(prevSchema => ({
-    GSI2SK: string().required().link<typeof prevSchema>(
+  }).and(_prevSchema => ({
+    GSI2SK: string().required().link<typeof _prevSchema>(
       ({ number }) => number
     ),
-    initiationRegionId: string().required().link<typeof prevSchema>(
+    initiationRegionId: string().required().link<typeof _prevSchema>(
       ({ initiation }) => initiation.regionId
     ),
-    destinationRegionId: string().required().link<typeof prevSchema>(
+    destinationRegionId: string().required().link<typeof _prevSchema>(
       ({ destination }) => destination.regionId
     ),
   })),

@@ -3,17 +3,18 @@ import axios from 'axios';
 import { ServiceError } from './serviceError';
 import { QuoteApiReq } from '../models/veryk/quote.entity';
 import { ShipmentApiReq } from '../models/veryk/shipment.entity';
-
-import logger from './logger';
+import { AxiosResponse } from 'axios';
+import { ApiResponse } from '../models/veryk/index.entity';
+// import logger from './logger';
 
 const verykApiUrl = process.env.VERYK_API_URL;
-const verykAppId = process.env.VERYK_APP_ID;
+const verykAppId = process.env.VERYK_APP_ID as string;
 const verykAppSecret = process.env.VERYK_APP_SECRET;
 
 const ERROR_CODE = 'Veryk.ApiError';
 
 export function buildUrl(action: string): string {
-  const params: Record<string, any> = {
+  const params: Record<string, string | number> = {
     id: verykAppId,
     timestamp: Math.floor(Date.now() / 1000), // ISO8601 format
     action: action,
@@ -24,7 +25,7 @@ export function buildUrl(action: string): string {
   const lowercaseParams = Object.keys(params).reduce((acc, key) => {
     acc[key.toLowerCase()] = params[key];
     return acc;
-  }, {} as Record<string, any>);
+  }, {} as Record<string, string | number>);
 
   // If there is a sign, remove it
   delete lowercaseParams['sign'];
@@ -49,9 +50,8 @@ export function buildUrl(action: string): string {
   return `${verykApiUrl}?${queryString}&sign=${sign}`;
 }
 
-export function getResponseData(response: any) {
+export function getResponseData(response: AxiosResponse<ApiResponse>) {
   if (response.data.status !== 1) {
-    //logger.error(response.data);
     throw new ServiceError(response.data.message, ERROR_CODE);
   }
   return response.data.response;

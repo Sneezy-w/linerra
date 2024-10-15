@@ -35,7 +35,7 @@ app.use(expressWinston.logger({
 app.use(trace);
 app.use(contextInjector);
 app.use((req: Request, res: Response, next) => {
-  res.ok = function (data?: any) {
+  res.ok = function (data?: unknown) {
     return this.status(200).json({
       success: true,
       data,

@@ -6644,4 +6644,4 @@ export const provinceRecord: Record<string, Province[]> = {
   "ZM": [],
   "ZW": [],
   "AX": []
-}
+};

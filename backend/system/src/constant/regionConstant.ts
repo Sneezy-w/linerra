@@ -1,4 +1,4 @@
-import { Region } from "../models/veryk/general.entity"
+import { Region } from "../models/veryk/general.entity";
 
 export const regions: Region[] = [
   {
@@ -5070,4 +5070,4 @@ export const regions: Region[] = [
     },
     "phoneCode": "358"
   }
-]
+];

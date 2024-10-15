@@ -3,6 +3,7 @@ import { CognitoService } from '@linerra/system/src/services/cognitoService';
 import logger from '@linerra/system/src/utils/logger';
 import { ErrorShowType } from '@linerra/system/src/enum/errorShowType';
 import { accessVerifier, idTokenVerifier } from '@linerra/system/src/utils/tokenVerifier';
+import { AttributeType } from '@aws-sdk/client-cognito-identity-provider';
 
 
 const cognitoService = CognitoService.instance;
@@ -34,7 +35,7 @@ export class AgentController {
   async getUserInfo(req: Request, res: Response) {
     try {
       const result = await cognitoService.getUser(req.context.accessToken);
-      const userInfo = result?.UserAttributes?.reduce((acc: any, attr: any) => {
+      const userInfo = result?.UserAttributes?.reduce((acc: Record<string, unknown>, attr: AttributeType) => {
         if (attr.Name && attr.Value) {
           acc[attr.Name] = attr.Value;
         }
@@ -95,7 +96,7 @@ export class AgentController {
       const result = await cognitoService.handleGoogleCallback(code);
       res.ok(result);
     } catch (error) {
-      //logger.error("Error handling Google callback", error);
+      logger.error("Error handling Google callback", error);
       res.fail('Error handling Google callback', 'ErrorHandlingGoogleCallback', ErrorShowType.ERROR_MESSAGE, 400);
     }
   }
