@@ -15,7 +15,7 @@ stages:
       agentUserPoolClientName: ${self:service}-user-pool-client-${sls:stage}
       agentUserPoolDomain: ${self:service}-user-pool-domain-${sls:stage}
       mainTable: ${sls:stage}_linerra_main
-      frontendUrl: ${env:FRONTEND_URL, 'http://localhost:8000'}
+      frontendUrl: ${env:FRONTEND_URL, param:frontendUrl-${sls:stage}, 'http://localhost:8000'}
       localDynamoDBPort: ${env:LOCAL_DYNAMO_DB_PORT, 8900}
       labelBucketName: shipment-label-files-${sls:stage}
 
