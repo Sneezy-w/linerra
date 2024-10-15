@@ -83,6 +83,3 @@ To deploy the backend to AWS:
 
 Please read our contributing guidelines before submitting pull requests.
 
-## License
-
-This project is licensed under the ISC License.
