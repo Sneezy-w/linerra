@@ -159,7 +159,7 @@ export default defineConfig({
   tailwindcss: {
     timeout: 10000,
   },
-  // define: {
-  //   'process.env.API_URL': process.env.API_URL,
-  // },
+  define: {
+    'process.env.API_URL': process.env.API_URL,
+  },
 });

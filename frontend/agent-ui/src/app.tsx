@@ -202,5 +202,5 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState, loa
  */
 export const request = {
   ...errorConfig,
-  baseURL: process.env.NODE_ENV === 'production' ? process.env.API_URL : '',
+  baseURL: process.env.NODE_ENV === 'production' ? process.env.UMI_APP_API_BASE_URL : '',
 };
