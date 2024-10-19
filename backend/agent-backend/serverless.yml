@@ -23,18 +23,18 @@ provider:
   name: aws
   runtime: nodejs20.x
   region: us-east-1
-  timeout: 29
+  # timeout: 29
   versionFunctions: false
   # httpApi:
   #   id: Fn::GetAtt: [HttpApi, Arn]
-  httpApi:
-    cors:
-      allowedOrigins:
-        - ${param:frontendUrl}
-      allowedHeaders:
-        - "*"
-      allowedMethods:
-        - "*"
+  # httpApi:
+  #   cors:
+  #     allowedOrigins:
+  #       - ${param:frontendUrl}
+  #     allowedHeaders:
+  #       - "*"
+  #     allowedMethods:
+  #       - "*"
   environment:
     AGENT_USER_POOL_ID: !Ref AgentUserPool
     AGENT_USER_POOL_CLIENT_ID: !Ref AgentUserPoolClient
@@ -87,8 +87,18 @@ provider:
 functions:
   api:
     handler: src/index.handler
-    events:
-      - httpApi: "*"
+    timeout: 300
+    url:
+      cors:  # CORS configuration for Lambda URL, can also be defined as `true` with default CORS configuration
+        cors:
+          allowedOrigins:
+            - ${param:frontendUrl}
+          allowedHeaders:
+            - "*"
+          allowedMethods:
+            - "*"
+    # events:
+    #   - httpApi: "*"
 
 
 
@@ -103,24 +113,24 @@ resources:
 
   Resources:
 
-    HttpApiMapping:
-      Type: AWS::ApiGatewayV2::ApiMapping
-      Condition: ShouldCreateCustomDomain
-      DependsOn: HttpApiCustomDomain
-      Properties:
-        ApiId: !Ref HttpApi
-        DomainName: ${param:apiGatewayDomain-${sls:stage}, ''}
-        Stage: !Ref HttpApiStage
+    # HttpApiMapping:
+    #   Type: AWS::ApiGatewayV2::ApiMapping
+    #   Condition: ShouldCreateCustomDomain
+    #   DependsOn: HttpApiCustomDomain
+    #   Properties:
+    #     ApiId: !Ref HttpApi
+    #     DomainName: ${param:apiGatewayDomain-${sls:stage}, ''}
+    #     Stage: !Ref HttpApiStage
 
-    HttpApiCustomDomain:
-      Type: AWS::ApiGatewayV2::DomainName
-      Condition: ShouldCreateCustomDomain
-      Properties:
-        DomainName: ${param:apiGatewayDomain-${sls:stage}, ''}
-        DomainNameConfigurations:
-          - CertificateArn: ${param:apiGatewayCertificateArn-${sls:stage}, ''}
-            EndpointType: REGIONAL
-            SecurityPolicy: TLS_1_2
+    # HttpApiCustomDomain:
+    #   Type: AWS::ApiGatewayV2::DomainName
+    #   Condition: ShouldCreateCustomDomain
+    #   Properties:
+    #     DomainName: ${param:apiGatewayDomain-${sls:stage}, ''}
+    #     DomainNameConfigurations:
+    #       - CertificateArn: ${param:apiGatewayCertificateArn-${sls:stage}, ''}
+    #         EndpointType: REGIONAL
+    #         SecurityPolicy: TLS_1_2
 
     AgentUserPool:
       Type: AWS::Cognito::UserPool
