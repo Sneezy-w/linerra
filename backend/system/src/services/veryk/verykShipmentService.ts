@@ -145,6 +145,7 @@ export class VerykShipmentService {
       .entities(Shipment)
       .options({
         limit: (conditions.length > 0 ? undefined : params.limit),
+        reverse: true,
         filters: filters,
         exclusiveStartKey: params.lastEvaluatedKey
       })

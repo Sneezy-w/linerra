@@ -111,7 +111,7 @@ export const errorConfig: RequestConfig = {
               // TODO: redirect
               break;
             default:
-              message.error(errorMessage);
+              message.error(errorMessage || 'Request error, please retry.');
           }
         }
       } else if (error.response) {
@@ -149,7 +149,7 @@ export const errorConfig: RequestConfig = {
               // TODO: redirect
               break;
             default:
-              message.error(errorMessage);
+              message.error(errorMessage || 'Request error, please retry.');
           }
         }
       } else if (error.request) {
