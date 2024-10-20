@@ -12,6 +12,8 @@ import { ServiceError } from "system/src/utils/serviceError";
 //import { updateAttributesCommandReturnValuesOptionsSet } from "dynamodb-toolbox/dist/esm/entity/actions/updateAttributes/options";
 import { LabelApiRes, LabelFile } from "system/src/models/veryk/label.entity";
 import { S3Service } from "../s3Service";
+import logger from "../../utils/logger";
+import { LambdaService } from "../lambdaService";
 
 export class VerykShipmentService {
   public static instance: VerykShipmentService = new VerykShipmentService();
@@ -173,39 +175,53 @@ export class VerykShipmentService {
     }
     const { number } = await this.save(params, currentUser);
     //console.log(number);
-    const apiReq = shipmentReqVOToApiReq(params);
-    if (apiReq.option) {
-      apiReq.option.reference_number = number;
-    } else {
-      apiReq.option = { reference_number: number };
+    try {
+      const apiReq = shipmentReqVOToApiReq(params);
+      if (apiReq.option) {
+        apiReq.option.reference_number = number;
+      } else {
+        apiReq.option = { reference_number: number };
+      }
+      const shipmentApiRes = await create(apiReq, acceptLanguage);
+      //console.log(shipmentApiRes);
+      //console.log(JSON.stringify(shipmentApiRes.package.packages, null, 2));
+
+      //const labelFile = await this.saveAllLabelFile(shipmentApiRes.id, acceptLanguage);
+
+      //const shipmentDetailApiRes = await shipmentDetail({ id: shipmentApiRes.id }, acceptLanguage);
+      //console.log(JSON.stringify(shipmentDetailApiRes, null, 2));
+
+      const shipmentApiUpdateDO = shipmentApiResToApiUpdateDO(shipmentApiRes);
+      //shipmentApiUpdateDO.labelFile = labelFile;
+
+      //console.log(shipmentApiUpdateDO);
+      const { Attributes } = await Shipment.build(UpdateAttributesCommand)
+        .item({ ...shipmentApiUpdateDO })
+        .options({ returnValues: "ALL_NEW" })
+        .send();
+      // const referenceNumber = generateOrderNumber("VK", currentUser.stationNo);
+      // const apiReq = shipmentReqVOToApiReq(params);
+      // if (apiReq.option) {
+      //   apiReq.option.reference_number = referenceNumber;
+      // } else {
+      //   apiReq.option = { reference_number: referenceNumber };
+      // }
+      // const submitRes = await create(apiReq, acceptLanguage);
+      // return submitRes;
+
+      LambdaService.instance.invokeAsynchronously(
+        process.env.PROCESS_LABEL_AND_UPDATE_SHIPMENT_FUNCTION_NAME as string,
+        { shipmentId: shipmentApiRes.id, acceptLanguage }
+      );
+      return { externalId: Attributes?.externalId, waybillNumber: Attributes?.waybillNumber, number: Attributes?.number };
+    } catch (error) {
+      //console.error(error);
+      // throw new ServiceError("Failed to submit shipment", "Shipment.SubmitFailed");
+      logger.error("Failed to submit shipment", error);
     }
-    const shipmentApiRes = await create(apiReq, acceptLanguage);
-    //console.log(shipmentApiRes);
-    //console.log(JSON.stringify(shipmentApiRes.package.packages, null, 2));
-
-    const labelFile = await this.saveAllLabelFile(shipmentApiRes.id, acceptLanguage);
-
-    const shipmentDetailApiRes = await shipmentDetail({ id: shipmentApiRes.id }, acceptLanguage);
-    //console.log(JSON.stringify(shipmentDetailApiRes, null, 2));
-
-    const shipmentApiUpdateDO = shipmentApiResToApiUpdateDO(shipmentDetailApiRes);
-    shipmentApiUpdateDO.labelFile = labelFile;
-
-    //console.log(shipmentApiUpdateDO);
-    const { Attributes } = await Shipment.build(UpdateAttributesCommand)
-      .item({ ...shipmentApiUpdateDO })
-      .options({ returnValues: "ALL_NEW" })
-      .send();
-    // const referenceNumber = generateOrderNumber("VK", currentUser.stationNo);
-    // const apiReq = shipmentReqVOToApiReq(params);
-    // if (apiReq.option) {
-    //   apiReq.option.reference_number = referenceNumber;
-    // } else {
-    //   apiReq.option = { reference_number: referenceNumber };
-    // }
-    // const submitRes = await create(apiReq, acceptLanguage);
-    // return submitRes;
-    return { externalId: Attributes?.externalId, waybillNumber: Attributes?.waybillNumber, number: Attributes?.number };
+    return {
+      number: number || ""
+    }
   }
 
   /**
@@ -214,16 +230,17 @@ export class VerykShipmentService {
    * @param acceptLanguage
    * @returns
    */
-  async getAllPrintableLabels(shipmentId: string, acceptLanguage?: string): Promise<LabelApiRes> {
-    const labelApiRes = await getLabel({ id: shipmentId, options: 1 }, acceptLanguage);
+  async getAllPrintableLabels(shipmentId: string): Promise<LabelApiRes> {
+    const labelApiRes = await getLabel({ id: shipmentId, option: 1 });
     return labelApiRes;
   }
 
-  async saveAllLabelFile(shipmentId: string, acceptLanguage?: string): Promise<LabelFile> {
-    const labelApiRes = await this.getAllPrintableLabels(shipmentId, acceptLanguage);
+  async saveAllLabelFile(shipmentId: string): Promise<LabelFile> {
+    const labelApiRes = await this.getAllPrintableLabels(shipmentId);
     if (!labelApiRes) {
       throw new ServiceError("Label not found", "Label.NotFound");
     }
+
     //console.log(labelApiRes.invoice?.name);
     //console.log(labelApiRes.delivery?.label);
 
@@ -236,6 +253,8 @@ export class VerykShipmentService {
       label: labelKey
     };
 
+    //console.log("invoice", labelApiRes.invoice);
+
     if (labelApiRes.invoice) {
       const { name: invoiceFileName, label: invoiceFileContent, type: invoiceFileType } = labelApiRes.invoice;
       const invoiceBuffer = Buffer.from(invoiceFileContent as string, 'base64');
@@ -244,12 +263,14 @@ export class VerykShipmentService {
       labelFile.invoice = invoiceKey;
     }
 
-    if (labelApiRes.delivery) {
-      const { name: deliveryFileName, label: deliveryFileContent, type: deliveryFileType } = labelApiRes.delivery;
-      const deliveryBuffer = Buffer.from(deliveryFileContent as string, 'base64');
-      const deliveryKey = `delivery/${deliveryFileName}`;
-      await S3Service.instance.uploadLabelFile(deliveryKey, deliveryBuffer, deliveryFileType);
-      labelFile.delivery = deliveryKey;
+    console.log("deliver", labelApiRes.deliver);
+
+    if (labelApiRes.deliver) {
+      const { name: deliverFileName, label: deliverFileContent, type: deliverFileType } = labelApiRes.deliver;
+      const deliverBuffer = Buffer.from(deliverFileContent as string, 'base64');
+      const deliverKey = `deliver/${deliverFileName}`;
+      await S3Service.instance.uploadLabelFile(deliverKey, deliverBuffer, deliverFileType);
+      labelFile.deliver = deliverKey;
     }
 
     return labelFile;

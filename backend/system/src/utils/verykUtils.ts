@@ -146,7 +146,7 @@ export async function shipmentDetail(params: { id: string }, acceptLanguage?: st
   return getResponseData(response);
 }
 
-export async function getLabel(params: { id: string, options?: 0 | 1 }, acceptLanguage?: string) {
+export async function getLabel(params: { id: string, option?: 0 | 1 }, acceptLanguage?: string) {
   const url = buildUrl('shipment/label');
   const headers = acceptLanguage ? { 'Accept-Language': acceptLanguage } : {};
 

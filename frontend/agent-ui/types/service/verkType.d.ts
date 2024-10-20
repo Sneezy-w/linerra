@@ -117,13 +117,13 @@ declare namespace VerykType {
     token: string;
     zoneId: string;
     zoneprice:
-      | any[]
-      | {
-          id: string;
-          description: string;
-          postalcode_start: string;
-          postalcode_end: string;
-        };
+    | any[]
+    | {
+      id: string;
+      description: string;
+      postalcode_start: string;
+      postalcode_end: string;
+    };
     carrier?: {
       carrierId: string;
       carrierCode: string;
@@ -516,7 +516,7 @@ declare namespace VerykType {
   type LabelFile = {
     label: string;
     invoice?: string;
-    delivery?: string;
+    deliver?: string;
   };
 
   type TrackingInfoApiResVO = {

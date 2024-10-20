@@ -8,6 +8,7 @@ import { ShipmentDO } from '@linerra/system/src/models/veryk/shipment.entity';
 import { S3Service } from '@linerra/system/src/services/s3Service';
 import { ErrorShowType } from '@linerra/system/src/enum/errorShowType';
 import logger from '@linerra/system/src/utils/logger';
+import { LambdaService } from 'system/src/services/lambdaService';
 
 const verykShipmentService = VerykShipmentService.instance;
 
@@ -19,12 +20,12 @@ export class VerykShipmentController {
   }
 
   async quote(req: Request, res: Response) {
-    const quotes: QuoteResVO[] = await verykShipmentService.quote(req.body, req.context.acceptLanguage);
+    const quotes: QuoteResVO[] = await verykShipmentService.quote(req.body, req.context.acceptLanguage as string);
     res.ok(quotes);
   }
 
   async save(req: Request, res: Response) {
-    const shipment = await verykShipmentService.save(req.body, req.context.user);
+    const shipment = await verykShipmentService.save(req.body, req.context.user as Record<string, string>);
     res.ok(shipment);
   }
 
@@ -56,7 +57,7 @@ export class VerykShipmentController {
       status: req.body.status as string,
       dateRange: [req.body.startDate as string || new Date(new Date().setMonth(new Date().getMonth() - 3)).toISOString(), req.body.endDate as string || new Date().toISOString()],
       lastEvaluatedKey: req.body.lastEvaluatedKey as Record<string, unknown>
-    }, req.context.user);
+    }, req.context.user as Record<string, string>);
 
     res.ok({
       items: (shipmentPage.Items || []).map(shipment => shipmentDOToDetailResVO(shipment as ShipmentDO)),
@@ -65,17 +66,17 @@ export class VerykShipmentController {
   }
 
   async submit(req: Request, res: Response) {
-    const submit = await verykShipmentService.submit(req.body, req.context.user, req.context.acceptLanguage);
+    const submit = await verykShipmentService.submit(req.body, req.context.user as Record<string, string>, req.context.acceptLanguage as string);
     res.ok(submit);
   }
 
   async shipmentList(req: Request, res: Response) {
-    const shipments = await shipmentList({ keyword: req.query.keyword as string }, req.context.acceptLanguage);
+    const shipments = await shipmentList({ keyword: req.query.keyword as string }, req.context.acceptLanguage as string);
     res.ok(shipments);
   }
 
   async shipmentDetail(req: Request, res: Response) {
-    const shipment = await shipmentDetail({ id: req.params.id }, req.context.acceptLanguage);
+    const shipment = await shipmentDetail({ id: req.params.id }, req.context.acceptLanguage as string);
     res.ok(shipment);
   }
 
@@ -95,7 +96,11 @@ export class VerykShipmentController {
   }
 
   async tracking(req: Request, res: Response) {
-    const trackingApiRes = await tracking({ keyword: req.query.keyword as string }, req.context.acceptLanguage);
+    const trackingApiRes = await tracking({ keyword: req.query.keyword as string }, req.context.acceptLanguage as string);
+    LambdaService.instance.invokeAsynchronously(
+      process.env.PROCESS_LABEL_AND_UPDATE_SHIPMENT_FUNCTION_NAME as string,
+      { shipmentId: req.query.keyword as string, acceptLanguage: req.context.acceptLanguage as string }
+    );
     res.ok(trackingApiRes);
   }
 

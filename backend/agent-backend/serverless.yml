@@ -23,12 +23,13 @@ stages:
       frontendUrl: ${env:FRONTEND_URL, param:frontendUrl-${sls:stage}, 'http://localhost:8000'}
       localDynamoDBPort: ${env:LOCAL_DYNAMO_DB_PORT, 8900}
       labelBucketName: shipment-label-files-${sls:stage}
+      processLabelAndUpdateShipmentFunctionName: ${self:service}-${sls:stage}-processLabelAndUpdateShipment
 
 provider:
   name: aws
   runtime: nodejs20.x
   region: us-east-1
-  # timeout: 29
+  timeout: 60
   versionFunctions: false
   # httpApi:
   #   id: Fn::GetAtt: [HttpApi, Arn]
@@ -52,6 +53,7 @@ provider:
     FRONTEND_URL: ${param:frontendUrl}
     LOCAL_DYNAMO_DB_PORT: ${param:localDynamoDBPort}
     S3_LABEL_BUCKET_NAME: ${param:labelBucketName}
+    PROCESS_LABEL_AND_UPDATE_SHIPMENT_FUNCTION_NAME: ${param:processLabelAndUpdateShipmentFunctionName}
 
   iam:
     role:
@@ -88,6 +90,10 @@ provider:
             - s3:DeleteObject
             - s3:PutObjectAcl
           Resource: "*"
+        - Effect: Allow
+          Action:
+            - lambda:InvokeFunction
+          Resource: "*"
 
 functions:
   api: ${file(./apiFuncConfig.js)}
@@ -103,6 +109,11 @@ functions:
     #       - "*"
     # events:
     #   - httpApi: "*"
+  processLabelAndUpdateShipment:
+    handler: src/functions/processLabelAndUpdateShipment.handler
+    name: ${param:processLabelAndUpdateShipmentFunctionName}
+    timeout: 120
+
 
 resources:
   Conditions:

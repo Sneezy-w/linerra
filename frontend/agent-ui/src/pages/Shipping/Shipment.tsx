@@ -1,7 +1,7 @@
 import { ShipmentStatus } from '@/constant/constant';
 import { getShipment } from '@/services/service/verykApi';
 import { ProCard } from '@ant-design/pro-components';
-import { useModel, useParams } from '@umijs/max';
+import { useLocation, useModel, useParams } from '@umijs/max';
 import { Spin, Steps } from 'antd';
 import React, { useEffect } from 'react';
 import OrderSuccess from './components/OrderSuccess';
@@ -25,6 +25,9 @@ const Shipment: React.FC = () => {
   } = useModel('Shipping.shipmentForm');
 
   const { number } = useParams<{ number: string }>();
+
+  const location = useLocation();
+
 
   useEffect(() => {
     setDataLoading(true);
@@ -50,7 +53,7 @@ const Shipment: React.FC = () => {
         setDataLoading(false);
       });
     }
-  }, [number]);
+  }, [number, location.pathname, location.search]);
 
   const renderStepContent = () => {
     switch (currentStep) {

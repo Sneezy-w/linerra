@@ -301,7 +301,7 @@ export const Shipment = new Entity({
     labelFile: map({
       label: string().required(),
       invoice: string().optional(),
-      delivery: string().optional(),
+      deliver: string().optional(),
     }).optional(),
   }).and(_prevSchema => ({
     GSI2SK: string().required().link<typeof _prevSchema>(

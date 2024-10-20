@@ -25,12 +25,13 @@ app.use(express.json());
 
 
 // requestLogger
+// console.log(process.env.IS_OFFLINE);
 app.use(expressWinston.logger({
   winstonInstance: logger,
-  meta: true,
+  meta: !process.env.IS_OFFLINE,
   msg: "HTTP {{req.method}} {{req.url}}",
   expressFormat: true,
-  colorize: false,
+  colorize: true,
 }));
 
 app.use(trace);

@@ -16,3 +16,5 @@ export const generateRandomString = (length: number) => {
   const randomChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   return Array(length).fill(0).map(() => randomChars[Math.floor(Math.random() * randomChars.length)]).join('');
 };
+
+export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));

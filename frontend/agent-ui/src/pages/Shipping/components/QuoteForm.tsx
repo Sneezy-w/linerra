@@ -115,32 +115,37 @@ const QuoteForm: React.FC = () => {
     setQuoteFormData(formData);
     const carrierIds: string[] = allCarrierIds;
     const carriers: VerykType.Carrier[] = allCarriers;
-    const quotePromises = carrierIds.map((carrierId) => fetchQuoteForCarrier(formData, carrierId));
+    try {
+      const quotePromises = carrierIds.map((carrierId) => fetchQuoteForCarrier(formData, carrierId));
 
-    const quoteResults = await Promise.all(quotePromises);
-    const aggregatedResults = quoteResults.flatMap((result) => result || []);
-    const quoteServices: VerykType.QuoteService[] = aggregatedResults
-      .flatMap((result) => {
-        const carrier = carriers.find((c) => c.id === result.carrierId);
-        return (
-          result?.services?.map((service: VerykType.QuoteService) => {
-            return {
-              ...service,
-              carrier: {
-                carrierId: result.carrierId,
-                carrierCode: result.carrierCode,
-                name: result.name,
-                currency: result.currency,
-                logo: carrier?.logo,
-              },
-            };
-          }) || []
-        );
-      })
-      .sort((a, b) => Number(a.charge) - Number(b.charge));
-    setQuoteServices(quoteServices);
-    setCurrentStep(1);
-    setOperationLoading(false);
+      const quoteResults = await Promise.all(quotePromises);
+      const aggregatedResults = quoteResults.flatMap((result) => result || []);
+      const quoteServices: VerykType.QuoteService[] = aggregatedResults
+        .flatMap((result) => {
+          const carrier = carriers.find((c) => c.id === result.carrierId);
+          return (
+            result?.services?.map((service: VerykType.QuoteService) => {
+              return {
+                ...service,
+                carrier: {
+                  carrierId: result.carrierId,
+                  carrierCode: result.carrierCode,
+                  name: result.name,
+                  currency: result.currency,
+                  logo: carrier?.logo,
+                },
+              };
+            }) || []
+          );
+        })
+        .sort((a, b) => Number(a.charge) - Number(b.charge));
+      setQuoteServices(quoteServices);
+      setCurrentStep(1);
+    } catch (error) {
+      //console.error(error);
+    } finally {
+      setOperationLoading(false);
+    }
   }, []);
 
   const packagesProFormListRender =
@@ -334,7 +339,7 @@ const QuoteForm: React.FC = () => {
                               },
                             };
                           }}
-                          //convertValue={(value) => value?.code}
+                        //convertValue={(value) => value?.code}
                         />
                       );
                     } else {
@@ -355,7 +360,7 @@ const QuoteForm: React.FC = () => {
                               },
                             };
                           }}
-                          // convertValue={(value) => value?.name || ''}
+                        // convertValue={(value) => value?.name || ''}
                         />
                       );
                     }
@@ -451,7 +456,7 @@ const QuoteForm: React.FC = () => {
                               },
                             };
                           }}
-                          //convertValue={(value) => value?.code}
+                        //convertValue={(value) => value?.code}
                         />
                       );
                     } else {
@@ -472,7 +477,7 @@ const QuoteForm: React.FC = () => {
                               },
                             };
                           }}
-                          // convertValue={(value) => value?.name || ''}
+                        // convertValue={(value) => value?.name || ''}
                         />
                       );
                     }

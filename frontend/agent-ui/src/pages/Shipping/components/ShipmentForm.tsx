@@ -776,11 +776,14 @@ const ShipmentForm: React.FC = () => {
   const handleSave = useCallback(
     async (formData: any) => {
       setOperationLoading(true);
-      const result = await postShipmentSave(formData);
-      history.push(`/shipping/shipment/${result.data?.number}`);
-
-      //formRef.current?.setFieldsValue(result.data);
-      setOperationLoading(false);
+      try {
+        const result = await postShipmentSave(formData);
+        history.push(`/shipping/shipment/${result.data?.number}?t=${Date.now()}`);
+      } catch (error) {
+        //console.error(error);
+      } finally {
+        setOperationLoading(false);
+      }
     },
     [setOperationLoading, formRef],
   );
@@ -791,12 +794,14 @@ const ShipmentForm: React.FC = () => {
     try {
       const formData = await formRef.current?.validateFieldsReturnFormatValue?.();
       const result = await postShipmentSubmit(formData);
-      setOrderNumber(result.data?.number || '');
-      setCurrentStep(3);
+      //setOrderNumber(result.data?.number || '');
+      //setCurrentStep(3);
+      history.push(`/shipping/shipment/${result.data?.number}?t=${Date.now()}`);
     } catch (errorInfo) {
       //console.log('validate error:', errorInfo);
+    } finally {
+      setOperationLoading(false);
     }
-    setOperationLoading(false);
   }, [setOperationLoading, setCurrentStep, setOrderNumber, formRef]);
 
   const handleReQuote = useCallback(async () => {
@@ -931,52 +936,52 @@ const ShipmentForm: React.FC = () => {
         destinationRegion,
         params?.package?.type,
       ) && (
-        <>
-          <ProFormSelect
-            name={['additional', 'COD', 'state']}
-            label="Collect on Delivery?"
-            options={YesNoOptions}
-            allowClear={false}
-            placeholder="Required."
-            initialValue={No}
-            rules={[{ required: true, message: 'Please select Collect on Delivery' }]}
-            extra={
-              <Text type="secondary">
-                <QuestionCircleOutlined style={{ marginRight: 4 }} />
-                CA to US COD is not allowed for package Letter/Envelope
-              </Text>
-            }
-          />
-          <ProFormDependency name={[['additional', 'COD', 'state']]}>
-            {({ additional }) => {
-              if (additional?.COD?.state === Yes) {
-                return (
-                  <>
-                    <ProFormDigit
-                      name={['additional', 'COD', 'amount']}
-                      label="COD Amount"
-                      min={0}
-                      placeholder="Required."
-                      rules={[{ required: true, message: 'Please enter COD Amount' }]}
-                      fieldProps={{
-                        precision: 2,
-                      }}
-                    />
-                    <ProFormSelect
-                      name={['additional', 'COD', 'fund_type']}
-                      label="Fund Type"
-                      options={packageAdditionalCODFundTypeItems}
-                      allowClear={false}
-                      placeholder="Required."
-                      rules={[{ required: true, message: 'Please select Fund Type' }]}
-                    />
-                  </>
-                );
+          <>
+            <ProFormSelect
+              name={['additional', 'COD', 'state']}
+              label="Collect on Delivery?"
+              options={YesNoOptions}
+              allowClear={false}
+              placeholder="Required."
+              initialValue={No}
+              rules={[{ required: true, message: 'Please select Collect on Delivery' }]}
+              extra={
+                <Text type="secondary">
+                  <QuestionCircleOutlined style={{ marginRight: 4 }} />
+                  CA to US COD is not allowed for package Letter/Envelope
+                </Text>
               }
-            }}
-          </ProFormDependency>
-        </>
-      );
+            />
+            <ProFormDependency name={[['additional', 'COD', 'state']]}>
+              {({ additional }) => {
+                if (additional?.COD?.state === Yes) {
+                  return (
+                    <>
+                      <ProFormDigit
+                        name={['additional', 'COD', 'amount']}
+                        label="COD Amount"
+                        min={0}
+                        placeholder="Required."
+                        rules={[{ required: true, message: 'Please enter COD Amount' }]}
+                        fieldProps={{
+                          precision: 2,
+                        }}
+                      />
+                      <ProFormSelect
+                        name={['additional', 'COD', 'fund_type']}
+                        label="Fund Type"
+                        options={packageAdditionalCODFundTypeItems}
+                        allowClear={false}
+                        placeholder="Required."
+                        rules={[{ required: true, message: 'Please select Fund Type' }]}
+                      />
+                    </>
+                  );
+                }
+              }}
+            </ProFormDependency>
+          </>
+        );
 
       const AHInput = showPackageAdditionalAH(service, params?.package?.type) && (
         <>
@@ -1429,7 +1434,7 @@ const ShipmentForm: React.FC = () => {
                               },
                             };
                           }}
-                          //convertValue={(value) => value?.name || ''}
+                        //convertValue={(value) => value?.name || ''}
                         />
                       );
                     }
@@ -1572,21 +1577,21 @@ const ShipmentForm: React.FC = () => {
                         const signatureTypeInput = showShipmentAdditionalSignatureType(
                           signatureState,
                         ) && (
-                          <ProFormSelect
-                            name={['sadditional', 'signature', 'type']}
-                            label="Confirmation Type"
-                            options={shipmentAdditionalSignatureTypeItemsByGroupCodeAndRegion(
-                              service,
-                              initiationRegion,
-                              destinationRegion,
-                              shipmentAdditionalSignatureTypeFedexItems,
-                              shipmentAdditionalSignatureTypePurolatorItems,
-                              shipmentAdditionalSignatureTypePurolatorInternationalItems,
-                            )}
-                            placeholder="Required."
-                            rules={[{ required: true, message: 'Please select a signature type' }]}
-                          />
-                        );
+                            <ProFormSelect
+                              name={['sadditional', 'signature', 'type']}
+                              label="Confirmation Type"
+                              options={shipmentAdditionalSignatureTypeItemsByGroupCodeAndRegion(
+                                service,
+                                initiationRegion,
+                                destinationRegion,
+                                shipmentAdditionalSignatureTypeFedexItems,
+                                shipmentAdditionalSignatureTypePurolatorItems,
+                                shipmentAdditionalSignatureTypePurolatorInternationalItems,
+                              )}
+                              placeholder="Required."
+                              rules={[{ required: true, message: 'Please select a signature type' }]}
+                            />
+                          );
                         return <>{signatureTypeInput}</>;
                       }}
                     </ProFormDependency>
@@ -1608,15 +1613,15 @@ const ShipmentForm: React.FC = () => {
                       dnsState,
                       ladState,
                     ) && (
-                      <ProFormSelect
-                        name={['sadditional', 'HFP', 'state']}
-                        label="Card for pickup?"
-                        options={YesNoOptions}
-                        initialValue={No}
-                        placeholder="Required."
-                        rules={[{ required: true, message: 'Please select a card for pickup' }]}
-                      />
-                    );
+                        <ProFormSelect
+                          name={['sadditional', 'HFP', 'state']}
+                          label="Card for pickup?"
+                          options={YesNoOptions}
+                          initialValue={No}
+                          placeholder="Required."
+                          rules={[{ required: true, message: 'Please select a card for pickup' }]}
+                        />
+                      );
                     return <>{hfpInput}</>;
                   }}
                 </ProFormDependency>
@@ -1636,15 +1641,15 @@ const ShipmentForm: React.FC = () => {
                       hfpState,
                       ladState,
                     ) && (
-                      <ProFormSelect
-                        name={['sadditional', 'DNS', 'state']}
-                        label="Do not safe drop?"
-                        options={YesNoOptions}
-                        initialValue={No}
-                        placeholder="Required."
-                        rules={[{ required: true, message: 'Please select a do not safe drop' }]}
-                      />
-                    );
+                        <ProFormSelect
+                          name={['sadditional', 'DNS', 'state']}
+                          label="Do not safe drop?"
+                          options={YesNoOptions}
+                          initialValue={No}
+                          placeholder="Required."
+                          rules={[{ required: true, message: 'Please select a do not safe drop' }]}
+                        />
+                      );
                     return <>{dnsInput}</>;
                   }}
                 </ProFormDependency>
@@ -1668,20 +1673,20 @@ const ShipmentForm: React.FC = () => {
                       hfpState,
                       dnsState,
                     ) && (
-                      <ProFormSelect
-                        name={['sadditional', 'LAD', 'state']}
-                        label="Leave at door - do not card?"
-                        options={YesNoOptions}
-                        initialValue={No}
-                        placeholder="Required."
-                        rules={[
-                          {
-                            required: true,
-                            message: 'Please select a leave at door - do not card',
-                          },
-                        ]}
-                      />
-                    );
+                        <ProFormSelect
+                          name={['sadditional', 'LAD', 'state']}
+                          label="Leave at door - do not card?"
+                          options={YesNoOptions}
+                          initialValue={No}
+                          placeholder="Required."
+                          rules={[
+                            {
+                              required: true,
+                              message: 'Please select a leave at door - do not card',
+                            },
+                          ]}
+                        />
+                      );
                     return <>{ladInput}</>;
                   }}
                 </ProFormDependency>
@@ -1730,24 +1735,24 @@ const ShipmentForm: React.FC = () => {
                       params?.package?.type,
                       params?.sadditional?.DIT?.state,
                     ) && (
-                      <ProFormSelect
-                        name={['sadditional', 'EDI', 'state']}
-                        label="E-Commercial Invoice?"
-                        options={YesNoOptions}
-                        initialValue={No}
-                        placeholder="Required."
-                        rules={[
-                          { required: true, message: 'Please select a e-commercial invoice' },
-                        ]}
-                        extra={
-                          <Text type="secondary">
-                            <QuestionCircleOutlined style={{ marginRight: 4 }} />
-                            This option is for paperless shipment. Select &quot;No&quot; if you want
-                            to print commercial invoice.
-                          </Text>
-                        }
-                      />
-                    );
+                        <ProFormSelect
+                          name={['sadditional', 'EDI', 'state']}
+                          label="E-Commercial Invoice?"
+                          options={YesNoOptions}
+                          initialValue={No}
+                          placeholder="Required."
+                          rules={[
+                            { required: true, message: 'Please select a e-commercial invoice' },
+                          ]}
+                          extra={
+                            <Text type="secondary">
+                              <QuestionCircleOutlined style={{ marginRight: 4 }} />
+                              This option is for paperless shipment. Select &quot;No&quot; if you want
+                              to print commercial invoice.
+                            </Text>
+                          }
+                        />
+                      );
                     return <>{ediInput}</>;
                   }}
                 </ProFormDependency>
@@ -1759,37 +1764,37 @@ const ShipmentForm: React.FC = () => {
                       destinationRegion,
                       params?.package?.type,
                     ) && (
-                      <>
-                        <ProFormSelect
-                          name={['sadditional', 'DG', 'state']}
-                          label="Dangerous Goods?"
-                          options={YesNoOptions}
-                          initialValue={No}
-                          placeholder="Required."
-                          rules={[{ required: true, message: 'Please select yes or no' }]}
-                        />
-                        <ProFormDependency name={[['sadditional', 'DG', 'state']]}>
-                          {({ sadditional }) => {
-                            const dgState = sadditional?.DG?.state;
-                            const dgTypeInput = showShipmentAdditionalDGType(dgState) && (
-                              <ProFormSelect
-                                name={['sadditional', 'DG', 'type']}
-                                label="Select type"
-                                options={shipmentAdditionalDGTypeItems}
-                                placeholder="Required."
-                                rules={[
-                                  {
-                                    required: true,
-                                    message: 'Please select a dangerous goods type',
-                                  },
-                                ]}
-                              />
-                            );
-                            return <>{dgTypeInput}</>;
-                          }}
-                        </ProFormDependency>
-                      </>
-                    );
+                        <>
+                          <ProFormSelect
+                            name={['sadditional', 'DG', 'state']}
+                            label="Dangerous Goods?"
+                            options={YesNoOptions}
+                            initialValue={No}
+                            placeholder="Required."
+                            rules={[{ required: true, message: 'Please select yes or no' }]}
+                          />
+                          <ProFormDependency name={[['sadditional', 'DG', 'state']]}>
+                            {({ sadditional }) => {
+                              const dgState = sadditional?.DG?.state;
+                              const dgTypeInput = showShipmentAdditionalDGType(dgState) && (
+                                <ProFormSelect
+                                  name={['sadditional', 'DG', 'type']}
+                                  label="Select type"
+                                  options={shipmentAdditionalDGTypeItems}
+                                  placeholder="Required."
+                                  rules={[
+                                    {
+                                      required: true,
+                                      message: 'Please select a dangerous goods type',
+                                    },
+                                  ]}
+                                />
+                              );
+                              return <>{dgTypeInput}</>;
+                            }}
+                          </ProFormDependency>
+                        </>
+                      );
                     return <>{dgInput}</>;
                   }}
                 </ProFormDependency>
@@ -1864,15 +1869,15 @@ const ShipmentForm: React.FC = () => {
                           service,
                           rfeState,
                         ) && (
-                          <ProFormText
-                            name={['sadditional', '_RFE', 'otherReason']}
-                            label="Other Reason"
-                            placeholder="Required."
-                            rules={[
-                              { required: true, message: 'Please enter other reason for export' },
-                            ]}
-                          />
-                        );
+                            <ProFormText
+                              name={['sadditional', '_RFE', 'otherReason']}
+                              label="Other Reason"
+                              placeholder="Required."
+                              rules={[
+                                { required: true, message: 'Please enter other reason for export' },
+                              ]}
+                            />
+                          );
                         return <>{rfeOtherReasonInput}</>;
                       }}
                     </ProFormDependency>
@@ -1886,20 +1891,20 @@ const ShipmentForm: React.FC = () => {
                       destinationRegion,
                       params?.package?.type,
                     ) && (
-                      <ProFormSelect
-                        name={['sadditional', 'TermsOfTrade', 'state']}
-                        label="Terms of Trade?"
-                        options={shipmentAdditionalTermsOfTradeStateItems}
-                        placeholder="Required."
-                        rules={[{ required: true, message: 'Please select a terms of trade' }]}
-                        extra={
-                          <Text type="secondary">
-                            <QuestionCircleOutlined style={{ marginRight: 4 }} />
-                            This option is only valid for accounts
-                          </Text>
-                        }
-                      />
-                    );
+                        <ProFormSelect
+                          name={['sadditional', 'TermsOfTrade', 'state']}
+                          label="Terms of Trade?"
+                          options={shipmentAdditionalTermsOfTradeStateItems}
+                          placeholder="Required."
+                          rules={[{ required: true, message: 'Please select a terms of trade' }]}
+                          extra={
+                            <Text type="secondary">
+                              <QuestionCircleOutlined style={{ marginRight: 4 }} />
+                              This option is only valid for accounts
+                            </Text>
+                          }
+                        />
+                      );
                     return <>{termsOfTradeInput}</>;
                   }}
                 </ProFormDependency>
@@ -1911,59 +1916,59 @@ const ShipmentForm: React.FC = () => {
                       destinationRegion,
                       params?.package?.type,
                     ) && (
-                      <>
-                        <ProFormSelect
-                          name={['sadditional', 'IOSS', 'state']}
-                          label="IOSS?"
-                          options={YesNoOptions}
-                          initialValue={No}
-                          placeholder="Required."
-                          rules={[{ required: true, message: 'Please select a IOSS' }]}
-                        />
-                        <ProFormDependency name={[['sadditional', 'IOSS', 'state']]}>
-                          {({ sadditional }) => {
-                            const iossState = sadditional?.IOSS?.state;
-                            const iossTypeInput = showShipmentAdditionalIOSSType(
-                              service,
-                              iossState,
-                            ) && (
-                              <ProFormSelect
-                                name={['sadditional', 'IOSS', 'type']}
-                                label="IOSS ID"
-                                options={shipmentAdditionalIOSSTypeItems}
-                                placeholder="Required."
-                                rules={[{ required: true, message: 'Please select a IOSS type' }]}
-                              />
-                            );
-                            const iossIdInput = showShipmentAdditionalIOSSId(iossState) && (
-                              <ProFormText
-                                name={['sadditional', 'IOSS', 'id']}
-                                label="IOSS ID"
-                                placeholder="Required."
-                                rules={[{ required: true, message: 'Please enter a IOSS ID' }]}
-                                extra={
-                                  service?.carrier?.groupCode === 'canadapost' && (
-                                    <Text type="secondary">
-                                      <QuestionCircleOutlined style={{ marginRight: 4 }} />
-                                      (Character String – up to 13 characters) Optional field to
-                                      enter Tax Registration Numbers or IDs (e.g. Tax ID, IRS No.,
-                                      VAT, IOSS number) for electronic transmission to the receiving
-                                      post. Note: IOSS should be entered as ‘IMxxxxxxxxxx’.
-                                    </Text>
-                                  )
-                                }
-                              />
-                            );
-                            return (
-                              <>
-                                {iossTypeInput}
-                                {iossIdInput}
-                              </>
-                            );
-                          }}
-                        </ProFormDependency>
-                      </>
-                    );
+                        <>
+                          <ProFormSelect
+                            name={['sadditional', 'IOSS', 'state']}
+                            label="IOSS?"
+                            options={YesNoOptions}
+                            initialValue={No}
+                            placeholder="Required."
+                            rules={[{ required: true, message: 'Please select a IOSS' }]}
+                          />
+                          <ProFormDependency name={[['sadditional', 'IOSS', 'state']]}>
+                            {({ sadditional }) => {
+                              const iossState = sadditional?.IOSS?.state;
+                              const iossTypeInput = showShipmentAdditionalIOSSType(
+                                service,
+                                iossState,
+                              ) && (
+                                  <ProFormSelect
+                                    name={['sadditional', 'IOSS', 'type']}
+                                    label="IOSS ID"
+                                    options={shipmentAdditionalIOSSTypeItems}
+                                    placeholder="Required."
+                                    rules={[{ required: true, message: 'Please select a IOSS type' }]}
+                                  />
+                                );
+                              const iossIdInput = showShipmentAdditionalIOSSId(iossState) && (
+                                <ProFormText
+                                  name={['sadditional', 'IOSS', 'id']}
+                                  label="IOSS ID"
+                                  placeholder="Required."
+                                  rules={[{ required: true, message: 'Please enter a IOSS ID' }]}
+                                  extra={
+                                    service?.carrier?.groupCode === 'canadapost' && (
+                                      <Text type="secondary">
+                                        <QuestionCircleOutlined style={{ marginRight: 4 }} />
+                                        (Character String – up to 13 characters) Optional field to
+                                        enter Tax Registration Numbers or IDs (e.g. Tax ID, IRS No.,
+                                        VAT, IOSS number) for electronic transmission to the receiving
+                                        post. Note: IOSS should be entered as ‘IMxxxxxxxxxx’.
+                                      </Text>
+                                    )
+                                  }
+                                />
+                              );
+                              return (
+                                <>
+                                  {iossTypeInput}
+                                  {iossIdInput}
+                                </>
+                              );
+                            }}
+                          </ProFormDependency>
+                        </>
+                      );
                     return <>{iossInput}</>;
                   }}
                 </ProFormDependency>
@@ -2087,7 +2092,7 @@ const ShipmentForm: React.FC = () => {
                               },
                             };
                           }}
-                          //convertValue={(value) => value.code}
+                        //convertValue={(value) => value.code}
                         />
                       );
                     } else {
@@ -2109,7 +2114,7 @@ const ShipmentForm: React.FC = () => {
                               },
                             };
                           }}
-                          //convertValue={(value) => value?.name || ''}
+                        //convertValue={(value) => value?.name || ''}
                         />
                       );
                     }

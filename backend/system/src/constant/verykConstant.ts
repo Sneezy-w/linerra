@@ -219,6 +219,11 @@ export const verykCarriers: Carrier[] = [
         "code": "INTERNATIONAL_ECONOMY",
         "name": "FedEx International Economy®"
       },
+      // {
+      //   "id": "264",
+      //   "code": "INTERNATIONAL_ECONOMY",
+      //   "name": "FedEx International Economy®"
+      // },
       {
         "id": "318",
         "code": "INTERNATIONAL_PRIORITY",

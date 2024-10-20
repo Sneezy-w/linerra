@@ -315,12 +315,12 @@ const ShipmentCard: React.FC<{
       });
     }
 
-    if (shipment.labelFile?.delivery) {
+    if (shipment.labelFile?.deliver) {
       items.push({
-        key: 'delivery',
+        key: 'deliver',
         label: (
-          <Typography.Link onClick={() => openLabelUrl(shipment.labelFile?.delivery)}>
-            Delivery Label
+          <Typography.Link onClick={() => openLabelUrl(shipment.labelFile?.deliver)}>
+            Deliver Label
           </Typography.Link>
         ),
       });

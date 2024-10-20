@@ -11,7 +11,7 @@ export interface LabelApiRes {
     size: number;
     label: string;
   }
-  delivery?: {
+  deliver?: {
     type: string;
     name: string;
     size: number;
@@ -22,5 +22,5 @@ export interface LabelApiRes {
 export interface LabelFile {
   label: string;
   invoice?: string;
-  delivery?: string;
+  deliver?: string;
 }
