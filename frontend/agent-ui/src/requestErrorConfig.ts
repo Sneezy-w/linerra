@@ -184,8 +184,22 @@ export const errorConfig: RequestConfig = {
 
   // Request interceptor
   requestInterceptors: [
-    async (config: RequestConfig) => {
+    // async (config: RequestConfig) => {
 
+    //   if (config.method?.toLowerCase() === 'put' || config.method?.toLowerCase() === 'post') {
+    //     const contentSha256 = await calculateSha256(config.data);
+    //     config.headers = {
+    //       ...config.headers,
+    //       'x-amz-content-sha256': contentSha256,
+    //     };
+    //   }
+
+    //   return { ...config };
+    // },
+    async (config: RequestConfig) => {
+      //console.log("requestInterceptor", config);
+      // Intercept request configuration for personalized processing.
+      //const url = config?.url?.concat('?token = 123');
       if (config.method?.toLowerCase() === 'put' || config.method?.toLowerCase() === 'post') {
         const contentSha256 = await calculateSha256(config.data);
         config.headers = {
@@ -194,12 +208,7 @@ export const errorConfig: RequestConfig = {
         };
       }
 
-      return { ...config };
-    },
-    async (config: RequestConfig) => {
-      //console.log("requestInterceptor", config);
-      // Intercept request configuration for personalized processing.
-      //const url = config?.url?.concat('?token = 123');
+
       const headers = config.headers;
       const isToken = headers?.['isToken'];
       if (isToken !== false) {

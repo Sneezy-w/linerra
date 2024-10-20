@@ -2,7 +2,7 @@ import { ShipmentDO, ShipmentEditResVO, ShipmentReqVO } from "../../models/veryk
 import { verykCarriers } from "../../constant/verykConstant";
 import { quoteApiResToResVO, quoteReqVOToApiReq } from "../../models/veryk/quote.convert";
 import { QuoteReqVO, QuoteResVO } from "../../models/veryk/quote.entity";
-import { quote, create, getLabel, shipmentDetail } from "../../utils/verykUtils";
+import { quote, create, getLabel } from "../../utils/verykUtils";
 import { shipmentApiResToApiUpdateDO, shipmentReqVOToApiReq, shipmentReqVOToDO } from "../../models/veryk/shipment.convert";
 import { generateOrderNumber, now } from "../../utils/utils";
 import { MainTable, Shipment } from "system/src/dynamodb/toolbox";
@@ -221,7 +221,7 @@ export class VerykShipmentService {
     }
     return {
       number: number || ""
-    }
+    };
   }
 
   /**
@@ -263,7 +263,7 @@ export class VerykShipmentService {
       labelFile.invoice = invoiceKey;
     }
 
-    console.log("deliver", labelApiRes.deliver);
+    //console.log("deliver", labelApiRes.deliver);
 
     if (labelApiRes.deliver) {
       const { name: deliverFileName, label: deliverFileContent, type: deliverFileType } = labelApiRes.deliver;
