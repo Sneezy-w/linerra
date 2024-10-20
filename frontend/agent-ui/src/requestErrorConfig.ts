@@ -54,13 +54,13 @@ const handleReturnToLogin = _.debounce(
 );
 
 let isRefreshing = false;
-let refreshSubscribers: Array<(token: string) => void> = [];
+let refreshSubscribers: Array<(accessToken: string, idToken: string) => void> = [];
 
-function onRefreshed(token: string) {
-  refreshSubscribers.map((cb) => cb(token));
+function onRefreshed(accessToken: string, idToken: string) {
+  refreshSubscribers.map((cb) => cb(accessToken, idToken));
 }
 
-function addRefreshSubscriber(cb: (token: string) => void) {
+function addRefreshSubscriber(cb: (accessToken: string, idToken: string) => void) {
   refreshSubscribers.push(cb);
 }
 
@@ -226,7 +226,8 @@ export const errorConfig: RequestConfig = {
         const sessionId = getSessionId();
         config.headers = {
           ...config.headers,
-          Authorization: `Bearer ${accessToken}`,
+          //Authorization: `Bearer ${accessToken}`,
+          'Access-Token': accessToken || '',
           'Identity-Token': idToken || '',
           'Session-Id': sessionId || '',
         };
@@ -240,7 +241,7 @@ export const errorConfig: RequestConfig = {
               if (refreshResult.success && refreshResult.data) {
                 const { accessToken, idToken } = refreshResult.data;
                 setSessionToken(accessToken, idToken);
-                onRefreshed(accessToken);
+                onRefreshed(accessToken, idToken);
               }
             } catch (error) {
               // Handle refresh token error
@@ -254,10 +255,11 @@ export const errorConfig: RequestConfig = {
 
           // Wait for the token to be refreshed
           return new Promise((resolve) => {
-            addRefreshSubscriber((token: string) => {
+            addRefreshSubscriber((accessToken: string, idToken: string) => {
               config.headers = {
                 ...config.headers,
-                Authorization: `Bearer ${token}`,
+                'Access-Token': accessToken || '',
+                'Identity-Token': idToken || '',
               };
               resolve(config);
             });
