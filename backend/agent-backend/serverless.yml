@@ -8,12 +8,17 @@ service: agent-backend
 stages:
   prod:
     observability: true
+  test:
+    observability: true
   default:
     observability: false
     params:
       agentUserPoolName: ${self:service}-user-pool-${sls:stage}
       agentUserPoolClientName: ${self:service}-user-pool-client-${sls:stage}
       agentUserPoolDomain: ${self:service}-user-pool-domain-${sls:stage}
+      googleClientId: ${param:googleClientId-${sls:stage}, param:defaultGoogleClientId}
+      googleClientSecret: ${param:googleClientSecret-${sls:stage}, param:defaultGoogleClientSecret}
+      cloudFrontAlternateDomain: ${param:cloudFrontAlternateDomain-${sls:stage}, param:defaultCloudFrontAlternateDomain}
       mainTable: ${sls:stage}_linerra_main
       frontendUrl: ${env:FRONTEND_URL, param:frontendUrl-${sls:stage}, 'http://localhost:8000'}
       localDynamoDBPort: ${env:LOCAL_DYNAMO_DB_PORT, 8900}
@@ -128,6 +133,87 @@ resources:
     #         EndpointType: REGIONAL
     #         SecurityPolicy: TLS_1_2
 
+    ApiCloudFrontOriginAccessControl:
+      Type: AWS::CloudFront::OriginAccessControl
+      Properties:
+        OriginAccessControlConfig:
+          Name: ${self:service}-${sls:stage}-api-cloudfront-origin-access-control
+          OriginAccessControlOriginType: lambda
+          SigningBehavior: always
+          SigningProtocol: sigv4
+
+    ApiCloudFrontDistribution:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Aliases:
+            - ${param:cloudFrontAlternateDomain}
+          DefaultCacheBehavior:
+            AllowedMethods:
+              - HEAD
+              - DELETE
+              - POST
+              - GET
+              - OPTIONS
+              - PUT
+              - PATCH
+            CachedMethods:
+              - HEAD
+              - GET
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+            Compress: true
+            #SmoothStreaming: false
+            TargetOriginId: !Select [2, !Split ["/", !GetAtt ApiLambdaFunctionUrl.FunctionUrl]] 
+            ViewerProtocolPolicy: redirect-to-https
+          Enabled: true
+          HttpVersion: http2
+          #IPV6Enabled: true
+          # Logging:
+          #   IncludeCookies: false
+          #   Bucket: ''
+          #   Prefix: ''
+          Origins:
+            - DomainName: !Select [2, !Split ["/", !GetAtt ApiLambdaFunctionUrl.FunctionUrl]] 
+              Id: !Select [2, !Split ["/", !GetAtt ApiLambdaFunctionUrl.FunctionUrl]] 
+              # ConnectionAttempts: 3
+              # ConnectionTimeout: 10
+              CustomOriginConfig:
+                HTTPSPort: 443
+                HTTPPort: 80
+                OriginProtocolPolicy: https-only
+                OriginReadTimeout: 60
+                # OriginKeepaliveTimeout: 5
+                OriginSSLProtocols:
+                  - TLSv1.2
+                
+                
+              OriginAccessControlId: !Ref ApiCloudFrontOriginAccessControl
+              #OriginCustomHeaders: []
+              
+              OriginShield:
+                Enabled: false
+              #OriginPath: ''
+          PriceClass: PriceClass_All
+          Staging: false
+          ViewerCertificate:
+            AcmCertificateArn: ${param:apiGatewayCertificateArn-${sls:stage}, ''}
+            #CloudFrontDefaultCertificate: false
+            SslSupportMethod: sni-only
+            MinimumProtocolVersion: TLSv1.2_2021
+                
+
+    ApiAllowCloudFrontServicePrincipalLambdaPermission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        FunctionName: !GetAtt ApiLambdaFunction.Arn
+        Action: lambda:InvokeFunctionUrl
+        Principal: cloudfront.amazonaws.com
+        SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${ApiCloudFrontDistribution}'
+
+        # !Ref ApiCloudFrontDistribution
+
+
     AgentUserPool:
       Type: AWS::Cognito::UserPool
       Properties:
@@ -209,8 +295,8 @@ resources:
         ProviderName: Google
         ProviderType: Google
         ProviderDetails:
-          client_id: ${param:googleClientId-${sls:stage}}
-          client_secret: ${param:googleClientSecret-${sls:stage}}
+          client_id: ${param:googleClientId}
+          client_secret: ${param:googleClientSecret}
           authorize_scopes: "openid profile email"
         AttributeMapping:
           email: email
