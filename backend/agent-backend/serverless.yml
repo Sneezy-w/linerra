@@ -85,23 +85,19 @@ provider:
           Resource: "*"
 
 functions:
-  api:
-    handler: src/index.handler
-    timeout: 300
-    url:
-      cors:  # CORS configuration for Lambda URL, can also be defined as `true` with default CORS configuration
-        cors:
-          allowedOrigins:
-            - ${param:frontendUrl}
-          allowedHeaders:
-            - "*"
-          allowedMethods:
-            - "*"
+  api: ${file(./apiFuncConfig.js)}
+    # handler: src/index.handler
+    # timeout: 300
+    # url:
+    #   cors:  # CORS configuration for Lambda URL, can also be defined as `true` with default CORS configuration
+    #     allowedOrigins:
+    #       - ${param:frontendUrl}
+    #     allowedHeaders:
+    #       - "*"
+    #     allowedMethods:
+    #       - "*"
     # events:
     #   - httpApi: "*"
-
-
-
 
 resources:
   Conditions:
@@ -200,7 +196,6 @@ resources:
           - custom:stationId
           - custom:stationNo
 
-
     AgentUserPoolDomain:
       Type: AWS::Cognito::UserPoolDomain
       Properties:
@@ -220,8 +215,6 @@ resources:
         AttributeMapping:
           email: email
           email_verified: email_verified
-
-
 
     MainTable:
       Type: AWS::DynamoDB::Table
@@ -285,6 +278,11 @@ custom:
       migrate: true
       noStart: true
       #sharedDb: true
+
+  # addHttpOffline: # Only used for local testing (offline) as Lambda URL is not (yet) supported by Serverless Offline
+  #   integrationInternal:
+  #     offline:
+  #       - httpApi: "*"
 
 plugins:
   - serverless-cloudside-plugin

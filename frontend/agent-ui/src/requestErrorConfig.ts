@@ -64,6 +64,13 @@ function addRefreshSubscriber(cb: (token: string) => void) {
   refreshSubscribers.push(cb);
 }
 
+async function calculateSha256(data: any): Promise<string> {
+  const msgUint8 = new TextEncoder().encode(JSON.stringify(data));
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 /**
  * @name Error handling
  * pro's own error handling, can make your own changes here
@@ -129,6 +136,8 @@ export const errorConfig: RequestConfig = {
         const errorInfo: ResponseStructure | undefined = error.response.data;
         if (errorInfo) {
           const { errorMessage, errorCode } = errorInfo;
+          //console.log("errorInfo", errorInfo);
+          //console.log("error", error);
           switch (errorInfo.showType) {
             case ErrorShowType.SILENT:
               // do nothing
@@ -149,7 +158,7 @@ export const errorConfig: RequestConfig = {
               // TODO: redirect
               break;
             default:
-              message.error(errorMessage || 'Request error, please retry.');
+              message.error(errorMessage || error.message || error.msg || error.response?.message || error.response?.msg || 'Request error, please retry.');
           }
         }
       } else if (error.request) {
@@ -175,6 +184,18 @@ export const errorConfig: RequestConfig = {
 
   // Request interceptor
   requestInterceptors: [
+    async (config: RequestConfig) => {
+
+      if (config.method?.toLowerCase() === 'put' || config.method?.toLowerCase() === 'post') {
+        const contentSha256 = await calculateSha256(config.data);
+        config.headers = {
+          ...config.headers,
+          'x-amz-content-sha256': contentSha256,
+        };
+      }
+
+      return { ...config };
+    },
     async (config: RequestConfig) => {
       //console.log("requestInterceptor", config);
       // Intercept request configuration for personalized processing.

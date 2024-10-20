@@ -157,7 +157,7 @@ export default defineConfig({
   esbuildMinifyIIFE: true,
   requestRecord: {},
   tailwindcss: {
-    timeout: 10000,
+    CHECK_TIMEOUT_UNIT_SECOND: 20,
   },
   define: {
     'process.env.API_URL': process.env.API_URL,
